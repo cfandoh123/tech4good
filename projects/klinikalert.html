@@ -1,0 +1,2914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KlinikAlert — Maternal health reminders for Greater Accra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1A1612;
+    --ink-soft: #3a3128;
+    --forest: #0F3D2E;
+    --forest-deep: #0a2a20;
+    --forest-soft: #2a5a47;
+    --terra: #D97543;
+    --terra-deep: #B85A2E;
+    --gold: #C8956D;
+    --rose: #C97770;
+    --rose-soft: #f0d4d0;
+    --cream: #F4EDE0;
+    --cream-warm: #EEE3CF;
+    --paper: #FAF6EE;
+    --line: rgba(26, 22, 18, 0.10);
+    --line-strong: rgba(26, 22, 18, 0.18);
+    --good: #2D6E4E;
+    --bad: #B84A3E;
+    --warn: #C8956D;
+
+    /* WhatsApp-ish */
+    --wa-green: #075E54;
+    --wa-green-light: #128C7E;
+    --wa-bg: #ECE5DB;
+    --wa-out: #DCF8C6;
+    --wa-in: #FFFFFF;
+
+    --display: 'Fraunces', Georgia, serif;
+    --body: 'DM Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; font-size: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ============ HEADER ============ */
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250, 246, 238, 0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .top-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+    background: var(--forest);
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  /* Plus/cross + heart-ish symbol */
+  .brand-mark::before {
+    content: '';
+    position: absolute;
+    top: 8px; bottom: 8px;
+    left: 50%; transform: translateX(-50%);
+    width: 3px;
+    background: var(--gold);
+    border-radius: 2px;
+  }
+  .brand-mark::after {
+    content: '';
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    left: 8px; right: 8px;
+    height: 3px;
+    background: var(--gold);
+    border-radius: 2px;
+  }
+  .brand-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0.55;
+    font-weight: normal;
+    margin-left: 4px;
+  }
+
+  .role-switcher {
+    display: flex;
+    gap: 4px;
+    background: var(--cream);
+    padding: 4px;
+    border-radius: 100px;
+    border: 1px solid var(--line);
+  }
+  .role-btn {
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .role-btn:hover { color: var(--ink); }
+  .role-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .role-btn .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+  }
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--good);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(45, 110, 78, 0.4); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(45, 110, 78, 0); }
+  }
+
+  /* ============ MAIN ============ */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+
+  .view-header {
+    margin-bottom: 32px;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .view-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--terra-deep);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .view-eyebrow::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--terra-deep);
+  }
+  .view-title {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+  }
+  .view-title em { font-style: italic; color: var(--forest); }
+  .view-sub {
+    margin-top: 14px;
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 560px;
+  }
+  .view-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .selector {
+    padding: 10px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--paper);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .selector:hover { border-color: var(--ink); }
+  .selector-wide { min-width: 280px; }
+
+  /* ============ CARDS ============ */
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 24px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .card-title {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+  .card-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    padding: 4px 10px;
+    background: var(--cream);
+    border-radius: 100px;
+  }
+  .card-tag.urgent {
+    background: var(--rose-soft);
+    color: var(--bad);
+  }
+
+  /* ============ STATS ============ */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 22px;
+    border-radius: 6px;
+  }
+  .stat-card.accent {
+    background: var(--forest);
+    color: var(--cream);
+    border-color: var(--forest);
+  }
+  .stat-card.accent .stat-label { color: var(--gold); }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .stat-value {
+    font-family: var(--display);
+    font-size: 38px;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    margin-bottom: 8px;
+  }
+  .stat-value .small-unit {
+    font-size: 16px;
+    opacity: 0.6;
+    margin-left: 4px;
+  }
+  .stat-change {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--good);
+  }
+  .stat-change.down { color: var(--bad); }
+  .stat-change.flat { color: var(--ink-soft); }
+  .stat-card.accent .stat-change { color: var(--gold); }
+
+  /* ============ CHO DASHBOARD ============ */
+  .greeting-card {
+    background: linear-gradient(135deg, var(--forest) 0%, var(--forest-deep) 100%);
+    color: var(--cream);
+    padding: 36px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .greeting-card::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 60%;
+    height: 140%;
+    background: radial-gradient(circle, var(--gold) 0%, transparent 65%);
+    opacity: 0.18;
+  }
+  .greeting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+    position: relative;
+  }
+  .greeting-text { max-width: 580px; }
+  .greeting-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .greeting-title {
+    font-family: var(--display);
+    font-size: 36px;
+    line-height: 1.1;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .greeting-title em { font-style: italic; color: var(--gold); }
+  .greeting-sub {
+    font-size: 15px;
+    opacity: 0.85;
+  }
+  .greeting-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .btn-primary {
+    background: var(--terra);
+    color: var(--paper);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--terra-deep); transform: translateY(-1px); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--cream);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid rgba(244, 237, 224, 0.3);
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { background: rgba(244, 237, 224, 0.1); border-color: var(--gold); }
+
+  .cho-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* Roster */
+  .roster-list { display: flex; flex-direction: column; }
+  .roster-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .roster-item:first-child { border-top: none; }
+  .roster-item:hover { background: rgba(216, 117, 67, 0.04); }
+  .patient-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .av-1 { background: var(--cream-warm); color: var(--forest); }
+  .av-2 { background: var(--forest); color: var(--cream); }
+  .av-3 { background: var(--rose-soft); color: var(--bad); }
+  .av-4 { background: var(--gold); color: var(--ink); }
+  .av-5 { background: var(--ink); color: var(--cream); }
+  .av-6 { background: rgba(45, 110, 78, 0.15); color: var(--good); }
+  .roster-name {
+    font-weight: 500;
+    font-size: 15px;
+    margin-bottom: 2px;
+  }
+  .roster-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .roster-week {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--forest);
+  }
+  .roster-week .small-unit {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-left: 2px;
+    letter-spacing: 0.08em;
+  }
+  .status-pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+  .status-pill.confirmed { background: rgba(45, 110, 78, 0.12); color: var(--good); }
+  .status-pill.pending   { background: rgba(200, 149, 109, 0.18); color: var(--terra-deep); }
+  .status-pill.missed    { background: rgba(184, 74, 62, 0.12); color: var(--bad); }
+  .status-pill.confirmedLight { background: var(--cream); color: var(--ink-soft); }
+  .lang-pill {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 100px;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Activity feed */
+  .activity-feed { max-height: 480px; overflow-y: auto; }
+  .activity-item {
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 12px;
+    align-items: start;
+  }
+  .activity-item:first-child { border-top: none; padding-top: 0; }
+  .activity-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .activity-icon.sent { background: var(--cream); color: var(--forest); }
+  .activity-icon.replied { background: rgba(45, 110, 78, 0.12); color: var(--good); }
+  .activity-icon.missed { background: rgba(184, 74, 62, 0.12); color: var(--bad); }
+  .activity-icon.emergency { background: var(--rose-soft); color: var(--bad); }
+  .activity-body { flex: 1; }
+  .activity-text {
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .activity-text .hl { color: var(--forest); font-weight: 500; }
+  .activity-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Patient roster full table */
+  .full-roster .roster-item {
+    grid-template-columns: auto 1.5fr 1fr auto auto auto;
+  }
+
+  /* ============ PATIENT JOURNEY ============ */
+  .patient-header {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 32px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 28px;
+    align-items: center;
+  }
+  .patient-avatar-large {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display);
+    font-size: 32px;
+    font-weight: 500;
+  }
+  .ph-name {
+    font-family: var(--display);
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .ph-meta {
+    display: flex;
+    gap: 18px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+  .ph-meta span strong { color: var(--ink); font-weight: 500; }
+  .ph-stats {
+    display: flex;
+    gap: 32px;
+    text-align: right;
+  }
+  .ph-stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .ph-stat-value {
+    font-family: var(--display);
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .ph-stat-value.due { color: var(--terra-deep); }
+
+  /* Pregnancy timeline */
+  .timeline-card { padding: 28px; }
+  .timeline-svg {
+    width: 100%;
+    height: 130px;
+    margin-top: 12px;
+  }
+  .timeline-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+  .tl-legend-item {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--ink-soft);
+  }
+  .tl-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  /* Patient grid */
+  .patient-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  /* Appointments list */
+  .appt-list { display: flex; flex-direction: column; }
+  .appt-item {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+    align-items: center;
+  }
+  .appt-item:first-child { border-top: none; padding-top: 4px; }
+  .appt-date {
+    text-align: center;
+    background: var(--cream);
+    padding: 8px 6px;
+    border-radius: 6px;
+    line-height: 1;
+  }
+  .appt-date.upcoming { background: var(--forest); color: var(--cream); }
+  .appt-date.past { background: var(--cream); color: var(--ink-soft); }
+  .appt-day {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    opacity: 0.7;
+  }
+  .appt-num {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .appt-title {
+    font-weight: 500;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .appt-details {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .appt-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border-radius: 100px;
+    background: var(--cream-warm);
+    color: var(--ink-soft);
+  }
+  .appt-tag.scan { background: rgba(45, 110, 78, 0.15); color: var(--good); }
+  .appt-tag.tt { background: rgba(216, 117, 67, 0.15); color: var(--terra-deep); }
+  .appt-tag.iptp { background: rgba(200, 149, 109, 0.2); color: var(--terra-deep); }
+  .appt-tag.postnatal { background: var(--rose-soft); color: var(--rose); }
+
+  /* Message thread preview */
+  .message-thread { max-height: 480px; overflow-y: auto; padding-right: 4px; }
+  .msg-thread-item {
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .msg-thread-item:first-child { border-top: none; padding-top: 0; }
+  .msg-thread-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .msg-thread-from {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+  }
+  .msg-thread-from.outgoing { color: var(--forest); }
+  .msg-thread-from.incoming { color: var(--terra-deep); }
+  .msg-thread-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .msg-thread-text {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .msg-thread-text em {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-style: normal;
+    background: var(--cream);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--ink-soft);
+    margin-left: 6px;
+  }
+
+  /* Quick send */
+  .quick-send-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .qs-textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--paper);
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 80px;
+  }
+  .qs-textarea:focus { outline: none; border-color: var(--forest); }
+  .qs-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .qs-lang {
+    display: flex;
+    gap: 6px;
+  }
+  .lang-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 6px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    transition: all 0.2s;
+  }
+  .lang-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .lang-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* ============ ADMIN ============ */
+  .admin-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .admin-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .big-chart {
+    width: 100%;
+    height: 280px;
+  }
+  .chart-legend-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .chart-legend-swatch {
+    width: 16px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  /* Funnel */
+  .funnel { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .funnel-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 80px;
+    gap: 14px;
+    align-items: center;
+  }
+  .funnel-label {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .funnel-label strong { color: var(--ink); font-weight: 500; }
+  .funnel-track {
+    height: 32px;
+    background: var(--cream);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .funnel-fill {
+    height: 100%;
+    background: var(--forest);
+    border-radius: 4px;
+    position: relative;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .funnel-fill.f-1 { background: var(--forest); }
+  .funnel-fill.f-2 { background: var(--forest-soft); }
+  .funnel-fill.f-3 { background: var(--gold); }
+  .funnel-fill.f-4 { background: var(--terra); }
+  .funnel-fill.f-5 { background: var(--terra-deep); }
+  .funnel-val {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 500;
+    text-align: right;
+  }
+
+  /* Language breakdown */
+  .lang-list { margin-top: 8px; }
+  .lang-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 80px;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .lang-name {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 500;
+  }
+  .lang-track {
+    height: 8px;
+    background: var(--cream);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .lang-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.8s ease-out;
+  }
+  .lang-pct {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+
+  /* Area heatmap-ish */
+  .area-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .area-cell {
+    padding: 16px;
+    background: var(--cream);
+    border-radius: 6px;
+    border-left: 3px solid var(--forest);
+  }
+  .area-name {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+  .area-count {
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--forest);
+  }
+  .area-attendance {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  /* ============ WHATSAPP SIMULATOR ============ */
+  .wa-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
+    align-items: start;
+  }
+  .wa-context h3 {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .wa-context h3 em { font-style: italic; color: var(--forest); }
+  .wa-context > p {
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+    max-width: 560px;
+  }
+
+  .language-switcher {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 24px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+  }
+  .ls-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .ls-sub {
+    font-size: 13px;
+    opacity: 0.75;
+    margin-bottom: 16px;
+  }
+  .ls-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .ls-btn {
+    padding: 10px 18px;
+    border-radius: 100px;
+    background: transparent;
+    color: var(--cream);
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 500;
+    border: 1px solid rgba(244, 237, 224, 0.2);
+    transition: all 0.2s;
+  }
+  .ls-btn:hover { border-color: var(--gold); }
+  .ls-btn.active {
+    background: var(--gold);
+    color: var(--ink);
+    border-color: var(--gold);
+  }
+  .ls-btn .native {
+    font-style: italic;
+    font-weight: 400;
+    opacity: 0.7;
+    margin-left: 4px;
+  }
+  .ls-btn.active .native { opacity: 0.85; }
+
+  .commands-card {
+    background: var(--cream);
+    padding: 28px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+  }
+  .commands-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--terra-deep);
+    margin-bottom: 18px;
+  }
+  .commands-list { display: grid; gap: 8px; }
+  .command-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 16px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .command-row:first-child { border-top: none; padding-top: 0; }
+  .command-code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--forest);
+    cursor: pointer;
+    transition: color 0.2s;
+    font-weight: 500;
+  }
+  .command-code:hover { color: var(--terra-deep); }
+  .command-desc {
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+
+  .insight-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 24px;
+    border-radius: 6px;
+    border-left: 3px solid var(--terra);
+  }
+  .insight-title {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .insight-body {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+
+  /* Phone */
+  .phone {
+    background: var(--ink);
+    border-radius: 38px;
+    padding: 14px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 400px;
+    position: sticky;
+    top: 100px;
+  }
+  .phone-screen {
+    background: var(--wa-bg);
+    border-radius: 28px;
+    overflow: hidden;
+    height: 700px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .phone-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 24px;
+    background: var(--ink);
+    border-radius: 0 0 18px 18px;
+    z-index: 10;
+  }
+  .phone-statusbar {
+    height: 38px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    padding-top: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--wa-green);
+    color: white;
+  }
+
+  .phone-header {
+    background: var(--wa-green);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+  }
+  .phone-back {
+    color: white;
+    font-size: 22px;
+    width: 24px;
+    line-height: 1;
+  }
+  .phone-contact-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--forest);
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .phone-contact-info { flex: 1; }
+  .phone-contact-name {
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.1;
+  }
+  .phone-contact-meta {
+    font-size: 11px;
+    opacity: 0.85;
+    margin-top: 1px;
+  }
+  .phone-header-icons {
+    display: flex;
+    gap: 14px;
+    font-size: 16px;
+    opacity: 0.85;
+  }
+
+  /* Doodle background for chat */
+  .phone-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--wa-bg);
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(15, 61, 46, 0.04) 1px, transparent 2px),
+      radial-gradient(circle at 30% 60%, rgba(15, 61, 46, 0.04) 1px, transparent 2px),
+      radial-gradient(circle at 70% 35%, rgba(15, 61, 46, 0.04) 1px, transparent 2px),
+      radial-gradient(circle at 85% 75%, rgba(15, 61, 46, 0.04) 1px, transparent 2px),
+      radial-gradient(circle at 50% 90%, rgba(15, 61, 46, 0.04) 1px, transparent 2px);
+    background-size: 80px 80px, 100px 100px, 120px 120px, 90px 90px, 110px 110px;
+  }
+  .phone-messages::-webkit-scrollbar { width: 4px; }
+  .phone-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+
+  .wa-date-divider {
+    align-self: center;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-weight: 500;
+    margin: 4px 0;
+  }
+
+  .wa-msg {
+    max-width: 82%;
+    padding: 8px 10px 5px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    animation: msgIn 0.3s ease-out;
+    word-wrap: break-word;
+    position: relative;
+    box-shadow: 0 1px 0.5px rgba(0,0,0,0.06);
+  }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .wa-msg.in {
+    align-self: flex-start;
+    background: var(--wa-in);
+    border-top-left-radius: 0;
+  }
+  .wa-msg.out {
+    align-self: flex-end;
+    background: var(--wa-out);
+    border-top-right-radius: 0;
+  }
+  .wa-msg.system {
+    align-self: center;
+    background: rgba(255, 251, 220, 0.95);
+    color: var(--ink-soft);
+    font-size: 11.5px;
+    font-style: italic;
+    padding: 6px 12px;
+    border-radius: 6px;
+    max-width: 80%;
+    text-align: center;
+    box-shadow: 0 1px 0.5px rgba(0,0,0,0.05);
+  }
+  .wa-meta {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+    font-size: 10px;
+    color: var(--ink-soft);
+    font-family: var(--mono);
+  }
+  .wa-checks {
+    font-size: 12px;
+    color: #4FC3F7;
+    margin-left: 2px;
+  }
+  .typing {
+    align-self: flex-start;
+    background: var(--wa-in);
+    padding: 10px 14px;
+    border-radius: 8px;
+    border-top-left-radius: 0;
+    display: flex;
+    gap: 4px;
+    box-shadow: 0 1px 0.5px rgba(0,0,0,0.06);
+  }
+  .typing span {
+    width: 6px;
+    height: 6px;
+    background: var(--ink-soft);
+    border-radius: 50%;
+    animation: typingDot 1.2s infinite;
+    opacity: 0.5;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingDot {
+    0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-3px); }
+  }
+  .phone-input-area {
+    background: var(--wa-bg);
+    padding: 6px 10px 10px;
+  }
+  .phone-suggestions {
+    display: flex;
+    gap: 6px;
+    padding-bottom: 8px;
+    overflow-x: auto;
+  }
+  .phone-suggestions::-webkit-scrollbar { display: none; }
+  .suggestion-chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 5px 11px;
+    background: var(--paper);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 100px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+  .suggestion-chip:hover {
+    background: var(--wa-green);
+    color: white;
+    border-color: var(--wa-green);
+  }
+  .phone-input {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .phone-input input {
+    flex: 1;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 100px;
+    font-size: 13px;
+    background: var(--paper);
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+  }
+  .phone-input input:focus { outline: none; }
+  .phone-send {
+    width: 40px;
+    height: 40px;
+    background: var(--wa-green);
+    border-radius: 50%;
+    color: white;
+    font-size: 16px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .phone-send:hover { background: var(--wa-green-light); transform: scale(1.05); }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: var(--ink);
+    color: var(--cream);
+    padding: 14px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast::before {
+    content: '✓';
+    color: var(--gold);
+  }
+
+  /* Footer */
+  footer {
+    max-width: 1400px;
+    margin: 60px auto 0;
+    padding: 32px 32px 40px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  footer a {
+    color: var(--terra-deep);
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--ink); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1100px) {
+    .cho-grid, .admin-grid, .patient-grid, .wa-layout, .admin-grid-2 {
+      grid-template-columns: 1fr;
+    }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .phone { position: relative; top: 0; margin: 0 auto; }
+    .patient-header { grid-template-columns: auto 1fr; }
+    .ph-stats { grid-column: 1 / -1; justify-content: start; gap: 24px; }
+    .area-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .top-inner { flex-wrap: wrap; gap: 12px; padding: 14px 20px; }
+    .role-switcher { width: 100%; overflow-x: auto; }
+    .role-btn { white-space: nowrap; padding: 8px 12px; font-size: 12px; }
+    main { padding: 24px 20px; }
+    .view-title { font-size: 36px; }
+    .greeting-title { font-size: 26px; }
+    .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-card { padding: 16px; }
+    .stat-value { font-size: 28px; }
+    .roster-item { grid-template-columns: auto 1fr auto; gap: 10px; }
+    .roster-item .lang-pill, .full-roster .lang-pill { display: none; }
+    .patient-header { padding: 22px; gap: 16px; }
+    .patient-avatar-large { width: 64px; height: 64px; font-size: 22px; }
+    .ph-name { font-size: 22px; }
+    .area-grid { grid-template-columns: 1fr; }
+    .command-row { grid-template-columns: 1fr; gap: 4px; }
+    footer { flex-direction: column; align-items: start; text-align: left; }
+    .funnel-row { grid-template-columns: 90px 1fr 60px; gap: 8px; }
+    .funnel-label { font-size: 11px; }
+    .lang-row { grid-template-columns: 70px 1fr 60px; }
+  }
+
+/* ===== Tech4Good back-nav banner (injected by wiring script) ===== */
+.t4g-back-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: #1A1612;
+  color: #F4EDE0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(244, 237, 224, 0.08);
+}
+.t4g-back-nav .t4g-back-link {
+  color: #F4EDE0;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s;
+  font-weight: 500;
+}
+.t4g-back-nav .t4g-back-link:hover { color: #C8956D; }
+.t4g-back-nav .t4g-back-arrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.t4g-back-nav .t4g-context {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.t4g-back-nav .t4g-mark {
+  width: 16px;
+  height: 16px;
+  background: #0F3D2E;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.t4g-back-nav .t4g-mark::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: #D97543;
+  border-radius: 50%;
+}
+body {
+  padding-top: 36px;
+}
+header.top {
+  top: 36px !important;
+}
+@media (max-width: 700px) {
+  .t4g-back-nav { padding: 0 16px; height: 32px; }
+  .t4g-back-nav .t4g-context { display: none; }
+  body { padding-top: 32px; }
+  header.top { top: 32px !important; }
+}
+
+</style>
+</head>
+<body>
+<div class="t4g-back-nav">
+  <a href="../index.html" class="t4g-back-link">
+    <span class="t4g-mark"></span>
+    <span class="t4g-back-arrow">←</span>
+    Back to Tech4Good
+  </a>
+  <span class="t4g-context">KlinikAlert · Cohort 01 Demo Day</span>
+</div>
+
+
+<!-- HEADER -->
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        KlinikAlert<span class="brand-sub">Madina · Cohort 01</span>
+      </div>
+    </div>
+    <div class="role-switcher" id="roleSwitcher">
+      <button class="role-btn active" data-role="cho"><span class="dot"></span>Health Officer</button>
+      <button class="role-btn" data-role="patient"><span class="dot"></span>Patient Journey</button>
+      <button class="role-btn" data-role="admin"><span class="dot"></span>Admin</button>
+      <button class="role-btn" data-role="wa"><span class="dot"></span>WhatsApp Demo</button>
+    </div>
+    <div class="live-indicator">
+      <span class="live-dot"></span>
+      <span>Live · <span id="liveTime">--:--</span></span>
+    </div>
+  </div>
+</header>
+
+<main id="mainContent"></main>
+
+<footer>
+  <div>KlinikAlert · Built by Cohort 01 · <a href="#">Tech4Good Nungua</a></div>
+  <div>Service hours: 7am–9pm GMT · WhatsApp 24/7 emergency routing</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   KLINIKALERT — Maternal health WhatsApp companion
+   Built for the Tech4Good Innovators Bootcamp · Cohort 01
+   Focus: peri-urban Greater Accra · Twi · Ga · English
+   ============================================================ */
+
+// ---------- DATA ----------
+
+const FACILITIES = [
+  { id: 'madina',    name: 'Madina Polyclinic',         area: 'Madina',    type: 'polyclinic' },
+  { id: 'adenta',    name: 'Adenta Municipal Hospital', area: 'Adenta',    type: 'hospital' },
+  { id: 'la',        name: 'La General Hospital',       area: 'La',         type: 'hospital' },
+  { id: 'ridge',     name: 'Ridge Hospital',            area: 'Central Accra', type: 'hospital' },
+  { id: 'ashaiman',  name: 'Ashaiman Polyclinic',       area: 'Ashaiman',  type: 'polyclinic' },
+  { id: 'amasaman',  name: 'Amasaman Hospital',         area: 'Amasaman',  type: 'hospital' },
+  { id: 'pantang',   name: 'Pantang CHPS',              area: 'Pantang',   type: 'chps' }
+];
+
+const CHOS = [
+  { id: 'cho1', name: 'Faustina Lartey',    area: 'Madina-Adenta corridor', caseload: 24 },
+  { id: 'cho2', name: 'Akosua Owusu-Nyarko',area: 'La-Teshie',              caseload: 18 },
+  { id: 'cho3', name: 'Naomi Tetteh',       area: 'Ashaiman',                caseload: 21 }
+];
+
+// Patients
+const PATIENTS = [
+  { id: 'p01', initials: 'AM', name: 'Akua Mensah',           week: 24, lang: 'twi', area: 'Madina',  facility: 'madina',   cho: 'cho1', avatar: 'av-1', phone: '+233 24 4*** 102', joined: '2025-11-14', status: 'active' },
+  { id: 'p02', initials: 'NA', name: 'Naa Adoley Quaye',      week: 32, lang: 'ga',  area: 'La',       facility: 'la',       cho: 'cho2', avatar: 'av-3', phone: '+233 20 8*** 445', joined: '2025-09-22', status: 'active' },
+  { id: 'p03', initials: 'AB', name: 'Adwoa Boateng',          week: 16, lang: 'twi', area: 'Adenta',  facility: 'adenta',   cho: 'cho1', avatar: 'av-2', phone: '+233 50 1*** 778', joined: '2026-01-30', status: 'active' },
+  { id: 'p04', initials: 'EA', name: 'Esi Aidoo',              week: 36, lang: 'en',  area: 'Madina',  facility: 'madina',   cho: 'cho1', avatar: 'av-4', phone: '+233 55 9*** 014', joined: '2025-08-10', status: 'active' },
+  { id: 'p05', initials: 'NK', name: 'Naa Korkor Okine',      week: 28, lang: 'ga',  area: 'La',       facility: 'la',       cho: 'cho2', avatar: 'av-3', phone: '+233 26 7*** 332', joined: '2025-10-18', status: 'active' },
+  { id: 'p06', initials: 'AO', name: 'Afia Owusu',             week: 12, lang: 'twi', area: 'Pantang', facility: 'pantang',  cho: 'cho1', avatar: 'av-1', phone: '+233 24 5*** 891', joined: '2026-02-22', status: 'active' },
+  { id: 'p07', initials: 'YP', name: 'Yaa Pomaa',              week: 'PN-6w', lang: 'twi', area: 'Ashaiman', facility: 'ashaiman', cho: 'cho3', avatar: 'av-6', phone: '+233 24 0*** 117', joined: '2025-05-04', status: 'postnatal' },
+  { id: 'p08', initials: 'AD', name: 'Ama Doku',               week: 20, lang: 'twi', area: 'Amasaman', facility: 'amasaman', cho: 'cho3', avatar: 'av-2', phone: '+233 55 1*** 220', joined: '2025-12-19', status: 'active' },
+  { id: 'p09', initials: 'NS', name: 'Naa Dedei Sowah',       week: 34, lang: 'ga',  area: 'La',       facility: 'la',       cho: 'cho2', avatar: 'av-3', phone: '+233 50 6*** 905', joined: '2025-09-02', status: 'active' },
+  { id: 'p10', initials: 'AS', name: 'Akosua Asante',          week: 8,  lang: 'twi', area: 'Madina',  facility: 'madina',   cho: 'cho1', avatar: 'av-1', phone: '+233 24 8*** 552', joined: '2026-03-15', status: 'active' },
+  { id: 'p11', initials: 'AT', name: 'Abena Tetteh',           week: 30, lang: 'twi', area: 'Adenta',  facility: 'adenta',   cho: 'cho1', avatar: 'av-5', phone: '+233 20 3*** 661', joined: '2025-09-30', status: 'active' },
+  { id: 'p12', initials: 'NQ', name: 'Naa Amerley Quaye',     week: 'PN-1w', lang: 'ga', area: 'La',  facility: 'la',       cho: 'cho2', avatar: 'av-6', phone: '+233 26 4*** 087', joined: '2025-06-22', status: 'postnatal' },
+  { id: 'p13', initials: 'EK', name: 'Efua Koranteng',         week: 14, lang: 'en',  area: 'Madina',  facility: 'madina',   cho: 'cho1', avatar: 'av-4', phone: '+233 24 2*** 444', joined: '2026-02-08', status: 'active' },
+  { id: 'p14', initials: 'AN', name: 'Adwoa Nyantakyi',        week: 26, lang: 'twi', area: 'Amasaman', facility: 'amasaman', cho: 'cho3', avatar: 'av-2', phone: '+233 55 7*** 318', joined: '2025-11-02', status: 'active' },
+  { id: 'p15', initials: 'NL', name: 'Naa Lamiokor Adjei',    week: 38, lang: 'ga',  area: 'La',       facility: 'la',       cho: 'cho2', avatar: 'av-3', phone: '+233 24 9*** 776', joined: '2025-08-14', status: 'active' },
+  { id: 'p16', initials: 'KO', name: 'Kukua Otoo',             week: 18, lang: 'en',  area: 'Ashaiman', facility: 'ashaiman', cho: 'cho3', avatar: 'av-4', phone: '+233 50 8*** 195', joined: '2026-01-12', status: 'active' },
+  { id: 'p17', initials: 'AF', name: 'Adwoa Foriwaa',          week: 22, lang: 'twi', area: 'Pantang', facility: 'pantang',  cho: 'cho1', avatar: 'av-1', phone: '+233 24 6*** 230', joined: '2025-12-04', status: 'active' },
+  { id: 'p18', initials: 'NN', name: 'Naa Norkor Nartey',     week: 10, lang: 'ga',  area: 'La',       facility: 'la',       cho: 'cho2', avatar: 'av-3', phone: '+233 55 4*** 658', joined: '2026-03-02', status: 'active' },
+  { id: 'p19', initials: 'AY', name: 'Akua Yeboah',            week: 40, lang: 'twi', area: 'Madina',  facility: 'madina',   cho: 'cho1', avatar: 'av-5', phone: '+233 24 1*** 999', joined: '2025-07-30', status: 'active' },
+  { id: 'p20', initials: 'AP', name: 'Adwoa Pomaa Antwi',     week: 'PN-3d', lang: 'twi', area: 'Adenta', facility: 'adenta', cho: 'cho1', avatar: 'av-6', phone: '+233 20 5*** 521', joined: '2025-06-15', status: 'postnatal' }
+];
+
+// WHO 2016 8-contact ANC schedule (adapted with Ghana Health Service standards)
+const ANC_SCHEDULE = [
+  { week: 12, type: 'booking',   title: 'First ANC booking',     details: 'Blood tests · Urine · BP · Weight · NHIS registration' },
+  { week: 16, type: 'anc',       title: 'Second ANC',            details: 'TT1 · Iron + folate · Counselling', tag: 'tt' },
+  { week: 20, type: 'scan',      title: 'Anomaly scan',          details: 'Ultrasound · Detailed fetal check', tag: 'scan' },
+  { week: 24, type: 'anc',       title: 'Third ANC',             details: 'TT2 · IPTp1 · Growth check', tag: 'iptp' },
+  { week: 28, type: 'anc',       title: 'Fourth ANC',            details: 'IPTp2 · Growth · Position', tag: 'iptp' },
+  { week: 30, type: 'anc',       title: 'Fifth ANC',             details: 'TT3 · Repeat Hb', tag: 'tt' },
+  { week: 32, type: 'anc',       title: 'Sixth ANC',             details: 'IPTp3 · Presentation · Birth plan', tag: 'iptp' },
+  { week: 34, type: 'anc',       title: 'Seventh ANC',           details: 'Final birth plan · Bag readiness' },
+  { week: 36, type: 'anc',       title: 'Eighth ANC',            details: 'GBS · Position · Labor signs counselling' },
+  { week: 38, type: 'anc',       title: 'Ninth ANC',             details: 'Readiness check · 24/7 helpline' },
+  { week: 40, type: 'due',       title: 'Estimated due date',    details: 'Labor watch · Active monitoring' }
+];
+
+const POSTNATAL_SCHEDULE = [
+  { day: 1, title: 'Day-1 postnatal check', details: 'Mother & baby vitals · Breastfeeding support' },
+  { day: 3, title: 'Day-3 home visit',      details: 'Cord care · Mood check · Bleeding monitoring' },
+  { day: 7, title: 'Week-1 check',          details: 'Weight · Feeding · Vaccine reminder' },
+  { day: 42, title: '6-week postnatal',     details: 'BCG, OPV0 done · Family planning conversation' },
+  { day: 180, title: '6-month check',       details: 'Solids introduction · Vaccines update' }
+];
+
+// ---------- LANGUAGES & MESSAGES ----------
+
+const LANGUAGES = {
+  en:  { name: 'English', native: '· English' },
+  twi: { name: 'Twi',     native: '· Akan Twi' },
+  ga:  { name: 'Ga',      native: '· Gã' }
+};
+
+// Pre-translated message templates. {PLACEHOLDERS} are substituted at send time.
+const MSG_TEMPLATES = {
+  welcome: {
+    en:  "Hello {NAME}! Welcome to KlinikAlert. I'm your maternal health companion. I'll send reminders, answers, and check-ins throughout your pregnancy. Reply HELP anytime to see what I can do.",
+    twi: "Akwaaba {NAME}! Wo ne KlinikAlert. Me na me bɛboa wo wɔ wo nyinsɛn berɛ yi mu. Mɛsoma wo nkae, nsɛmmisa ne nhwehwɛmu. Tia HELP berɛ biara.",
+    ga:  "Ojekoo {NAME}! Bawo KlinikAlert mli. Mi ji ohe yelikɛbuamɔ kɛjɛ ohe hewalɛ be lɛ mli. Mahã bo kaimɔi, nibii kɛ kpamɔ. Hã HELP be fɛɛ be."
+  },
+  reminder: {
+    en:  "Hi {NAME} 🌿\nReminder: Your {APPT} is tomorrow ({DATE}) at {TIME} at {FACILITY}.\n\nPlease bring your maternal health book.\n\nReply YES to confirm, NO to reschedule, HELP for help.",
+    twi: "Maakye {NAME} 🌿\nYɛrekae wo: Wo {APPT} wɔ ɔkyena ({DATE}) {TIME} wɔ {FACILITY}.\n\nFa wo apomuden nwoma no bra.\n\nTia YES sɛ wɔbɛba, NO sɛ wopɛ sɛ wosesa berɛ, HELP sɛ wuhia mmoa.",
+    ga:  "Ojekoo {NAME} 🌿\nWɔkaiɔ bo: Ohe {APPT} tswen ({DATE}) {TIME} yɛ {FACILITY}.\n\nKɛ ohe wala wolo lɛ ba.\n\nHã YES kɛ̃ɔ obaba, NO kɛ̃ɔ otsumɔ be, HELP kɛji obi yelikɛbuamɔ."
+  },
+  confirmed: {
+    en:  "✓ Confirmed. Your CHO Faustina has been notified. See you at {FACILITY} on {DATE}. Travel safely.",
+    twi: "✓ Yɛagye. Wo CHO Faustina ate ho asɛm. Yɛbɛhyia wo {FACILITY} {DATE}. Twa wo ho yiye.",
+    ga:  "✓ Wɔgbɛ. Ohe CHO Faustina ena lɛ. Wɔbaakpe yɛ {FACILITY} {DATE}. Tswa ohe lɛ jogbaŋ."
+  },
+  reschedule: {
+    en:  "No problem. When would work better? Reply with a day (e.g. FRIDAY or 22 NOV). Your CHO will confirm a new time.",
+    twi: "Ɛyɛ. Da bɛn na ɛbɛyɛ ma wo? Tia da no (sɛ FIDA anaa 22 NOV). Wo CHO bɛhyɛ wo berɛ foforɔ.",
+    ga:  "Eko. Mɛɛ gbi ji obaa? Hã gbi lɛ (FIDA loo 22 NOV). Ohe CHO baahã bo be hee."
+  },
+  edu_24wk: {
+    en:  "Tip for week {WEEK}: Your baby can now hear your voice 🎵. Eat iron-rich foods like kontomire, beans, and fish. Keep taking your iron tablets.",
+    twi: "Adesua wɔ dapɛn {WEEK}: Wo ba bɛtumi ate wo nne 🎵. Di nnuane a wuram dade — kontomire, adua, ne nam. Toaso fa wo dade aduro no.",
+    ga:  "Nikasemɔ wɔ otsi {WEEK}: Ohe abifao baanu ohe gbee 🎵. Kɛ nibii a dade yɔɔ — kontomire, akpetenshie, kɛ lo. Ya ohe dade tsofa lɛ nɔ."
+  },
+  edu_general: {
+    en:  "Week {WEEK} tip: At this stage, focus on rest, water, and warm meals. Reduce salt and avoid alcohol. Call me with any questions.",
+    twi: "Dapɛn {WEEK} adesua: Saa berɛ yi, fa wo ho mu kakra, nom nsuo pii, na di nnuane a ahyew. Tew nkyene so, na ngu nsa. Frɛ me sɛ wopɛ asɛm.",
+    ga:  "Otsi {WEEK} nikasemɔ: Be nɛɛ mli, hã ohe he hewalɛ, nu nui babaoo, kɛ nibii a egbomɔ ohe. Hã ŋmaa nu ohu kɛɛ. Tswa mi kɛ owie."
+  },
+  emergency: {
+    en:  "⚠️ This needs care now. I'm alerting your CHO Faustina (+233 24 5xx xxx). If you can't reach her in 5 minutes, please go to the nearest clinic IMMEDIATELY. For severe emergency dial 112.",
+    twi: "⚠️ Eyi hia ɔdɔm seesei. Merefrɛ wo CHO Faustina (+233 24 5xx xxx). Sɛ wontumi nfa no wɔ simma 5 mu a, kɔ ayaresabea a ɛbɛn wo no SEESEI ARA. Sɛ asomdwoeɛ ho asɛm a, frɛ 112.",
+    ga:  "⚠️ Enɛ hia yelikɛbuamɔ bewɛ. Mitswa ohe CHO Faustina (+233 24 5xx xxx). Kɛji onyɛ ŋma lɛ yɛ minit 5 mli, ya ayaresabea ni baa bɛn bo lɛ AMRƆŊ. Kɛji emanye ohi, tswa 112."
+  },
+  help: {
+    en:  "I can help with:\n• YES / NO — confirm or reschedule\n• WHEN — your next appointment\n• FACILITY — where to go\n• INFO [topic] — ask a question\n• HELP ME — talk to your CHO\n• LANG TWI / GA / EN — change language",
+    twi: "Mɛboa wo wɔ:\n• YES / NO — gye anaa sesa berɛ\n• WHEN — wo nhyiamu a edi hɔ\n• FACILITY — baabi a wɔbɛkɔ\n• INFO [asɛm] — bisa asɛm\n• HELP ME — kasa wo CHO\n• LANG TWI / GA / EN — sesa kasa",
+    ga:  "Mã yelikɛbuamɔ kɛji:\n• YES / NO — gbɛ loo tsumɔ be\n• WHEN — ohe kpaaŋmɔ ni ba\n• FACILITY — hee ni ohaa\n• INFO [sane] — bi mɔ sane\n• HELP ME — wie ohe CHO\n• LANG TWI / GA / EN — tsumɔ wiemɔ"
+  }
+};
+
+const APPT_TYPES = {
+  booking: { en: 'First ANC visit', twi: 'ANC kan',        ga: 'ANC klɛŋklɛŋ' },
+  anc:     { en: 'antenatal visit', twi: 'ANC nhyiamu',    ga: 'ANC kpaaŋmɔ' },
+  scan:    { en: 'ultrasound scan', twi: 'ultrasound scan',ga: 'ultrasound' },
+  due:     { en: 'due date check',  twi: 'awoyɛ nhwehwɛmu',ga: 'fɔmɔ kpamɔ' }
+};
+
+const STATE = {
+  role: 'cho',
+  selectedPatient: 'p01',
+  composeLang: 'twi',
+  waLang: 'twi',
+  waHistory: []
+};
+
+// ---------- HELPERS ----------
+
+function patientById(id) { return PATIENTS.find(p => p.id === id); }
+function facilityById(id) { return FACILITIES.find(f => f.id === id); }
+function choById(id) { return CHOS.find(c => c.id === id); }
+
+function fmtWeek(w) {
+  if (typeof w === 'number') return `${w}w`;
+  return w;
+}
+
+function patientWeekNum(p) {
+  if (typeof p.week === 'number') return p.week;
+  // Postnatal — return null
+  return null;
+}
+
+function isPostnatal(p) { return p.status === 'postnatal'; }
+
+function dueInDays(p) {
+  const w = patientWeekNum(p);
+  if (w == null) return null;
+  return Math.max(0, (40 - w) * 7);
+}
+
+function dueDate(p) {
+  const w = patientWeekNum(p);
+  if (w == null) return null;
+  const days = (40 - w) * 7;
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function fmtDateShort(d) {
+  if (!d) return '—';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function timeAgo(ts) {
+  const seconds = Math.floor((Date.now() - ts) / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+}
+
+function todaysTime(hour, min = 0) {
+  const d = new Date();
+  d.setHours(hour, min, 0, 0);
+  return d;
+}
+
+// ---------- RENDER: CHO DASHBOARD ----------
+
+function renderCHO() {
+  const cho = CHOS[0]; // Faustina is the active CHO
+  const myPatients = PATIENTS.filter(p => p.cho === cho.id);
+
+  // Build today's roster (simulated): pick 6 patients with appts today
+  const todaysIds = ['p01', 'p03', 'p06', 'p11', 'p17', 'p19'];
+  const todaysRoster = todaysIds.map(id => {
+    const p = patientById(id);
+    const apptHour = 8 + (todaysIds.indexOf(id) * 1.5);
+    const apptTime = todaysTime(Math.floor(apptHour), Math.round((apptHour % 1) * 60));
+    let status = 'pending';
+    if (id === 'p01' || id === 'p11') status = 'confirmed';
+    if (id === 'p17') status = 'missed';
+    return { ...p, apptTime, status };
+  });
+
+  const confirmed = todaysRoster.filter(p => p.status === 'confirmed').length;
+  const pending = todaysRoster.filter(p => p.status === 'pending').length;
+  const missed = PATIENTS.filter(p => p.id === 'p17' || p.id === 'p13').length;
+
+  return `
+    <div class="greeting-card">
+      <div class="greeting-row">
+        <div class="greeting-text">
+          <div class="greeting-eyebrow">${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+          <h1 class="greeting-title">Maakye, <em>Faustina</em>.</h1>
+          <p class="greeting-sub">You have ${todaysRoster.length} patients on the roster today across Madina and Adenta. Three need follow-up from earlier this week.</p>
+        </div>
+        <div class="greeting-actions">
+          <button class="btn-primary" id="sendBatchBtn">Send today's reminders</button>
+          <button class="btn-ghost" id="viewFollowupsBtn">View follow-ups (3)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Active patients</div>
+        <div class="stat-value">${myPatients.length}</div>
+        <div class="stat-change">↑ 2 new this week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Appointments today</div>
+        <div class="stat-value">${todaysRoster.length}</div>
+        <div class="stat-change flat">→ on track</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Confirmed today</div>
+        <div class="stat-value">${confirmed}<span class="small-unit">/${todaysRoster.length}</span></div>
+        <div class="stat-change">↑ via WhatsApp</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Needs follow-up</div>
+        <div class="stat-value">3</div>
+        <div class="stat-change down">↑ from last week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Messages this week</div>
+        <div class="stat-value">142</div>
+        <div class="stat-change">↑ 24% vs last</div>
+      </div>
+    </div>
+
+    <div class="cho-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Today's roster</div>
+          <div class="card-tag">Tap a patient to open</div>
+        </div>
+        <div class="roster-list">
+          ${todaysRoster.map(p => `
+            <div class="roster-item" data-patient="${p.id}">
+              <div class="patient-avatar ${p.avatar}">${p.initials}</div>
+              <div>
+                <div class="roster-name">${p.name}</div>
+                <div class="roster-meta">${facilityById(p.facility).name} · ${p.apptTime.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'})}</div>
+              </div>
+              <span class="lang-pill">${LANGUAGES[p.lang].name}</span>
+              <div class="roster-week">${fmtWeek(p.week)}<span class="small-unit">${typeof p.week === 'number' ? 'wks' : ''}</span></div>
+              <span class="status-pill ${p.status}">${p.status}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Recent activity</div>
+          <div class="card-tag">Live</div>
+        </div>
+        <div class="activity-feed">
+          ${renderActivityFeed()}
+        </div>
+      </div>
+    </div>
+
+    <div class="card full-roster">
+      <div class="card-head">
+        <div class="card-title">Full caseload — ${cho.name}</div>
+        <div class="card-tag">${myPatients.length} patients</div>
+      </div>
+      <div class="roster-list">
+        ${myPatients.map(p => {
+          const dueD = dueDate(p);
+          const dueTxt = isPostnatal(p) ? 'Postnatal' : (dueD ? fmtDateShort(dueD) : '—');
+          return `
+            <div class="roster-item" data-patient="${p.id}">
+              <div class="patient-avatar ${p.avatar}">${p.initials}</div>
+              <div>
+                <div class="roster-name">${p.name}</div>
+                <div class="roster-meta">${p.area} · ${facilityById(p.facility).name}</div>
+              </div>
+              <div style="font-family: var(--mono); font-size: 11px; color: var(--ink-soft);">EDD: ${dueTxt}</div>
+              <span class="lang-pill">${LANGUAGES[p.lang].name}</span>
+              <div class="roster-week">${fmtWeek(p.week)}<span class="small-unit">${typeof p.week === 'number' ? 'wks' : ''}</span></div>
+              <span class="status-pill ${isPostnatal(p) ? 'confirmedLight' : 'confirmed'}">${isPostnatal(p) ? 'postnatal' : 'active'}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderActivityFeed() {
+  const items = [
+    { icon: 'replied', iconChar: '✓', text: '<span class="hl">Akua Mensah</span> confirmed her 24-week ANC at Madina Polyclinic.', ts: Date.now() - 4 * 60 * 1000 },
+    { icon: 'sent', iconChar: '→', text: 'Reminder sent to <span class="hl">Naa Lamiokor Adjei</span> in Ga · 38-week visit tomorrow.', ts: Date.now() - 12 * 60 * 1000 },
+    { icon: 'replied', iconChar: '✓', text: '<span class="hl">Abena Tetteh</span> read your iron-supplement check-in.', ts: Date.now() - 38 * 60 * 1000 },
+    { icon: 'emergency', iconChar: '⚠', text: '<span class="hl">Adwoa Foriwaa</span> reported mild back pain. Auto-triage: educational reply sent. No emergency flag.', ts: Date.now() - 47 * 60 * 1000 },
+    { icon: 'sent', iconChar: '→', text: 'Weekly tip sent to 9 patients in week 24–30 range.', ts: Date.now() - 90 * 60 * 1000 },
+    { icon: 'missed', iconChar: '⨯', text: '<span class="hl">Efua Koranteng</span> missed her 14-week appointment. Follow-up message queued.', ts: Date.now() - 3 * 60 * 60 * 1000 },
+    { icon: 'replied', iconChar: '✓', text: '<span class="hl">Akua Yeboah</span> (40w) replied to labor-signs reminder. CHO call scheduled.', ts: Date.now() - 4 * 60 * 60 * 1000 },
+    { icon: 'sent', iconChar: '→', text: 'Welcome message sent to new patient <span class="hl">Akosua Asante</span> · 8w · Twi.', ts: Date.now() - 6 * 60 * 60 * 1000 },
+    { icon: 'replied', iconChar: '✓', text: '<span class="hl">Yaa Pomaa</span> confirmed 6-week postnatal visit · Ashaiman.', ts: Date.now() - 8 * 60 * 60 * 1000 },
+    { icon: 'sent', iconChar: '→', text: 'IPTp2 reminder sent to <span class="hl">Naa Korkor Okine</span> (28w) in Ga.', ts: Date.now() - 18 * 60 * 60 * 1000 }
+  ];
+  return items.map(i => `
+    <div class="activity-item">
+      <div class="activity-icon ${i.icon}">${i.iconChar}</div>
+      <div class="activity-body">
+        <div class="activity-text">${i.text}</div>
+        <div class="activity-time">${timeAgo(i.ts)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ---------- RENDER: PATIENT JOURNEY ----------
+
+function renderPatient() {
+  const p = patientById(STATE.selectedPatient);
+  const facility = facilityById(p.facility);
+  const cho = choById(p.cho);
+  const week = patientWeekNum(p);
+  const dueD = dueDate(p);
+  const due = dueD ? dueD : null;
+  const daysToDue = dueInDays(p);
+
+  const patientOptions = PATIENTS.map(pt => `
+    <option value="${pt.id}" ${pt.id === p.id ? 'selected' : ''}>${pt.name} · ${fmtWeek(pt.week)} · ${pt.area}</option>
+  `).join('');
+
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Patient Journey</div>
+        <h1 class="view-title">Her <em>pregnancy</em> in full view.</h1>
+        <p class="view-sub">Every appointment, every message, every milestone. Built for the health officer to walk in already knowing the full picture.</p>
+      </div>
+      <div class="view-actions">
+        <select class="selector selector-wide" id="patientSelector">${patientOptions}</select>
+      </div>
+    </div>
+
+    <div class="patient-header">
+      <div class="patient-avatar-large ${p.avatar}">${p.initials}</div>
+      <div>
+        <div class="ph-name">${p.name}</div>
+        <div class="ph-meta">
+          <span><strong>${p.area}</strong> · ${facility.name}</span>
+          <span>CHO <strong>${cho.name}</strong></span>
+          <span>Preferred language <strong>${LANGUAGES[p.lang].name}</strong></span>
+          <span>Joined ${fmtDateShort(new Date(p.joined))}</span>
+        </div>
+      </div>
+      <div class="ph-stats">
+        <div>
+          <div class="ph-stat-label">Gestation</div>
+          <div class="ph-stat-value">${fmtWeek(p.week)}</div>
+        </div>
+        ${isPostnatal(p) ? `
+          <div>
+            <div class="ph-stat-label">Phase</div>
+            <div class="ph-stat-value">Postnatal</div>
+          </div>
+        ` : `
+          <div>
+            <div class="ph-stat-label">Due date</div>
+            <div class="ph-stat-value due">${fmtDateShort(due)}</div>
+          </div>
+          <div>
+            <div class="ph-stat-label">Days remaining</div>
+            <div class="ph-stat-value">${daysToDue}</div>
+          </div>
+        `}
+      </div>
+    </div>
+
+    <div class="card timeline-card">
+      <div class="card-head">
+        <div class="card-title">Pregnancy timeline</div>
+        <div class="card-tag">WHO 8-contact ANC model</div>
+      </div>
+      ${renderTimeline(p)}
+      <div class="timeline-legend">
+        <div class="tl-legend-item"><span class="tl-dot" style="background: var(--good);"></span> Completed</div>
+        <div class="tl-legend-item"><span class="tl-dot" style="background: var(--terra);"></span> Today</div>
+        <div class="tl-legend-item"><span class="tl-dot" style="background: var(--cream-warm); border: 1px solid var(--line-strong);"></span> Upcoming</div>
+        <div class="tl-legend-item" style="margin-left: auto; font-family: var(--mono); font-size: 11px;">Week 0 → 40+ Postnatal</div>
+      </div>
+    </div>
+
+    <div class="patient-grid" style="margin-top: 24px;">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Appointments</div>
+          <div class="card-tag">${getUpcomingAppointments(p).length} upcoming</div>
+        </div>
+        <div class="appt-list">
+          ${renderAppointments(p)}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Message history</div>
+          <div class="card-tag">${LANGUAGES[p.lang].name} preferred</div>
+        </div>
+        <div class="message-thread">
+          ${renderMessageHistory(p)}
+        </div>
+        <div class="quick-send-form">
+          <textarea class="qs-textarea" id="quickSendText" placeholder="Type a custom message — it'll be translated to ${LANGUAGES[p.lang].name} automatically."></textarea>
+          <div class="qs-row">
+            <div class="qs-lang">
+              <button class="lang-btn ${STATE.composeLang === 'twi' ? 'active' : ''}" data-lang="twi">Twi</button>
+              <button class="lang-btn ${STATE.composeLang === 'ga' ? 'active' : ''}" data-lang="ga">Ga</button>
+              <button class="lang-btn ${STATE.composeLang === 'en' ? 'active' : ''}" data-lang="en">EN</button>
+            </div>
+            <button class="btn-primary" id="quickSendBtn">Send via WhatsApp →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTimeline(p) {
+  const W = 1000, H = 90;
+  const padding = 30;
+  const innerW = W - padding * 2;
+  const maxWeek = 46; // 40 + 6 postnatal
+  const currentWeek = patientWeekNum(p) ?? (40 + 4); // postnatal at week 44 visually
+
+  // Build markers for ANC + postnatal
+  const markers = [
+    ...ANC_SCHEDULE.map(s => ({ week: s.week, type: s.type, title: s.title })),
+    { week: 41, type: 'postnatal', title: 'Day 1' },
+    { week: 42, type: 'postnatal', title: 'Day 6' },
+    { week: 46, type: 'postnatal', title: '6-week' }
+  ];
+
+  const wx = (w) => padding + (w / maxWeek) * innerW;
+
+  // Background bar (trimesters)
+  const t1End = wx(13);
+  const t2End = wx(27);
+  const t3End = wx(40);
+
+  let svg = `<svg class="timeline-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+    <!-- Trimester bands -->
+    <rect x="${padding}" y="50" width="${t1End - padding}" height="14" fill="#EEE3CF" rx="7"/>
+    <rect x="${t1End}" y="50" width="${t2End - t1End}" height="14" fill="#E5D8BD" rx="0"/>
+    <rect x="${t2End}" y="50" width="${t3End - t2End}" height="14" fill="#D9C39A" rx="0"/>
+    <rect x="${t3End}" y="50" width="${wx(maxWeek) - t3End}" height="14" fill="#f0d4d0" rx="7"/>
+
+    <text x="${(padding + t1End)/2}" y="44" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.55)" letter-spacing="1">TRIMESTER 1</text>
+    <text x="${(t1End + t2End)/2}" y="44" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.55)" letter-spacing="1">TRIMESTER 2</text>
+    <text x="${(t2End + t3End)/2}" y="44" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.55)" letter-spacing="1">TRIMESTER 3</text>
+    <text x="${(t3End + wx(maxWeek))/2}" y="44" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="var(--rose)" letter-spacing="1">POSTNATAL</text>
+  `;
+
+  // Week labels (every 10 weeks)
+  [0, 10, 20, 30, 40].forEach(w => {
+    svg += `<text x="${wx(w)}" y="85" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="rgba(26,22,18,0.55)">${w}w</text>`;
+  });
+
+  // ANC markers
+  markers.forEach(m => {
+    const x = wx(m.week);
+    const isPast = m.week < currentWeek;
+    const isCurrent = Math.abs(m.week - currentWeek) < 1.5;
+    let fill, stroke;
+    if (isCurrent) { fill = 'var(--terra)'; stroke = 'var(--terra-deep)'; }
+    else if (isPast) { fill = 'var(--good)'; stroke = 'var(--good)'; }
+    else { fill = '#EEE3CF'; stroke = 'rgba(26,22,18,0.25)'; }
+
+    svg += `
+      <g>
+        <line x1="${x}" x2="${x}" y1="50" y2="64" stroke="${stroke}" stroke-width="${isCurrent ? 2 : 1}"/>
+        <circle cx="${x}" cy="${isCurrent ? 57 : 57}" r="${isCurrent ? 6 : 4}" fill="${fill}" stroke="${stroke}" stroke-width="${isCurrent ? 2 : 1}"/>
+        ${isCurrent ? `<text x="${x}" y="22" text-anchor="middle" font-family="Fraunces" font-style="italic" font-size="13" fill="var(--terra-deep)" font-weight="500">today</text>
+        <line x1="${x}" x2="${x}" y1="25" y2="48" stroke="var(--terra)" stroke-width="1" stroke-dasharray="2,3"/>` : ''}
+      </g>
+    `;
+  });
+
+  // Patient progress line
+  const progressX = wx(currentWeek);
+  svg += `
+    <rect x="${padding}" y="55" width="${progressX - padding}" height="4" fill="var(--good)" opacity="0.4" rx="2"/>
+  `;
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function getUpcomingAppointments(p) {
+  const week = patientWeekNum(p);
+  if (week == null) {
+    // Postnatal — return postnatal schedule
+    return POSTNATAL_SCHEDULE.slice(0, 3);
+  }
+  return ANC_SCHEDULE.filter(s => s.week >= week);
+}
+
+function renderAppointments(p) {
+  const week = patientWeekNum(p);
+  const facility = facilityById(p.facility);
+  const today = new Date();
+
+  if (isPostnatal(p)) {
+    // Postnatal patient
+    return POSTNATAL_SCHEDULE.map((s, idx) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() + (idx - 1) * 6);
+      const isPast = idx === 0;
+      return `
+        <div class="appt-item">
+          <div class="appt-date ${isPast ? 'past' : 'upcoming'}">
+            <div class="appt-day">${d.toLocaleDateString('en-GB', { month: 'short' })}</div>
+            <div class="appt-num">${d.getDate()}</div>
+          </div>
+          <div>
+            <div class="appt-title">${s.title}</div>
+            <div class="appt-details">${facility.name} · ${s.details}</div>
+          </div>
+          <div class="appt-tag postnatal">postnatal</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Show 3 upcoming + 1-2 past
+  const past = ANC_SCHEDULE.filter(s => s.week < week).slice(-2);
+  const upcoming = ANC_SCHEDULE.filter(s => s.week >= week).slice(0, 4);
+  const all = [...past.map(s => ({ ...s, isPast: true })), ...upcoming.map(s => ({ ...s, isPast: false }))];
+
+  return all.map(s => {
+    const weekDiff = s.week - week;
+    const d = new Date(today);
+    d.setDate(d.getDate() + weekDiff * 7);
+    return `
+      <div class="appt-item">
+        <div class="appt-date ${s.isPast ? 'past' : 'upcoming'}">
+          <div class="appt-day">${d.toLocaleDateString('en-GB', { month: 'short' })}</div>
+          <div class="appt-num">${d.getDate()}</div>
+        </div>
+        <div>
+          <div class="appt-title">${s.title} <span style="color: var(--ink-soft); font-weight: normal; font-family: var(--mono); font-size: 11px;">· week ${s.week}</span></div>
+          <div class="appt-details">${facility.name} · ${s.details}</div>
+        </div>
+        ${s.tag ? `<div class="appt-tag ${s.tag}">${s.tag === 'tt' ? 'TT shot' : s.tag === 'iptp' ? 'IPTp' : s.tag}</div>` : `<div class="appt-tag">${s.isPast ? 'done' : 'next'}</div>`}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderMessageHistory(p) {
+  // Generate a contextual history for this patient
+  const lang = p.lang;
+  const week = patientWeekNum(p);
+
+  // Sample message thread (back-dated)
+  const messages = [];
+  const baseTime = Date.now();
+
+  if (isPostnatal(p)) {
+    messages.push({
+      from: 'incoming',
+      text: lang === 'twi' ? "Mema mo akye! Akwaaba afie." : lang === 'ga' ? "Ojekoo! Bawo shia." : "Good morning! Glad to be home.",
+      ts: baseTime - 2 * 24 * 60 * 60 * 1000,
+      meta: 'patient reply'
+    });
+    messages.push({
+      from: 'outgoing',
+      text: subst(MSG_TEMPLATES.reminder[lang], { NAME: p.name.split(' ')[0], APPT: lang === 'twi' ? 'wo 6-dapɛn postnatal' : '6-week postnatal', DATE: fmtDateShort(new Date(baseTime + 6 * 24 * 60 * 60 * 1000)), TIME: '10:00', FACILITY: facilityById(p.facility).name }),
+      ts: baseTime - 1 * 24 * 60 * 60 * 1000,
+      meta: 'auto reminder · ' + lang
+    });
+  } else {
+    messages.push({
+      from: 'outgoing',
+      text: subst(MSG_TEMPLATES.welcome[lang], { NAME: p.name.split(' ')[0] }),
+      ts: baseTime - 30 * 24 * 60 * 60 * 1000,
+      meta: 'welcome · ' + lang
+    });
+    messages.push({
+      from: 'incoming',
+      text: lang === 'twi' ? "Medaase." : lang === 'ga' ? "Wɔda bo shi." : "Thank you.",
+      ts: baseTime - 30 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000,
+      meta: 'patient reply'
+    });
+    if (week >= 16) {
+      messages.push({
+        from: 'outgoing',
+        text: subst(MSG_TEMPLATES.edu_general[lang], { WEEK: 16 }),
+        ts: baseTime - 14 * 24 * 60 * 60 * 1000,
+        meta: 'weekly tip · ' + lang
+      });
+    }
+    if (week >= 20) {
+      messages.push({
+        from: 'outgoing',
+        text: subst(MSG_TEMPLATES.reminder[lang], { NAME: p.name.split(' ')[0], APPT: lang === 'twi' ? 'wo anomaly scan' : 'your anomaly scan', DATE: fmtDateShort(new Date(baseTime - 7 * 24 * 60 * 60 * 1000)), TIME: '09:00', FACILITY: facilityById(p.facility).name }),
+        ts: baseTime - 8 * 24 * 60 * 60 * 1000,
+        meta: 'scan reminder · ' + lang
+      });
+      messages.push({
+        from: 'incoming',
+        text: 'YES',
+        ts: baseTime - 8 * 24 * 60 * 60 * 1000 + 12 * 60 * 1000,
+        meta: 'confirmation'
+      });
+    }
+    messages.push({
+      from: 'outgoing',
+      text: subst(MSG_TEMPLATES.edu_24wk[lang], { WEEK: week }),
+      ts: baseTime - 2 * 24 * 60 * 60 * 1000,
+      meta: 'weekly tip · ' + lang
+    });
+  }
+
+  // Most recent first
+  return messages.reverse().map(m => `
+    <div class="msg-thread-item">
+      <div class="msg-thread-head">
+        <span class="msg-thread-from ${m.from}">${m.from === 'outgoing' ? '→ Sent' : '← Received'} <em>${m.meta}</em></span>
+        <span class="msg-thread-time">${timeAgo(m.ts)}</span>
+      </div>
+      <div class="msg-thread-text">${m.text}</div>
+    </div>
+  `).join('');
+}
+
+function subst(template, vars) {
+  let out = template;
+  Object.entries(vars).forEach(([k, v]) => {
+    out = out.split(`{${k}}`).join(v);
+  });
+  return out;
+}
+
+// ---------- RENDER: ADMIN ----------
+
+function renderAdmin() {
+  const totalActive = PATIENTS.filter(p => p.status === 'active').length;
+  const postnatal = PATIENTS.filter(p => p.status === 'postnatal').length;
+  const languages = {
+    twi: PATIENTS.filter(p => p.lang === 'twi').length,
+    ga:  PATIENTS.filter(p => p.lang === 'ga').length,
+    en:  PATIENTS.filter(p => p.lang === 'en').length
+  };
+  const total = PATIENTS.length;
+  const langPct = {
+    twi: (languages.twi / total * 100).toFixed(0),
+    ga:  (languages.ga / total * 100).toFixed(0),
+    en:  (languages.en / total * 100).toFixed(0)
+  };
+
+  // Engagement funnel
+  const funnel = [
+    { label: 'Sent',      count: 1248, color: 'f-1' },
+    { label: 'Delivered', count: 1201, color: 'f-2' },
+    { label: 'Read',      count: 1087, color: 'f-3' },
+    { label: 'Replied',   count: 712,  color: 'f-4' },
+    { label: 'Confirmed', count: 658,  color: 'f-5' }
+  ];
+  const maxFunnel = funnel[0].count;
+
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Program Admin</div>
+        <h1 class="view-title">Program <em>health</em> across Greater Accra.</h1>
+        <p class="view-sub">Reach, attendance, and engagement across three CHOs and seven facilities. Built for Ghana Health Service partners.</p>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total enrolled</div>
+        <div class="stat-value">${total}</div>
+        <div class="stat-change">↑ 5 this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active pregnancies</div>
+        <div class="stat-value">${totalActive}</div>
+        <div class="stat-change flat">→ steady</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Postnatal phase</div>
+        <div class="stat-value">${postnatal}</div>
+        <div class="stat-change">↑ 2 graduated</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Attendance rate</div>
+        <div class="stat-value">87<span class="small-unit">%</span></div>
+        <div class="stat-change">↑ 14 points vs baseline</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg response time</div>
+        <div class="stat-value">12<span class="small-unit">min</span></div>
+        <div class="stat-change">↓ improving</div>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Appointment attendance · 12-week trend</div>
+          <div class="card-tag">vs baseline 73%</div>
+        </div>
+        ${renderAttendanceChart()}
+        <div class="chart-legend-row">
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--forest);"></span> KlinikAlert cohort</div>
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--gold);"></span> Madina baseline (2024)</div>
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--terra); height: 0px; border-top: 1px dashed var(--terra); width: 16px;"></span> WHO target (80%)</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Engagement funnel</div>
+          <div class="card-tag">last 30 days</div>
+        </div>
+        <div class="funnel">
+          ${funnel.map(f => `
+            <div class="funnel-row">
+              <div class="funnel-label"><strong>${f.label}</strong></div>
+              <div class="funnel-track">
+                <div class="funnel-fill ${f.color}" style="width: ${(f.count / maxFunnel) * 100}%;"></div>
+              </div>
+              <div class="funnel-val">${f.count.toLocaleString()}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-soft);">
+          <strong style="color: var(--ink);">Read-to-reply rate: 65%</strong> — significantly above the 41% industry average for health-messaging programs.
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-grid-2">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Language reach</div>
+          <div class="card-tag">All patients</div>
+        </div>
+        <div class="lang-list">
+          <div class="lang-row">
+            <div class="lang-name">Twi</div>
+            <div class="lang-track"><div class="lang-fill" style="width: ${langPct.twi}%; background: var(--forest);"></div></div>
+            <div class="lang-pct">${langPct.twi}%</div>
+          </div>
+          <div class="lang-row">
+            <div class="lang-name">Ga</div>
+            <div class="lang-track"><div class="lang-fill" style="width: ${langPct.ga}%; background: var(--terra);"></div></div>
+            <div class="lang-pct">${langPct.ga}%</div>
+          </div>
+          <div class="lang-row">
+            <div class="lang-name">English</div>
+            <div class="lang-track"><div class="lang-fill" style="width: ${langPct.en}%; background: var(--gold);"></div></div>
+            <div class="lang-pct">${langPct.en}%</div>
+          </div>
+        </div>
+        <div style="margin-top: 24px; padding: 16px; background: var(--cream); border-radius: 4px; font-size: 13px; color: var(--ink-soft);">
+          <strong style="color: var(--ink);">Why this matters:</strong> Patients who receive content in their home language are 2.3× more likely to confirm and attend their appointments. Building Ga support unlocked the La sub-metro for us.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Coverage by area</div>
+          <div class="card-tag">7 facilities · 3 CHOs</div>
+        </div>
+        <div class="area-grid">
+          ${['Madina', 'Adenta', 'La', 'Ashaiman', 'Amasaman', 'Pantang'].map(area => {
+            const count = PATIENTS.filter(p => p.area === area).length;
+            const attendance = 80 + Math.floor(Math.random() * 15);
+            return `
+              <div class="area-cell">
+                <div class="area-name">${area}</div>
+                <div class="area-count">${count}</div>
+                <div class="area-attendance">${attendance}% attendance</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAttendanceChart() {
+  const W = 700, H = 280;
+  const padding = { top: 20, right: 24, bottom: 30, left: 50 };
+  const innerW = W - padding.left - padding.right;
+  const innerH = H - padding.top - padding.bottom;
+
+  // 12 weeks of data
+  const baseline = Array.from({ length: 12 }, () => 70 + Math.random() * 6);
+  const cohort = [];
+  let v = 74;
+  for (let i = 0; i < 12; i++) {
+    v += (Math.random() - 0.3) * 4; // upward trend
+    v = Math.max(70, Math.min(94, v));
+    cohort.push(v);
+  }
+  cohort[cohort.length - 1] = 87;
+
+  const allVals = [...baseline, ...cohort, 80];
+  const minVal = 60;
+  const maxVal = 100;
+  const range = maxVal - minVal;
+  const stepX = innerW / 11;
+  const yScale = (val) => padding.top + innerH - ((val - minVal) / range) * innerH;
+
+  // Y ticks
+  const yTicks = [60, 70, 80, 90, 100].map(v => ({ val: v, y: yScale(v) }));
+
+  // Build paths
+  const cohortPath = cohort.map((v, i) => `${padding.left + i * stepX},${yScale(v)}`).join(' ');
+  const baselinePath = baseline.map((v, i) => `${padding.left + i * stepX},${yScale(v)}`).join(' ');
+  const cohortArea = `M ${padding.left},${yScale(60)} L ${cohortPath.split(' ').join(' L ')} L ${padding.left + 11 * stepX},${yScale(60)} Z`;
+
+  // X labels
+  const xLabels = [0, 3, 6, 9, 11].map(i => ({
+    i,
+    x: padding.left + i * stepX,
+    label: i === 11 ? 'now' : `${11 - i}w ago`
+  }));
+
+  let svg = `
+    <svg class="big-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="cohortGrad" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="var(--forest)" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="var(--forest)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+
+      ${yTicks.map(t => `
+        <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(26,22,18,0.06)" stroke-width="1"/>
+        <text x="${padding.left - 8}" y="${t.y + 4}" text-anchor="end" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.5)">${t.val}%</text>
+      `).join('')}
+
+      <!-- WHO target line -->
+      <line x1="${padding.left}" x2="${W - padding.right}" y1="${yScale(80)}" y2="${yScale(80)}" stroke="var(--terra)" stroke-width="1" stroke-dasharray="4,4" opacity="0.7"/>
+
+      <!-- Cohort area & line -->
+      <path d="${cohortArea}" fill="url(#cohortGrad)"/>
+      <polyline fill="none" stroke="var(--forest)" stroke-width="2.5" points="${cohortPath}" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Baseline -->
+      <polyline fill="none" stroke="var(--gold)" stroke-width="2" points="${baselinePath}" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="0,0"/>
+
+      <!-- Dots for cohort -->
+      ${cohort.map((v, i) => `<circle cx="${padding.left + i * stepX}" cy="${yScale(v)}" r="3" fill="var(--forest)"/>`).join('')}
+
+      <!-- End label -->
+      <text x="${W - padding.right + 4}" y="${yScale(87) - 6}" font-family="Fraunces" font-style="italic" font-size="14" font-weight="500" fill="var(--forest)">87%</text>
+
+      ${xLabels.map(l => `
+        <text x="${l.x}" y="${H - 8}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.5)">${l.label}</text>
+      `).join('')}
+    </svg>
+  `;
+  return svg;
+}
+
+// ---------- RENDER: WHATSAPP SIMULATOR ----------
+
+function renderWA() {
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">WhatsApp · The patient experience</div>
+        <h1 class="view-title">Built for <em>her</em> phone.</h1>
+        <p class="view-sub">Most peri-urban women in Greater Accra already have WhatsApp. KlinikAlert meets them where they are — in their language, on the app they check every hour. Try the simulator.</p>
+      </div>
+    </div>
+
+    <div class="wa-layout">
+      <div class="wa-context">
+        <div class="language-switcher">
+          <div class="ls-title">Switch language · live</div>
+          <div class="ls-sub">Watch the entire conversation translate in real time. This is the single feature that opened doors with the Ga-speaking community in La.</div>
+          <div class="ls-options" id="langOptions">
+            <button class="ls-btn ${STATE.waLang === 'twi' ? 'active' : ''}" data-lang="twi">Twi <span class="native">· Akan</span></button>
+            <button class="ls-btn ${STATE.waLang === 'ga' ? 'active' : ''}" data-lang="ga">Ga <span class="native">· Gã</span></button>
+            <button class="ls-btn ${STATE.waLang === 'en' ? 'active' : ''}" data-lang="en">English</button>
+          </div>
+        </div>
+
+        <div class="commands-card">
+          <div class="commands-title">Things she can type — tap any to try</div>
+          <div class="commands-list">
+            <div class="command-row">
+              <div class="command-code" data-cmd="YES">YES</div>
+              <div class="command-desc">Confirm the upcoming appointment.</div>
+            </div>
+            <div class="command-row">
+              <div class="command-code" data-cmd="NO">NO</div>
+              <div class="command-desc">Request to reschedule. CHO is auto-notified.</div>
+            </div>
+            <div class="command-row">
+              <div class="command-code" data-cmd="WHEN">WHEN</div>
+              <div class="command-desc">"When is my next appointment?"</div>
+            </div>
+            <div class="command-row">
+              <div class="command-code" data-cmd="FACILITY">FACILITY</div>
+              <div class="command-desc">"Where do I need to go?"</div>
+            </div>
+            <div class="command-row">
+              <div class="command-code" data-cmd="INFO IRON">INFO [TOPIC]</div>
+              <div class="command-desc">Ask about iron, scans, malaria meds, etc.</div>
+            </div>
+            <div class="command-row">
+              <div class="command-code" data-cmd="I HAVE BACK PAIN">free text</div>
+              <div class="command-desc">Free-text questions get triaged — minor concerns answered, serious ones escalate.</div>
+            </div>
+            <div class="command-row">
+              <div class="command-code" data-cmd="BLEEDING">BLEEDING</div>
+              <div class="command-desc">⚠️ Emergency triage — CHO is paged immediately.</div>
+            </div>
+            <div class="command-row">
+              <div class="command-code" data-cmd="HELP">HELP</div>
+              <div class="command-desc">Show the menu of what she can do.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <div class="insight-title">Why WhatsApp + multilingual?</div>
+          <div class="insight-body">
+            93% of women on our pilot waitlist already use WhatsApp daily. Many couldn't read English fluently. Building Twi and Ga support — a feature most maternal health programs skip — moved attendance from a 73% baseline to 87%. The same message in your mother tongue is not just translated; it's <em>trusted</em>.
+          </div>
+        </div>
+      </div>
+
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar">
+            <span id="phoneTime">--:--</span>
+            <span style="opacity: 0.85;">●●●● MTN</span>
+            <span>87%</span>
+          </div>
+          <div class="phone-header">
+            <span class="phone-back">‹</span>
+            <div class="phone-contact-avatar">KA</div>
+            <div class="phone-contact-info">
+              <div class="phone-contact-name">KlinikAlert · Madina</div>
+              <div class="phone-contact-meta">online · auto-replies in <span id="waLangLabel">${LANGUAGES[STATE.waLang].name}</span></div>
+            </div>
+            <div class="phone-header-icons">
+              <span>📞</span>
+              <span>⋮</span>
+            </div>
+          </div>
+          <div class="phone-messages" id="waMessages"></div>
+          <div class="phone-input-area">
+            <div class="phone-suggestions" id="waSuggestions">
+              <span class="suggestion-chip" data-cmd="YES">YES</span>
+              <span class="suggestion-chip" data-cmd="WHEN">WHEN</span>
+              <span class="suggestion-chip" data-cmd="INFO IRON">INFO IRON</span>
+              <span class="suggestion-chip" data-cmd="I HAVE BACK PAIN">I HAVE BACK PAIN</span>
+              <span class="suggestion-chip" data-cmd="HELP">HELP</span>
+            </div>
+            <form class="phone-input" id="waForm">
+              <input id="waInput" type="text" placeholder="Type a message..." autocomplete="off">
+              <button type="submit" class="phone-send">→</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- WA: bot logic ----------
+
+const PATIENT_CONTEXT = {
+  name: 'Akua',
+  fullName: 'Akua Mensah',
+  week: 24,
+  cho: 'Faustina',
+  facility: 'Madina Polyclinic',
+  nextAppt: 'third ANC',
+  nextDate: 'tomorrow',
+  nextTime: '9:00 AM'
+};
+
+function waAddMsg(text, who, meta = '', delayedScroll = false) {
+  const container = document.getElementById('waMessages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = `wa-msg ${who}`;
+  const now = new Date();
+  const ts = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  const checks = who === 'in' ? '<span class="wa-checks">✓✓</span>' : '';
+  div.innerHTML = `${text}<div class="wa-meta">${ts}${checks}</div>`;
+  container.appendChild(div);
+  if (!delayedScroll) container.scrollTop = container.scrollHeight;
+  STATE.waHistory.push({ text, who, meta, ts });
+}
+
+function waAddSystem(text) {
+  const container = document.getElementById('waMessages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'wa-msg system';
+  div.innerHTML = text;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function waAddDateDivider(label) {
+  const container = document.getElementById('waMessages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'wa-date-divider';
+  div.textContent = label;
+  container.appendChild(div);
+}
+
+function waShowTyping() {
+  const container = document.getElementById('waMessages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.id = 'waTyping';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+function waHideTyping() {
+  const t = document.getElementById('waTyping');
+  if (t) t.remove();
+}
+
+function waSeed() {
+  const lang = STATE.waLang;
+  waAddDateDivider('Yesterday');
+
+  // Welcome from a few weeks ago — simulated
+  waAddMsg(subst(MSG_TEMPLATES.welcome[lang], { NAME: PATIENT_CONTEXT.name }), 'in', 'welcome');
+
+  // Patient response
+  const thanks = lang === 'twi' ? 'Medaase.' : lang === 'ga' ? 'Wɔda bo shi.' : 'Thank you.';
+  waAddMsg(thanks, 'out', 'reply');
+
+  // Educational nudge
+  waAddMsg(subst(MSG_TEMPLATES.edu_24wk[lang], { WEEK: PATIENT_CONTEXT.week }), 'in', 'weekly tip');
+
+  waAddDateDivider('Today');
+
+  // Reminder for tomorrow's appointment
+  waAddMsg(subst(MSG_TEMPLATES.reminder[lang], {
+    NAME: PATIENT_CONTEXT.name,
+    APPT: lang === 'twi' ? 'wo ANC tia abiɛsa' : lang === 'ga' ? 'ohe ANC etɛ̃' : PATIENT_CONTEXT.nextAppt,
+    DATE: PATIENT_CONTEXT.nextDate === 'tomorrow' ? (lang === 'twi' ? 'ɔkyena' : lang === 'ga' ? 'tswen' : 'tomorrow') : PATIENT_CONTEXT.nextDate,
+    TIME: PATIENT_CONTEXT.nextTime,
+    FACILITY: PATIENT_CONTEXT.facility
+  }), 'in', 'auto reminder');
+}
+
+function processWaCmd(rawText) {
+  const text = rawText.trim().toUpperCase();
+  const lang = STATE.waLang;
+  const tokens = text.split(/\s+/);
+  const cmd = tokens[0];
+
+  // YES — confirm
+  if (cmd === 'YES' || cmd === 'Y' || cmd === 'OK') {
+    return {
+      text: subst(MSG_TEMPLATES.confirmed[lang], {
+        FACILITY: PATIENT_CONTEXT.facility,
+        DATE: lang === 'twi' ? 'ɔkyena' : lang === 'ga' ? 'tswen' : 'tomorrow'
+      }),
+      system: `→ Faustina (CHO) notified · confirmation logged`
+    };
+  }
+
+  // NO — reschedule
+  if (cmd === 'NO' || cmd === 'N' || cmd === 'RESCHED' || cmd === 'RESCHEDULE') {
+    return {
+      text: MSG_TEMPLATES.reschedule[lang],
+      system: `→ Reschedule request flagged for Faustina (CHO)`
+    };
+  }
+
+  // WHEN
+  if (cmd === 'WHEN') {
+    const en = `Your next visit:\n\n📅 ${PATIENT_CONTEXT.nextAppt}\n🕘 ${PATIENT_CONTEXT.nextTime} ${PATIENT_CONTEXT.nextDate}\n📍 ${PATIENT_CONTEXT.facility}\n\nReply FACILITY for directions.`;
+    const twi = `Wo nhyiamu a edi hɔ:\n\n📅 ANC tia abiɛsa\n🕘 ${PATIENT_CONTEXT.nextTime} ɔkyena\n📍 ${PATIENT_CONTEXT.facility}\n\nTia FACILITY na woahu kwan.`;
+    const ga = `Ohe kpaaŋmɔ ni ba:\n\n📅 ANC etɛ̃\n🕘 ${PATIENT_CONTEXT.nextTime} tswen\n📍 ${PATIENT_CONTEXT.facility}\n\nHã FACILITY kɛ̃ɔ obɛna gbɛ.`;
+    return { text: lang === 'twi' ? twi : lang === 'ga' ? ga : en };
+  }
+
+  // FACILITY
+  if (cmd === 'FACILITY' || cmd === 'WHERE') {
+    const en = `📍 ${PATIENT_CONTEXT.facility}\nMadina, near Zongo Junction\n\nTrotros from Madina market drop you at the gate. Antenatal clinic is in Block B, ground floor.\n\nReply HELP for more.`;
+    const twi = `📍 ${PATIENT_CONTEXT.facility}\nMadina, ɛbɛn Zongo Junction\n\nTrotro a efiri Madina market no de wo bɛkɔ ɛpono ano. ANC clinic no wɔ Block B, fam.\n\nTia HELP na woahu pii.`;
+    const ga = `📍 ${PATIENT_CONTEXT.facility}\nMadina, baa Zongo Junction\n\nTrotro a ejɛ Madina market lɛ baahã bo agbo ŋmaa. ANC clinic yɛ Block B, shishi.\n\nHã HELP kɛ̃ɔ obɛna eko.`;
+    return { text: lang === 'twi' ? twi : lang === 'ga' ? ga : en };
+  }
+
+  // INFO TOPIC
+  if (cmd === 'INFO') {
+    const topic = tokens.slice(1).join(' ');
+    if (!topic) {
+      return { text: lang === 'twi' ? 'Bisa asɛm bi. Sɛ INFO IRON, INFO MALARIA, INFO SCAN.' : lang === 'ga' ? 'Bi sane. Tamɔ INFO IRON, INFO MALARIA, INFO SCAN.' : 'Ask about a topic. Try: INFO IRON, INFO MALARIA, INFO SCAN.' };
+    }
+    return { text: getInfo(topic, lang) };
+  }
+
+  // Emergency triage
+  if (cmd === 'BLEEDING' || text.includes('BLOOD') || text.includes('EMERGENCY') || text.includes('SEVERE PAIN') || text.includes('HELP ME')) {
+    return {
+      text: MSG_TEMPLATES.emergency[lang],
+      system: `🚨 EMERGENCY · CHO Faustina paged · SMS + call sent · clinic alerted`
+    };
+  }
+
+  // Symptom mentions (mild → educational)
+  if (text.includes('BACK PAIN') || text.includes('BACK HURT') || text.includes('TIRED') || text.includes('SLEEP')) {
+    const en = `That's common around week ${PATIENT_CONTEXT.week} as baby grows. Try resting on your left side with a pillow between your knees, and walking gently each day. If pain becomes sharp or constant, reply HELP ME and I'll alert ${PATIENT_CONTEXT.cho}.`;
+    const twi = `Ɛyɛ adwene wɔ dapɛn ${PATIENT_CONTEXT.week} mu bere a ba no renyini. Da wo benkum so na fa abɛnsoa to wo kotodwe ntam, na nantew kakra da biara. Sɛ ɛyɛ nyaa anaa ɛtoa so kɔ a, tia HELP ME na mafrɛ ${PATIENT_CONTEXT.cho}.`;
+    const ga = `Eko ji be ohe nyɔŋmɔ ${PATIENT_CONTEXT.week} mli, be a abifao lɛ ɛsɔɔ. Da ohe kɛ benkum mli, fɔ̃ɔ ʋulo kɛɛ kɔɔŋ tsumɔ, kɛ nyiɛ fioo gbi fɛɛ gbi. Kɛji eku kɛ baa nu, hã HELP ME mahã ${PATIENT_CONTEXT.cho}.`;
+    return { text: lang === 'twi' ? twi : lang === 'ga' ? ga : en };
+  }
+
+  // Lang switch
+  if (cmd === 'LANG' || cmd === 'LANGUAGE') {
+    const target = tokens[1];
+    if (['TWI', 'GA', 'EN', 'ENGLISH'].includes(target)) {
+      const newLang = target === 'EN' || target === 'ENGLISH' ? 'en' : target.toLowerCase();
+      STATE.waLang = newLang;
+      return {
+        text: subst(MSG_TEMPLATES.welcome[newLang], { NAME: PATIENT_CONTEXT.name }),
+        system: `Language changed to ${LANGUAGES[newLang].name}`,
+        rerender: true
+      };
+    }
+    return { text: 'Reply LANG TWI · LANG GA · LANG EN' };
+  }
+
+  // HELP
+  if (cmd === 'HELP' || cmd === 'START' || cmd === 'MENU') {
+    return { text: MSG_TEMPLATES.help[lang] };
+  }
+
+  // Thanks
+  if (text.includes('THANK') || text.includes('MEDAASE') || text.includes('OYIWALADON')) {
+    const en = `You're welcome 🌿 I'm here whenever you need me.`;
+    const twi = `Ɛyɛ 🌿 Mewɔ ha berɛ biara a wuhia me.`;
+    const ga = `Eko 🌿 Mihi yɛ be fɛɛ be ni obi mi.`;
+    return { text: lang === 'twi' ? twi : lang === 'ga' ? ga : en };
+  }
+
+  // Fallback
+  const en = `I'm not sure I understood. Reply HELP to see what I can do, or type your question and I'll do my best — or pass it to ${PATIENT_CONTEXT.cho} if needed.`;
+  const twi = `Mente aseɛ. Tia HELP na woahu nea metumi yɛ, anaa kyerɛw wo asɛm na mɛbɔ mmɔden — anaa mede bɛma ${PATIENT_CONTEXT.cho} sɛ ɛho hia a.`;
+  const ga = `Mibɛnu. Hã HELP kɛ̃ɔ obɛna nibii ni mã yɛ, loo ŋmaa ohe sane mahã yelikɛbuamɔ — loo mahã ${PATIENT_CONTEXT.cho} kɛji ehia.`;
+  return { text: lang === 'twi' ? twi : lang === 'ga' ? ga : en };
+}
+
+function getInfo(topic, lang) {
+  const t = topic.toUpperCase();
+
+  if (t.includes('IRON') || t.includes('DADE') || t.includes('FOLATE') || t.includes('SUPPLEMENT')) {
+    const en = `🌿 Iron + folate:\nIron makes blood — both yours and baby's. Folate prevents serious birth problems.\n\n• Take 1 tablet daily, with water or food\n• Vitamin C (orange, mango) helps absorption\n• Avoid taking with tea or coffee within 1 hour\n• Black stools are normal\n\nReply INFO MALARIA for the next tip.`;
+    const twi = `🌿 Dade ne Folate:\nDade yɛ mogya — wo ne ba no ne deɛ. Folate sii mfaso wɔ awoyɛ.\n\n• Nom aduro 1 da biara, fa nsuo anaa aduane ka ho\n• Vitamin C (ankaa, mango) boa\n• Mma ma onnka tea anaa kɔfe ho dɔnhwere 1 mu\n• Sɛ wo tuo yɛ tuntum a, ɛyɛ\n\nTia INFO MALARIA fa adesua a edi hɔ.`;
+    const ga = `🌿 Dade kɛ Folate:\nDade yɔɔ mogya — bo kɛ abifao lɛ. Folate buaa fɔmɔ tɛŋmɔ ohi.\n\n• Nu tsofa 1 gbi fɛɛ gbi, kɛ nui loo ŋmaa\n• Vitamin C (ankaa, mango) yelikɛbuamɔ\n• Hã ŋmaa lɛ kɛ tea loo kofe nyɛ kɛkpe dɔnhwere 1 mli\n• Kɛji ohe vuon dii bibi, eko ji\n\nHã INFO MALARIA kɛjɛ otsɔ nikasemɔ.`;
+    return lang === 'twi' ? twi : lang === 'ga' ? ga : en;
+  }
+
+  if (t.includes('MALARIA') || t.includes('IPTP') || t.includes('SP')) {
+    const en = `🦟 Malaria prevention (IPTp):\nWe give you SP medicine 3 times in pregnancy to prevent malaria — it protects both you and baby.\n\n• Take it AT the clinic (Directly Observed)\n• Sleep under an insecticide-treated net every night\n• Net is free at your facility\n\nReply INFO SCAN for scan info.`;
+    const twi = `🦟 Atridii ho bammɔ (IPTp):\nYɛma wo SP aduro mprɛnsa wɔ awoyɛ mu de bɔ atridii ho ban — ɛbɔ wo ne ba no nyinaa ho ban.\n\n• Nom no wɔ ayaresabea hɔ\n• Da pampam mu anadwo biara\n• Yɛma pampam no kwa wɔ wo ayaresabea hɔ\n\nTia INFO SCAN.`;
+    const ga = `🦟 Atridii buamɔ (IPTp):\nWɔɔhã bo SP tsofa shi yɛ fɔmɔ mli kɛɛ ekɛɛ atridii — eyi buaa bo kɛ abifao lɛ.\n\n• Nu lɛ yɛ ayaresabea\n• Wɔ pampam mli gbi fɛɛ gbi nyɔŋmɔ\n• Pampam lɛ ji yakaa yɛ ohe ayaresabea\n\nHã INFO SCAN.`;
+    return lang === 'twi' ? twi : lang === 'ga' ? ga : en;
+  }
+
+  if (t.includes('SCAN') || t.includes('ULTRASOUND')) {
+    const en = `📷 Ultrasound scan:\nAround week 20 we'll check baby's growth, organs, and position.\n\n• Drink water 1 hour before — full bladder helps the image\n• It doesn't hurt and there's no radiation\n• Bring your maternal health book\n• You may feel cold gel — that's normal\n\nReply WHEN for your next visit.`;
+    const twi = `📷 Ultrasound scan:\nƐbɛyɛ dapɛn 20 mu yɛbɛhwɛ ba no nyinyinii, n'akwaa, ne sɛnea ɔda.\n\n• Nom nsuo dɔnhwere 1 ansa na woaba — bladder a ayɛ ma boa scan no\n• Ɛnyɛ ya, na esum mfa kekaw\n• Fa wo apomuden nwoma no bra\n• Wobɛte nsu a ɛyɛ nwini — ɛyɛ\n\nTia WHEN.`;
+    const ga = `📷 Ultrasound scan:\nBeyɛ otsi 20 mli wɔbaakpamɔ abifao lɛ nyinyimɔ, ohe akwaa, kɛ kɛɛ edãa.\n\n• Nu nui dɔnhwere 1 dani obaaa — bladder ni eyi yɛɛ scan lɛ\n• Eko piɛ, kɛ kɛɛ esunɔ mli\n• Kɛ ohe wala wolo lɛ ba\n• Obanu nui ni gyɔɔŋ — eko ji\n\nHã WHEN.`;
+    return lang === 'twi' ? twi : lang === 'ga' ? ga : en;
+  }
+
+  if (t.includes('NUTRITION') || t.includes('FOOD') || t.includes('EAT') || t.includes('ADUANE')) {
+    const en = `🍲 Eating for two (sort of):\nYou actually only need ~300 extra calories — but quality matters more than quantity.\n\n• Beans, fish, eggs — for baby's growth\n• Kontomire, kale, plantain leaves — for iron\n• Oranges, mangoes — for absorbing iron\n• Pure water, not soft drinks\n• Avoid raw fish and unpasteurised milk\n\nReply INFO IRON for supplements info.`;
+    const twi = `🍲 Aduane wɔ awoyɛ mu:\nWohia 300 calories nkutoo nkae — sɛnea wodi no na ɛho hia kɛse sen dodow.\n\n• Adua, nam, kosua — ma ba no nyinyinii\n• Kontomire, ɔbɔbɔ — ma dade\n• Ankaa, mango — boa dade nya nipadua mu\n• Nsu pa, ɛnnyɛ minerals\n• Mma nam a ɛnnɔeɛ ne nufusuo a wonsuo no\n\nTia INFO IRON.`;
+    const ga = `🍲 Niyenii yɛ fɔmɔ mli:\nObiɔ calories 300 pɛ nkpɔ — kɛɛ ohe ŋmɛɛ nakai lɛ ehia jogbaŋ.\n\n• Akpetenshie, lo, kosi — yelikɛbuamɔ abifao nyinyimɔ\n• Kontomire, kɔtsa — dade\n• Ankaa, mango — yelikɛbuamɔ dade nyaa\n• Nui jogbaŋ, jeee minerals\n• Hã ŋmaa lo ni ɔbaa kɛ nufu ni edasi\n\nHã INFO IRON.`;
+    return lang === 'twi' ? twi : lang === 'ga' ? ga : en;
+  }
+
+  if (t.includes('NHIS') || t.includes('INSURANCE')) {
+    const en = `💳 NHIS for pregnant women:\nFree maternal health card covers ANC, scans, delivery, and postnatal care.\n\n• Bring Ghana Card to your facility\n• Renew if it has expired\n• Your CHO can help\n\nReply HELP for the menu.`;
+    const twi = `💳 NHIS ma awodifoɔ:\nNhwɛsoɔ kaad kwa boa ANC, scan, awoyɛ, ne nea ɛtoa so.\n\n• Fa wo Ghana Card kɔ ayaresabea hɔ\n• Yɛ no foforɔ sɛ atwam a\n• Wo CHO bɛboa wo\n\nTia HELP.`;
+    const ga = `💳 NHIS yɛ fɔmɔ mli:\nKaade lɛ ji yakaa kɛɛ ehe ANC, scan, fɔmɔ, kɛ otsɔ kpamɔ.\n\n• Kɛ ohe Ghana Card ya ayaresabea\n• Hɛɛ kɛji emɔɔ\n• Ohe CHO baahã yelikɛbuamɔ\n\nHã HELP.`;
+    return lang === 'twi' ? twi : lang === 'ga' ? ga : en;
+  }
+
+  const en = `I don't have a tip on "${topic}" yet. Try: INFO IRON · INFO MALARIA · INFO SCAN · INFO NUTRITION · INFO NHIS\n\nOr type your question and I'll pass it to ${PATIENT_CONTEXT.cho}.`;
+  const twi = `Menni "${topic}" ho asɛm. Sɔ: INFO IRON · INFO MALARIA · INFO SCAN · INFO NUTRITION · INFO NHIS\n\nAnaa kyerɛw wo asɛm na mɛma ${PATIENT_CONTEXT.cho}.`;
+  const ga = `Minyɛ "${topic}" he sane. Tamɔ: INFO IRON · INFO MALARIA · INFO SCAN · INFO NUTRITION · INFO NHIS\n\nLoo ŋmaa ohe sane mahã ${PATIENT_CONTEXT.cho}.`;
+  return lang === 'twi' ? twi : lang === 'ga' ? ga : en;
+}
+
+function waSend(text) {
+  if (!text || !text.trim()) return;
+  waAddMsg(text.trim(), 'out', 'user');
+  waShowTyping();
+  setTimeout(() => {
+    waHideTyping();
+    const response = processWaCmd(text);
+    waAddMsg(response.text, 'in', 'auto');
+    if (response.system) {
+      setTimeout(() => waAddSystem(response.system), 400);
+    }
+  }, 700 + Math.random() * 500);
+}
+
+function clearWaMessages() {
+  const container = document.getElementById('waMessages');
+  if (container) container.innerHTML = '';
+  STATE.waHistory = [];
+}
+
+// ---------- MAIN RENDER ----------
+
+function render() {
+  const main = document.getElementById('mainContent');
+  let html = '';
+  if (STATE.role === 'cho') html = renderCHO();
+  else if (STATE.role === 'patient') html = renderPatient();
+  else if (STATE.role === 'admin') html = renderAdmin();
+  else if (STATE.role === 'wa') html = renderWA();
+  main.innerHTML = html;
+  attachViewListeners();
+  if (STATE.role === 'wa') waSeed();
+}
+
+function attachViewListeners() {
+  // CHO view — roster clicks
+  document.querySelectorAll('.roster-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const pid = item.dataset.patient;
+      if (pid) {
+        STATE.selectedPatient = pid;
+        STATE.role = 'patient';
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === 'patient'));
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // CHO greeting buttons
+  const sendBatchBtn = document.getElementById('sendBatchBtn');
+  if (sendBatchBtn) {
+    sendBatchBtn.addEventListener('click', () => {
+      showToast('Sent 6 reminders for today · multi-language');
+    });
+  }
+  const viewFollowupsBtn = document.getElementById('viewFollowupsBtn');
+  if (viewFollowupsBtn) {
+    viewFollowupsBtn.addEventListener('click', () => {
+      showToast('Follow-up queue: 3 patients flagged');
+    });
+  }
+
+  // Patient view — selector
+  const patientSelector = document.getElementById('patientSelector');
+  if (patientSelector) {
+    patientSelector.addEventListener('change', e => {
+      STATE.selectedPatient = e.target.value;
+      render();
+    });
+  }
+  // Compose language buttons
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      STATE.composeLang = b.dataset.lang;
+      document.querySelectorAll('.lang-btn').forEach(bb => bb.classList.toggle('active', bb.dataset.lang === STATE.composeLang));
+    });
+  });
+  // Quick send
+  const quickSendBtn = document.getElementById('quickSendBtn');
+  if (quickSendBtn) {
+    quickSendBtn.addEventListener('click', () => {
+      const text = document.getElementById('quickSendText').value.trim();
+      if (!text) {
+        showToast('Type a message first');
+        return;
+      }
+      const p = patientById(STATE.selectedPatient);
+      showToast(`Sent to ${p.name.split(' ')[0]} in ${LANGUAGES[STATE.composeLang].name}`);
+      document.getElementById('quickSendText').value = '';
+    });
+  }
+
+  // WA view
+  const waForm = document.getElementById('waForm');
+  if (waForm) {
+    waForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const input = document.getElementById('waInput');
+      const text = input.value.trim();
+      if (text) {
+        waSend(text);
+        input.value = '';
+      }
+    });
+  }
+  document.querySelectorAll('#waSuggestions .suggestion-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const cmd = chip.dataset.cmd;
+      waSend(cmd);
+    });
+  });
+  document.querySelectorAll('.command-code').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const cmd = chip.dataset.cmd;
+      const input = document.getElementById('waInput');
+      if (input) {
+        input.value = cmd;
+        input.focus();
+      }
+    });
+  });
+  // Language switcher
+  document.querySelectorAll('.ls-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const newLang = b.dataset.lang;
+      if (newLang === STATE.waLang) return;
+      STATE.waLang = newLang;
+      document.querySelectorAll('.ls-btn').forEach(bb => bb.classList.toggle('active', bb.dataset.lang === newLang));
+      const label = document.getElementById('waLangLabel');
+      if (label) label.textContent = LANGUAGES[newLang].name;
+      clearWaMessages();
+      setTimeout(waSeed, 80);
+    });
+  });
+}
+
+function showToast(text) {
+  const toast = document.getElementById('toast');
+  toast.textContent = text;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+function updateTimes() {
+  const now = new Date();
+  const hh = now.getHours().toString().padStart(2, '0');
+  const mm = now.getMinutes().toString().padStart(2, '0');
+  const ss = now.getSeconds().toString().padStart(2, '0');
+  const liveTime = document.getElementById('liveTime');
+  const phoneTime = document.getElementById('phoneTime');
+  if (liveTime) liveTime.textContent = `${hh}:${mm}:${ss}`;
+  if (phoneTime) phoneTime.textContent = `${hh}:${mm}`;
+}
+
+// ---------- INIT ----------
+
+render();
+updateTimes();
+setInterval(updateTimes, 1000);
+
+document.querySelectorAll('.role-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.role = btn.dataset.role;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+</script>
+
+</body>
+</html>

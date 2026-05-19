@@ -1,0 +1,2878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DumpTrack — Sanitation reporting for Ledzokuku-Krowor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1A1612;
+    --ink-soft: #3a3128;
+    --forest: #0F3D2E;
+    --forest-deep: #0a2a20;
+    --forest-soft: #2a5a47;
+    --terra: #D97543;
+    --terra-deep: #B85A2E;
+    --gold: #C8956D;
+    --indigo: #3B4A6B;
+    --cream: #F4EDE0;
+    --cream-warm: #EEE3CF;
+    --paper: #FAF6EE;
+    --line: rgba(26, 22, 18, 0.10);
+    --line-strong: rgba(26, 22, 18, 0.18);
+    --good: #2D6E4E;
+    --bad: #B84A3E;
+    --warn: #C8956D;
+    --urgent: #C9433E;
+
+    --display: 'Fraunces', Georgia, serif;
+    --body: 'DM Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; font-size: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ============ HEADER ============ */
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250, 246, 238, 0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .top-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    background: var(--forest);
+    border-radius: 6px;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-3deg);
+  }
+  .brand-mark svg {
+    width: 20px;
+    height: 20px;
+  }
+  .brand-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0.55;
+    font-weight: normal;
+    margin-left: 4px;
+  }
+
+  .role-switcher {
+    display: flex;
+    gap: 4px;
+    background: var(--cream);
+    padding: 4px;
+    border-radius: 100px;
+    border: 1px solid var(--line);
+  }
+  .role-btn {
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .role-btn:hover { color: var(--ink); }
+  .role-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .role-btn .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+  }
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--good);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(45, 110, 78, 0.4); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(45, 110, 78, 0); }
+  }
+
+  /* ============ MAIN ============ */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+
+  .view-header {
+    margin-bottom: 32px;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .view-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--terra-deep);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .view-eyebrow::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--terra-deep);
+  }
+  .view-title {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+  }
+  .view-title em { font-style: italic; color: var(--forest); }
+  .view-sub {
+    margin-top: 14px;
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 560px;
+  }
+  .view-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .selector {
+    padding: 10px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--paper);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .selector:hover { border-color: var(--ink); }
+
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary:hover { background: var(--forest); transform: translateY(-1px); }
+
+  /* ============ CARDS ============ */
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 24px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .card-title {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+  .card-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    padding: 4px 10px;
+    background: var(--cream);
+    border-radius: 100px;
+  }
+  .card-tag.urgent {
+    background: rgba(201, 67, 62, 0.15);
+    color: var(--urgent);
+  }
+
+  /* ============ STATS ============ */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 22px;
+    border-radius: 6px;
+  }
+  .stat-card.accent {
+    background: var(--forest);
+    color: var(--cream);
+    border-color: var(--forest);
+  }
+  .stat-card.accent .stat-label { color: var(--gold); }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .stat-value {
+    font-family: var(--display);
+    font-size: 38px;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    margin-bottom: 8px;
+  }
+  .stat-value .small-unit {
+    font-size: 16px;
+    opacity: 0.6;
+    margin-left: 4px;
+  }
+  .stat-change {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--good);
+  }
+  .stat-change.down { color: var(--bad); }
+  .stat-change.flat { color: var(--ink-soft); }
+  .stat-card.accent .stat-change { color: var(--gold); }
+
+  /* ============ CITIZEN PHONE VIEW ============ */
+  .citizen-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 40px;
+    align-items: start;
+  }
+  .citizen-context h3 {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .citizen-context h3 em { font-style: italic; color: var(--forest); }
+  .citizen-context > p {
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+    max-width: 560px;
+  }
+
+  .feature-card {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 28px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+  }
+  .feature-card.cream {
+    background: var(--cream);
+    color: var(--ink);
+  }
+  .feature-card.cream .feature-card-title { color: var(--terra-deep); }
+  .feature-card-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 18px;
+  }
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .feature-item {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .feature-num {
+    font-family: var(--display);
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 400;
+    color: var(--gold);
+  }
+  .feature-card.cream .feature-num { color: var(--terra-deep); }
+  .feature-text-title {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .feature-text-body {
+    font-size: 13.5px;
+    opacity: 0.75;
+    line-height: 1.5;
+  }
+  .feature-card.cream .feature-text-body { opacity: 0.85; }
+
+  .insight-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 24px;
+    border-radius: 6px;
+    border-left: 3px solid var(--terra);
+  }
+  .insight-title {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .insight-body {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+
+  /* Phone mockup */
+  .phone {
+    background: var(--ink);
+    border-radius: 38px;
+    padding: 14px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 420px;
+    position: sticky;
+    top: 100px;
+  }
+  .phone-screen {
+    background: var(--paper);
+    border-radius: 28px;
+    overflow: hidden;
+    height: 720px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .phone-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 24px;
+    background: var(--ink);
+    border-radius: 0 0 18px 18px;
+    z-index: 10;
+  }
+  .phone-statusbar {
+    height: 38px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    padding-top: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--paper);
+  }
+
+  .app-header {
+    background: var(--forest);
+    color: var(--cream);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .app-header-title {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .app-header-icon {
+    width: 28px; height: 28px;
+    background: var(--gold);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-3deg);
+  }
+  .app-header-actions {
+    display: flex;
+    gap: 14px;
+    font-size: 16px;
+    opacity: 0.85;
+  }
+
+  /* Screens */
+  .app-screen {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--paper);
+    padding: 18px 16px 20px;
+  }
+  .app-screen::-webkit-scrollbar { width: 4px; }
+  .app-screen::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
+
+  .screen-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .screen-title {
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
+  }
+  .screen-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .step-indicator {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+  .step-dot {
+    height: 4px;
+    flex: 1;
+    background: var(--cream);
+    border-radius: 100px;
+    transition: background 0.3s;
+  }
+  .step-dot.active { background: var(--ink); }
+  .step-dot.done { background: var(--good); }
+
+  /* Step 1: Category */
+  .category-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .cat-btn {
+    background: var(--paper);
+    border: 1.5px solid var(--line-strong);
+    border-radius: 8px;
+    padding: 16px 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cat-btn:hover { border-color: var(--ink); }
+  .cat-btn.selected {
+    border-color: var(--forest);
+    background: rgba(15, 61, 46, 0.06);
+  }
+  .cat-icon {
+    width: 36px; height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .cat-icon.c1 { background: rgba(217, 117, 67, 0.15); color: var(--terra-deep); }
+  .cat-icon.c2 { background: rgba(15, 61, 46, 0.12); color: var(--forest); }
+  .cat-icon.c3 { background: rgba(59, 74, 107, 0.15); color: var(--indigo); }
+  .cat-icon.c4 { background: rgba(184, 74, 62, 0.12); color: var(--bad); }
+  .cat-icon.c5 { background: rgba(200, 149, 109, 0.2); color: var(--terra-deep); }
+  .cat-icon.c6 { background: rgba(26, 22, 18, 0.08); color: var(--ink); }
+  .cat-name {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  .cat-local {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+
+  /* Step 2: Severity */
+  .severity-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .sev-btn {
+    padding: 14px 16px;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--paper);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .sev-btn:hover { border-color: var(--ink); }
+  .sev-btn.selected {
+    border-color: var(--forest);
+    background: rgba(15, 61, 46, 0.06);
+  }
+  .sev-pill {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .sev-pill.low { background: var(--good); }
+  .sev-pill.med { background: var(--gold); }
+  .sev-pill.high { background: var(--terra); }
+  .sev-pill.critical { background: var(--urgent); }
+  .sev-text-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .sev-name {
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .sev-desc {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+
+  /* Step 3: Photo */
+  .photo-uploader {
+    background: var(--cream);
+    border: 2px dashed var(--line-strong);
+    border-radius: 8px;
+    padding: 28px 16px;
+    text-align: center;
+    margin-bottom: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .photo-uploader:hover {
+    background: var(--cream-warm);
+    border-color: var(--ink);
+  }
+  .photo-uploader.has-photo {
+    padding: 0;
+    border: none;
+    background: var(--paper);
+    overflow: hidden;
+    position: relative;
+  }
+  .photo-fake {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background:
+      linear-gradient(135deg, #6b6557 0%, #524d42 50%, #2f2c25 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .photo-fake::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 30% 70%, rgba(74, 89, 50, 0.6) 0%, transparent 35%),
+      radial-gradient(ellipse at 70% 40%, rgba(184, 74, 62, 0.4) 0%, transparent 30%),
+      radial-gradient(ellipse at 50% 90%, rgba(43, 38, 28, 0.8) 0%, transparent 50%);
+  }
+  .photo-fake::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    mix-blend-mode: multiply;
+  }
+  .photo-replace-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    color: var(--cream);
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .uploader-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  .uploader-text {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .uploader-sub {
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  /* Location block */
+  .location-block {
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .loc-icon {
+    width: 36px; height: 36px;
+    background: var(--forest);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .loc-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .loc-name {
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1.3;
+    margin-bottom: 2px;
+  }
+  .loc-coords {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .loc-accuracy {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--good);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: rgba(45, 110, 78, 0.12);
+    padding: 3px 7px;
+    border-radius: 100px;
+    flex-shrink: 0;
+  }
+
+  /* Note input */
+  .note-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--paper);
+    font-size: 13px;
+    resize: none;
+    min-height: 70px;
+    line-height: 1.5;
+    margin-bottom: 14px;
+    font-family: inherit;
+  }
+  .note-input:focus { outline: none; border-color: var(--forest); }
+
+  /* Phone footer with action button */
+  .phone-footer {
+    padding: 14px 16px;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 10px;
+  }
+  .phone-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .phone-btn.primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .phone-btn.primary:hover { background: var(--forest); }
+  .phone-btn.primary:disabled {
+    background: rgba(26, 22, 18, 0.2);
+    color: rgba(26, 22, 18, 0.4);
+    cursor: not-allowed;
+  }
+  .phone-btn.ghost {
+    background: transparent;
+    color: var(--ink-soft);
+  }
+  .phone-btn.ghost:hover { color: var(--ink); }
+
+  /* Confirmation screen */
+  .conf-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(45, 110, 78, 0.12);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto 24px;
+    color: var(--good);
+    font-size: 36px;
+    animation: confPop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes confPop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .conf-title {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .conf-sub {
+    font-size: 13px;
+    text-align: center;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+  .conf-ticket {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 18px 20px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+  }
+  .conf-ticket-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 12.5px;
+  }
+  .conf-ticket-row .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+  }
+  .conf-ticket-row .value {
+    font-weight: 500;
+  }
+  .conf-ticket-row.id .value {
+    font-family: var(--mono);
+    color: var(--gold);
+    font-size: 16px;
+    letter-spacing: 0.06em;
+  }
+  .conf-timeline {
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 12.5px;
+  }
+  .tl-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--line-strong);
+    background: var(--paper);
+    justify-self: center;
+  }
+  .tl-dot.done {
+    background: var(--good);
+    border-color: var(--good);
+    position: relative;
+  }
+  .tl-dot.done::after {
+    content: '✓';
+    color: white;
+    font-size: 8px;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tl-dot.active {
+    background: var(--terra);
+    border-color: var(--terra);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  .tl-label {
+    font-weight: 500;
+  }
+  .tl-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+
+  /* ============ PUBLIC DASHBOARD ============ */
+  .public-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .map-card {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .map-canvas {
+    width: 100%;
+    height: 480px;
+    background: linear-gradient(180deg, #d8e7e0 0%, #c5d8cb 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .map-canvas svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .map-controls {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .map-pill {
+    padding: 7px 14px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .map-pill:hover { background: white; }
+  .map-pill.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+  .map-legend {
+    padding: 16px 20px;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .legend-items {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.5px solid white;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+  }
+  .legend-info {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  /* Area performance bars */
+  .area-perf-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .area-perf {
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    gap: 14px;
+    align-items: center;
+  }
+  .area-name {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .area-name .small {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-left: 4px;
+    letter-spacing: 0.04em;
+  }
+  .area-bar {
+    height: 8px;
+    background: var(--cream);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .area-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.8s ease-out;
+  }
+  .area-time {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    text-align: right;
+    font-weight: 500;
+    min-width: 60px;
+  }
+  .area-time.bad { color: var(--bad); }
+  .area-time.good { color: var(--good); }
+
+  /* Wall of shame & resolved */
+  .wall-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .wall-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .wall-item:first-child { border-top: none; padding-top: 4px; }
+  .wall-photo {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .wall-photo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 70%, rgba(74, 89, 50, 0.6) 0%, transparent 35%),
+      radial-gradient(ellipse at 70% 40%, rgba(184, 74, 62, 0.4) 0%, transparent 30%),
+      radial-gradient(ellipse at 50% 90%, rgba(43, 38, 28, 0.8) 0%, transparent 50%);
+  }
+  .wall-photo.b1 { background: linear-gradient(135deg, #6b6557 0%, #524d42 100%); }
+  .wall-photo.b2 { background: linear-gradient(135deg, #524d42 0%, #2f2c25 100%); }
+  .wall-photo.b3 { background: linear-gradient(135deg, #6b554d 0%, #4d3a32 100%); }
+  .wall-photo.b4 { background: linear-gradient(135deg, #4a4538 0%, #2a2820 100%); }
+  .wall-photo.b5 { background: linear-gradient(135deg, #5a5246 0%, #3a342a 100%); }
+  .wall-info-title {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+  .wall-info-meta {
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .wall-info-meta .key {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.65;
+  }
+  .wall-status {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+  .wall-status.unresolved {
+    background: rgba(201, 67, 62, 0.12);
+    color: var(--urgent);
+  }
+  .wall-status.assigned {
+    background: rgba(200, 149, 109, 0.2);
+    color: var(--terra-deep);
+  }
+  .wall-status.resolved {
+    background: rgba(45, 110, 78, 0.12);
+    color: var(--good);
+  }
+  .wall-status.overdue {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  .public-stats-bar {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 28px 32px;
+    border-radius: 6px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    margin-bottom: 24px;
+  }
+  .pub-stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .pub-stat-value {
+    font-family: var(--display);
+    font-size: 36px;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    margin-bottom: 4px;
+  }
+  .pub-stat-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--cream);
+    opacity: 0.55;
+    letter-spacing: 0.04em;
+  }
+
+  /* ============ ASSEMBLY OPERATIONS ============ */
+  .ops-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* Triage queue */
+  .triage-list { display: flex; flex-direction: column; }
+  .triage-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .triage-item:first-child { border-top: none; padding-top: 4px; }
+  .triage-priority {
+    width: 8px;
+    height: 40px;
+    border-radius: 100px;
+    flex-shrink: 0;
+  }
+  .priority-critical { background: var(--urgent); }
+  .priority-high { background: var(--terra); }
+  .priority-med { background: var(--gold); }
+  .priority-low { background: var(--good); }
+  .triage-photo {
+    width: 44px; height: 44px;
+    border-radius: 6px;
+  }
+  .triage-info-title {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  .triage-info-meta {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+  }
+  .triage-age {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 500;
+    text-align: right;
+  }
+  .triage-age.urgent { color: var(--urgent); }
+  .triage-age .small {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-left: 2px;
+    letter-spacing: 0.06em;
+  }
+  .triage-assign {
+    padding: 8px 14px;
+    background: var(--cream);
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+  }
+  .triage-assign:hover {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .triage-assign.assigned {
+    background: rgba(15, 61, 46, 0.12);
+    color: var(--forest);
+  }
+
+  /* Crew/truck list */
+  .crew-list { display: flex; flex-direction: column; }
+  .crew-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .crew-item:first-child { border-top: none; padding-top: 4px; }
+  .crew-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .crew-status.active { background: var(--good); animation: pulse 2s infinite; }
+  .crew-status.idle { background: var(--gold); }
+  .crew-status.offline { background: var(--ink-soft); opacity: 0.3; }
+  .crew-name {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  .crew-detail {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .crew-load {
+    text-align: right;
+  }
+  .crew-load-val {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .crew-load-bar {
+    width: 60px;
+    height: 4px;
+    background: var(--cream);
+    border-radius: 100px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+  .crew-load-fill {
+    height: 100%;
+    background: var(--forest);
+    border-radius: 100px;
+  }
+  .crew-load-fill.overloaded { background: var(--bad); }
+  .crew-load-fill.busy { background: var(--gold); }
+
+  /* SLA panel */
+  .sla-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .sla-cell {
+    padding: 16px;
+    background: var(--cream);
+    border-radius: 6px;
+  }
+  .sla-cell-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .sla-cell-value {
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .sla-cell-value.good { color: var(--good); }
+  .sla-cell-value.bad { color: var(--bad); }
+  .sla-target {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* ============ DIRECTOR ============ */
+  .big-chart {
+    width: 100%;
+    height: 280px;
+  }
+  .chart-legend-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .chart-legend-swatch {
+    width: 16px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  .director-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .perf-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .perf-table th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line-strong);
+    font-weight: 500;
+  }
+  .perf-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .perf-table tr:last-child td { border-bottom: none; }
+  .perf-table tr:hover { background: rgba(216, 117, 67, 0.04); }
+  .area-cell-name {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 15px;
+  }
+  .delta-cell {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .delta-cell.up { color: var(--good); }
+  .delta-cell.down { color: var(--bad); }
+
+  /* Hotspot heatmap legend */
+  .heatmap-card {
+    padding: 0;
+    overflow: hidden;
+  }
+  .heatmap-canvas {
+    width: 100%;
+    height: 320px;
+    background: linear-gradient(180deg, #d8e7e0 0%, #c5d8cb 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .heatmap-canvas svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .heatmap-label {
+    padding: 16px 20px;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .heatmap-label strong { color: var(--ink); }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: var(--ink);
+    color: var(--cream);
+    padding: 14px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast::before {
+    content: '✓';
+    color: var(--gold);
+  }
+
+  /* Footer */
+  footer {
+    max-width: 1400px;
+    margin: 60px auto 0;
+    padding: 32px 32px 40px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  footer a {
+    color: var(--terra-deep);
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--ink); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1100px) {
+    .citizen-layout, .public-grid, .ops-grid, .director-grid {
+      grid-template-columns: 1fr;
+    }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .public-stats-bar { grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px 24px; }
+    .phone { position: relative; top: 0; margin: 0 auto; }
+    .sla-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .top-inner { flex-wrap: wrap; gap: 12px; padding: 14px 20px; }
+    .role-switcher { width: 100%; overflow-x: auto; }
+    .role-btn { white-space: nowrap; padding: 8px 12px; font-size: 12px; }
+    main { padding: 24px 20px; }
+    .view-title { font-size: 36px; }
+    .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-card { padding: 16px; }
+    .stat-value { font-size: 28px; }
+    .public-stats-bar { grid-template-columns: 1fr 1fr; padding: 16px; gap: 16px; }
+    .pub-stat-value { font-size: 28px; }
+    .triage-item { grid-template-columns: auto 1fr auto auto; gap: 8px; }
+    .triage-item .triage-assign { display: none; }
+    .map-canvas { height: 380px; }
+    .area-perf { grid-template-columns: 80px 1fr 50px; gap: 8px; font-size: 12px; }
+    footer { flex-direction: column; align-items: start; text-align: left; }
+  }
+
+/* ===== Tech4Good back-nav banner (injected by wiring script) ===== */
+.t4g-back-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: #1A1612;
+  color: #F4EDE0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(244, 237, 224, 0.08);
+}
+.t4g-back-nav .t4g-back-link {
+  color: #F4EDE0;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s;
+  font-weight: 500;
+}
+.t4g-back-nav .t4g-back-link:hover { color: #C8956D; }
+.t4g-back-nav .t4g-back-arrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.t4g-back-nav .t4g-context {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.t4g-back-nav .t4g-mark {
+  width: 16px;
+  height: 16px;
+  background: #0F3D2E;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.t4g-back-nav .t4g-mark::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: #D97543;
+  border-radius: 50%;
+}
+body {
+  padding-top: 36px;
+}
+header.top {
+  top: 36px !important;
+}
+@media (max-width: 700px) {
+  .t4g-back-nav { padding: 0 16px; height: 32px; }
+  .t4g-back-nav .t4g-context { display: none; }
+  body { padding-top: 32px; }
+  header.top { top: 32px !important; }
+}
+
+</style>
+</head>
+<body>
+<div class="t4g-back-nav">
+  <a href="../index.html" class="t4g-back-link">
+    <span class="t4g-mark"></span>
+    <span class="t4g-back-arrow">←</span>
+    Back to Tech4Good
+  </a>
+  <span class="t4g-context">DumpTrack · Cohort 01 Demo Day</span>
+</div>
+
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 8 L19 8 L17.5 19 L6.5 19 Z" fill="#C8956D" stroke="#C8956D" stroke-width="1.4" stroke-linejoin="round"/>
+          <line x1="3" y1="8" x2="21" y2="8" stroke="#C8956D" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="9" y1="5.5" x2="15" y2="5.5" stroke="#C8956D" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        DumpTrack<span class="brand-sub">LEKMA · Cohort 01</span>
+      </div>
+    </div>
+    <div class="role-switcher" id="roleSwitcher">
+      <button class="role-btn active" data-role="citizen"><span class="dot"></span>Citizen App</button>
+      <button class="role-btn" data-role="public"><span class="dot"></span>Public Dashboard</button>
+      <button class="role-btn" data-role="ops"><span class="dot"></span>Assembly Ops</button>
+      <button class="role-btn" data-role="director"><span class="dot"></span>Director View</button>
+    </div>
+    <div class="live-indicator">
+      <span class="live-dot"></span>
+      <span>Live · <span id="liveTime">--:--</span></span>
+    </div>
+  </div>
+</header>
+
+<main id="mainContent"></main>
+
+<footer>
+  <div>DumpTrack · Built by Cohort 01 · <a href="#">Tech4Good Nungua</a></div>
+  <div>In partnership with Ledzokuku-Krowor Municipal Assembly · Pilot active in Teshie-Nungua</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   DUMPTRACK — Geotagged sanitation reporting platform
+   Built for the Tech4Good Innovators Bootcamp · Cohort 01
+   Focus: LEKMA jurisdiction · Teshie-Nungua · Greater Accra
+   ============================================================ */
+
+// ---------- DATA ----------
+
+const CATEGORIES = [
+  { id: 'illegal',  name: 'Roadside dump',  local: 'Borla wɔ kwan ho', icon: '🗑', cls: 'c1', sla: 24 },
+  { id: 'drain',    name: 'Choked drain',   local: 'Achaa abɔ',         icon: '〰',  cls: 'c2', sla: 12 },
+  { id: 'bin',      name: 'Overflowing bin',local: 'Bin ahyɛ ma',       icon: '🔄', cls: 'c3', sla: 24 },
+  { id: 'dead',     name: 'Dead animal',    local: 'Aboa awufoɔ',       icon: '⚠',  cls: 'c4', sla: 6 },
+  { id: 'rubble',   name: 'Construction debris', local: 'Adansie nneɛma', icon: '◧', cls: 'c5', sla: 48 },
+  { id: 'medical',  name: 'Medical waste',  local: 'Aduro nneɛma',      icon: '⊕', cls: 'c6', sla: 6 }
+];
+
+const SEVERITIES = [
+  { id: 'low',      label: 'Minor',    desc: 'Small bag, easy to manage', cls: 'low' },
+  { id: 'med',      label: 'Moderate', desc: 'Bigger, blocking foot traffic', cls: 'med' },
+  { id: 'high',     label: 'Severe',   desc: 'Large dump or full drain',  cls: 'high' },
+  { id: 'critical', label: 'Critical', desc: 'Health hazard or flooding risk', cls: 'critical' }
+];
+
+const AREAS = [
+  { id: 'nungua-east',     name: 'Nungua East',     lat: 5.598, lng: -0.073, pop: 38000 },
+  { id: 'nungua-west',     name: 'Nungua West',     lat: 5.592, lng: -0.083, pop: 42000 },
+  { id: 'teshie-old',      name: 'Teshie Old Town', lat: 5.583, lng: -0.097, pop: 51000 },
+  { id: 'teshie-camp2',    name: 'Teshie Camp 2',   lat: 5.589, lng: -0.105, pop: 33000 },
+  { id: 'lascala',         name: 'LA School Junction', lat: 5.595, lng: -0.115, pop: 22000 },
+  { id: 'baatsona',        name: 'Baatsona',        lat: 5.622, lng: -0.075, pop: 28000 },
+  { id: 'spintex-east',    name: 'Spintex (east)',  lat: 5.638, lng: -0.063, pop: 35000 },
+  { id: 'manet',           name: 'Manet Cottage',   lat: 5.611, lng: -0.062, pop: 19000 }
+];
+
+const CREWS = [
+  { id: 'crew1', name: 'Crew Alpha',  vehicle: 'Truck GZ-2841',  status: 'active', load: 7,  capacity: 10, area: 'nungua-east' },
+  { id: 'crew2', name: 'Crew Bravo',  vehicle: 'Truck GZ-3127',  status: 'active', load: 9,  capacity: 10, area: 'teshie-old' },
+  { id: 'crew3', name: 'Crew Charlie',vehicle: 'Truck GZ-1923',  status: 'idle',   load: 2,  capacity: 8,  area: 'baatsona' },
+  { id: 'crew4', name: 'Crew Delta',  vehicle: 'Skip Loader SL-08', status: 'active', load: 5, capacity: 6, area: 'spintex-east' },
+  { id: 'crew5', name: 'Crew Echo',   vehicle: 'Truck GZ-4502',  status: 'active', load: 11, capacity: 10, area: 'teshie-camp2' },
+  { id: 'crew6', name: 'Crew Foxtrot',vehicle: 'Truck GZ-1004',  status: 'offline',load: 0,  capacity: 10, area: 'lascala' }
+];
+
+const REPORTS = [
+  { id: 'BRL-4128', cat: 'drain',   sev: 'critical', area: 'teshie-old',    title: 'Choked drain · Otokumpasi Rd',    age: 36, status: 'unresolved', photoCls: 'b1' },
+  { id: 'BRL-4127', cat: 'illegal', sev: 'high',     area: 'nungua-west',   title: 'Pile near Trinity Junction',     age: 28, status: 'unresolved', photoCls: 'b2' },
+  { id: 'BRL-4126', cat: 'bin',     sev: 'med',      area: 'baatsona',      title: 'Overflowing bin · Baatsona market', age: 14, status: 'assigned', photoCls: 'b3' },
+  { id: 'BRL-4125', cat: 'dead',    sev: 'high',     area: 'teshie-camp2',  title: 'Dead dog · 7th Lane',            age: 8,  status: 'assigned', photoCls: 'b4' },
+  { id: 'BRL-4124', cat: 'illegal', sev: 'critical', area: 'teshie-old',    title: 'Roadside dump · 4th Crescent',   age: 52, status: 'overdue', photoCls: 'b5' },
+  { id: 'BRL-4123', cat: 'drain',   sev: 'high',     area: 'nungua-east',   title: 'Drain · Coco Beach Rd',          age: 21, status: 'unresolved', photoCls: 'b1' },
+  { id: 'BRL-4122', cat: 'rubble',  sev: 'med',      area: 'spintex-east',  title: 'Construction debris · Spintex Rd', age: 30, status: 'assigned', photoCls: 'b2' },
+  { id: 'BRL-4121', cat: 'illegal', sev: 'high',     area: 'lascala',       title: 'Dump near LA Primary',          age: 18, status: 'unresolved', photoCls: 'b3' },
+  { id: 'BRL-4120', cat: 'bin',     sev: 'low',      area: 'manet',         title: 'Bin · Manet Estate gate',        age: 4,  status: 'unresolved', photoCls: 'b4' },
+  { id: 'BRL-4119', cat: 'drain',   sev: 'high',     area: 'teshie-camp2',  title: 'Drain · Camp 2 entry road',      age: 24, status: 'assigned', photoCls: 'b5' },
+  // resolved
+  { id: 'BRL-4118', cat: 'illegal', sev: 'med',      area: 'nungua-east',   title: 'Resolved · Manet road dump',     age: 0,  status: 'resolved', resolvedAt: 4, photoCls: 'b1' },
+  { id: 'BRL-4117', cat: 'bin',     sev: 'high',     area: 'teshie-old',    title: 'Resolved · Old Teshie Salaga',   age: 0,  status: 'resolved', resolvedAt: 9, photoCls: 'b2' },
+  { id: 'BRL-4116', cat: 'drain',   sev: 'high',     area: 'nungua-west',   title: 'Resolved · Trasacco gate drain', age: 0,  status: 'resolved', resolvedAt: 6, photoCls: 'b3' }
+];
+
+// Area performance: avg response time in hours, target 24h
+const AREA_PERF = {
+  'nungua-east':  { resp: 14.2, resolved: 47, open: 8,  total: 55 },
+  'nungua-west':  { resp: 19.8, resolved: 42, open: 11, total: 53 },
+  'teshie-old':   { resp: 38.4, resolved: 39, open: 19, total: 58 },
+  'teshie-camp2': { resp: 27.1, resolved: 31, open: 12, total: 43 },
+  'lascala':      { resp: 22.5, resolved: 24, open: 7,  total: 31 },
+  'baatsona':     { resp: 11.6, resolved: 38, open: 4,  total: 42 },
+  'spintex-east': { resp: 9.4,  resolved: 41, open: 3,  total: 44 },
+  'manet':        { resp: 15.2, resolved: 22, open: 6,  total: 28 }
+};
+
+const STATE = {
+  role: 'citizen',
+  // Phone wizard state
+  phoneStep: 1,         // 1=category, 2=severity, 3=photo+location, 4=confirmation
+  selectedCategory: null,
+  selectedSeverity: null,
+  hasPhoto: false,
+  reportNote: '',
+  reportId: null,
+  // Map filter
+  mapFilter: 'all'      // all | unresolved | assigned | resolved
+};
+
+// ---------- HELPERS ----------
+
+const catById = (id) => CATEGORIES.find(c => c.id === id);
+const sevById = (id) => SEVERITIES.find(s => s.id === id);
+const areaById = (id) => AREAS.find(a => a.id === id);
+const crewById = (id) => CREWS.find(c => c.id === id);
+
+function timeAgo(hours) {
+  if (hours < 1) return `${Math.floor(hours * 60)}m`;
+  if (hours < 24) return `${Math.floor(hours)}h`;
+  return `${Math.floor(hours / 24)}d`;
+}
+
+function generateReportId() {
+  return 'BRL-' + (4129 + Math.floor(Math.random() * 200));
+}
+
+// ---------- RENDER: CITIZEN PHONE APP ----------
+
+function renderCitizen() {
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Citizen app · The reporting experience</div>
+        <h1 class="view-title">A <em>30-second</em> report.</h1>
+        <p class="view-sub">Most people walk past borla every day because reporting it feels harder than ignoring it. DumpTrack fixes that with a three-tap flow that works on any Android phone, online or off.</p>
+      </div>
+    </div>
+
+    <div class="citizen-layout">
+      <div class="citizen-context">
+        <div class="feature-card">
+          <div class="feature-card-title">How it works · three taps and done</div>
+          <div class="feature-list">
+            <div class="feature-item">
+              <div class="feature-num">1</div>
+              <div>
+                <div class="feature-text-title">Pick what you see</div>
+                <div class="feature-text-body">Six categories cover 95% of complaints — roadside dump, choked drain, overflowing bin, dead animal, construction debris, medical waste. Each has a service-level deadline tied to it.</div>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-num">2</div>
+              <div>
+                <div class="feature-text-title">Rate how bad it is</div>
+                <div class="feature-text-body">From minor to critical. Critical reports skip the queue and page the on-call crew within 10 minutes.</div>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-num">3</div>
+              <div>
+                <div class="feature-text-title">Snap a photo. We do the rest.</div>
+                <div class="feature-text-body">Geolocation is automatic. The photo prevents fraud. Your report goes directly to the Assembly with a tracking ID.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card cream">
+          <div class="feature-card-title">What the reporter gets back</div>
+          <div class="feature-list">
+            <div class="feature-item">
+              <div class="feature-num">→</div>
+              <div>
+                <div class="feature-text-title">A real ticket ID</div>
+                <div class="feature-text-body">Not "thanks, we'll look into it." A trackable reference number with a public status page anyone can check.</div>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-num">→</div>
+              <div>
+                <div class="feature-text-title">SMS updates</div>
+                <div class="feature-text-body">When the crew is dispatched, and when the dump is cleared. No app push needed.</div>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-num">→</div>
+              <div>
+                <div class="feature-text-title">A photo of the resolution</div>
+                <div class="feature-text-body">The crew takes an "after" photo on completion. Closes the loop — and prevents fake closures.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <div class="insight-title">Why this matters in Teshie-Nungua</div>
+          <div class="insight-body">
+            Choked drains in Old Teshie cause annual flooding every monsoon. Roadside dumps near LA Primary attract flies and mosquitoes. The Assembly is willing — what they've lacked is a triaged, geotagged, accountable system to act on. DumpTrack is that system.
+          </div>
+        </div>
+      </div>
+
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar">
+            <span id="phoneTime">--:--</span>
+            <span style="opacity: 0.65;">●●●● MTN GH</span>
+            <span>78%</span>
+          </div>
+          <div class="app-header">
+            <div class="app-header-title">
+              <div class="app-header-icon">
+                <svg viewBox="0 0 24 24" fill="none" style="width: 14px; height: 14px;">
+                  <path d="M5 8 L19 8 L17.5 19 L6.5 19 Z" fill="#0F3D2E"/>
+                </svg>
+              </div>
+              DumpTrack
+            </div>
+            <div class="app-header-actions">
+              <span>🔔</span>
+              <span>≡</span>
+            </div>
+          </div>
+          <div class="app-screen" id="phoneScreen"></div>
+          <div class="phone-footer" id="phoneFooter"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderPhoneScreen() {
+  const screen = document.getElementById('phoneScreen');
+  const footer = document.getElementById('phoneFooter');
+  if (!screen) return;
+
+  if (STATE.phoneStep === 1) {
+    // Category selection
+    screen.innerHTML = `
+      <div class="step-indicator">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+      <div class="screen-eyebrow">Step 1 of 3</div>
+      <div class="screen-title">What did you see?</div>
+      <div class="screen-sub">Pick the closest match. We'll send your report to the right crew.</div>
+      <div class="category-grid">
+        ${CATEGORIES.map(c => `
+          <button class="cat-btn ${STATE.selectedCategory === c.id ? 'selected' : ''}" data-cat="${c.id}">
+            <div class="cat-icon ${c.cls}">${c.icon}</div>
+            <div>
+              <div class="cat-name">${c.name}</div>
+              <div class="cat-local">${c.local}</div>
+            </div>
+          </button>
+        `).join('')}
+      </div>
+    `;
+    footer.innerHTML = `
+      <button class="phone-btn primary" id="phoneNext" ${!STATE.selectedCategory ? 'disabled' : ''}>Continue →</button>
+    `;
+  } else if (STATE.phoneStep === 2) {
+    // Severity
+    screen.innerHTML = `
+      <div class="step-indicator">
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+      </div>
+      <div class="screen-eyebrow">Step 2 of 3</div>
+      <div class="screen-title">How bad is it?</div>
+      <div class="screen-sub">This decides how urgently a crew is dispatched. Be honest — false alarms slow everyone down.</div>
+      <div class="severity-row">
+        ${SEVERITIES.map(s => `
+          <button class="sev-btn ${STATE.selectedSeverity === s.id ? 'selected' : ''}" data-sev="${s.id}">
+            <div class="sev-pill ${s.cls}"></div>
+            <div class="sev-text-row">
+              <div class="sev-name">${s.label}</div>
+              <div class="sev-desc">${s.desc}</div>
+            </div>
+          </button>
+        `).join('')}
+      </div>
+    `;
+    footer.innerHTML = `
+      <button class="phone-btn ghost" id="phoneBack">← Back</button>
+      <button class="phone-btn primary" id="phoneNext" ${!STATE.selectedSeverity ? 'disabled' : ''}>Continue →</button>
+    `;
+  } else if (STATE.phoneStep === 3) {
+    // Photo + location
+    screen.innerHTML = `
+      <div class="step-indicator">
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+      </div>
+      <div class="screen-eyebrow">Step 3 of 3</div>
+      <div class="screen-title">Snap a photo.</div>
+      <div class="screen-sub">A photo helps the crew know what equipment to bring. Your location is detected automatically.</div>
+
+      <div class="photo-uploader ${STATE.hasPhoto ? 'has-photo' : ''}" id="photoBtn">
+        ${STATE.hasPhoto ? `
+          <div class="photo-fake"></div>
+          <button class="photo-replace-btn">Replace</button>
+        ` : `
+          <div class="uploader-icon">📷</div>
+          <div class="uploader-text">Tap to take a photo</div>
+          <div class="uploader-sub">Or upload from gallery</div>
+        `}
+      </div>
+
+      <div class="location-block">
+        <div class="loc-icon">📍</div>
+        <div class="loc-info">
+          <div class="loc-name">Otokumpasi Road, Teshie</div>
+          <div class="loc-coords">5.583°N · 0.097°W</div>
+        </div>
+        <div class="loc-accuracy">±8m</div>
+      </div>
+
+      <textarea class="note-input" id="noteInput" placeholder="Optional note (e.g. 'near the kelewele seller')">${STATE.reportNote}</textarea>
+    `;
+    footer.innerHTML = `
+      <button class="phone-btn ghost" id="phoneBack">← Back</button>
+      <button class="phone-btn primary" id="phoneSubmit" ${!STATE.hasPhoto ? 'disabled' : ''}>Submit report</button>
+    `;
+  } else if (STATE.phoneStep === 4) {
+    // Confirmation
+    const cat = catById(STATE.selectedCategory);
+    const sev = sevById(STATE.selectedSeverity);
+    const eta = sev.id === 'critical' ? '6 hours' : sev.id === 'high' ? '12 hours' : sev.id === 'med' ? '24 hours' : '48 hours';
+
+    screen.innerHTML = `
+      <div class="conf-icon">✓</div>
+      <div class="conf-title">Report submitted.</div>
+      <div class="conf-sub">Medaase! Your report is now in the queue.</div>
+
+      <div class="conf-ticket">
+        <div class="conf-ticket-row id">
+          <span class="label">Ticket</span>
+          <span class="value">#${STATE.reportId}</span>
+        </div>
+        <div class="conf-ticket-row">
+          <span class="label">Category</span>
+          <span class="value">${cat.name}</span>
+        </div>
+        <div class="conf-ticket-row">
+          <span class="label">Priority</span>
+          <span class="value">${sev.label}</span>
+        </div>
+        <div class="conf-ticket-row">
+          <span class="label">Expected resolution</span>
+          <span class="value">within ${eta}</span>
+        </div>
+      </div>
+
+      <div class="conf-timeline">
+        <div class="timeline-row">
+          <div class="tl-dot done"></div>
+          <span class="tl-label">Reported</span>
+          <span class="tl-time">just now</span>
+        </div>
+        <div class="timeline-row">
+          <div class="tl-dot active"></div>
+          <span class="tl-label">Triaging at LEKMA</span>
+          <span class="tl-time">in progress</span>
+        </div>
+        <div class="timeline-row">
+          <div class="tl-dot"></div>
+          <span class="tl-label">Crew dispatched</span>
+          <span class="tl-time">expected ${eta === '6 hours' ? '~1h' : '~3h'}</span>
+        </div>
+        <div class="timeline-row">
+          <div class="tl-dot"></div>
+          <span class="tl-label">Cleared & verified</span>
+          <span class="tl-time">within ${eta}</span>
+        </div>
+      </div>
+
+      <div style="font-size: 12px; color: var(--ink-soft); text-align: center; padding: 0 16px;">
+        We'll SMS you at <strong style="color: var(--ink);">+233 24 ** 1827</strong> when the crew arrives.
+      </div>
+    `;
+    footer.innerHTML = `
+      <button class="phone-btn ghost" id="phoneRestart">Report another</button>
+      <button class="phone-btn primary" id="phoneTrack">Track this report</button>
+    `;
+  }
+
+  attachPhoneListeners();
+}
+
+function attachPhoneListeners() {
+  // Step 1: category
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      STATE.selectedCategory = btn.dataset.cat;
+      renderPhoneScreen();
+    });
+  });
+
+  // Step 2: severity
+  document.querySelectorAll('.sev-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      STATE.selectedSeverity = btn.dataset.sev;
+      renderPhoneScreen();
+    });
+  });
+
+  // Step 3: photo
+  const photoBtn = document.getElementById('photoBtn');
+  if (photoBtn) {
+    photoBtn.addEventListener('click', () => {
+      STATE.hasPhoto = !STATE.hasPhoto;
+      renderPhoneScreen();
+    });
+  }
+  const noteInput = document.getElementById('noteInput');
+  if (noteInput) {
+    noteInput.addEventListener('input', e => STATE.reportNote = e.target.value);
+  }
+
+  // Footer buttons
+  const nextBtn = document.getElementById('phoneNext');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      STATE.phoneStep++;
+      renderPhoneScreen();
+    });
+  }
+  const backBtn = document.getElementById('phoneBack');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      STATE.phoneStep--;
+      renderPhoneScreen();
+    });
+  }
+  const submitBtn = document.getElementById('phoneSubmit');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', () => {
+      STATE.reportId = generateReportId();
+      STATE.phoneStep = 4;
+      renderPhoneScreen();
+    });
+  }
+  const restartBtn = document.getElementById('phoneRestart');
+  if (restartBtn) {
+    restartBtn.addEventListener('click', () => {
+      STATE.phoneStep = 1;
+      STATE.selectedCategory = null;
+      STATE.selectedSeverity = null;
+      STATE.hasPhoto = false;
+      STATE.reportNote = '';
+      STATE.reportId = null;
+      renderPhoneScreen();
+    });
+  }
+  const trackBtn = document.getElementById('phoneTrack');
+  if (trackBtn) {
+    trackBtn.addEventListener('click', () => {
+      showToast(`Tracking #${STATE.reportId} · Status: triaging`);
+    });
+  }
+}
+
+// ---------- RENDER: PUBLIC DASHBOARD ----------
+
+function renderPublic() {
+  const unresolved = REPORTS.filter(r => r.status === 'unresolved' || r.status === 'overdue').length;
+  const assigned = REPORTS.filter(r => r.status === 'assigned').length;
+  const resolved = REPORTS.filter(r => r.status === 'resolved').length;
+  const total = REPORTS.length;
+
+  // Wall of shame (oldest unresolved)
+  const wallOfShame = REPORTS
+    .filter(r => r.status === 'unresolved' || r.status === 'overdue')
+    .sort((a, b) => b.age - a.age)
+    .slice(0, 5);
+
+  // Recently resolved
+  const recentlyResolved = REPORTS
+    .filter(r => r.status === 'resolved')
+    .slice(0, 5);
+
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Public dashboard · accountability layer</div>
+        <h1 class="view-title">Every <em>borla</em>, on the record.</h1>
+        <p class="view-sub">Open to anyone — citizens, journalists, the Assembly itself. This is how DumpTrack creates the pressure that makes things actually get cleared.</p>
+      </div>
+    </div>
+
+    <div class="public-stats-bar">
+      <div>
+        <div class="pub-stat-label">Reports this month</div>
+        <div class="pub-stat-value">487</div>
+        <div class="pub-stat-sub">↑ 34% vs. last month</div>
+      </div>
+      <div>
+        <div class="pub-stat-label">Cleared on time</div>
+        <div class="pub-stat-value">68<span style="font-size: 18px; opacity: 0.6;">%</span></div>
+        <div class="pub-stat-sub">target: 80%</div>
+      </div>
+      <div>
+        <div class="pub-stat-label">Avg response time</div>
+        <div class="pub-stat-value">19<span style="font-size: 18px; opacity: 0.6;">hr</span></div>
+        <div class="pub-stat-sub">target: 24hr</div>
+      </div>
+      <div>
+        <div class="pub-stat-label">Open right now</div>
+        <div class="pub-stat-value" style="color: var(--terra);">${unresolved + assigned}</div>
+        <div class="pub-stat-sub">${unresolved} unresolved · ${assigned} assigned</div>
+      </div>
+    </div>
+
+    <div class="public-grid">
+      <div class="card map-card">
+        <div class="map-canvas">
+          <div class="map-controls">
+            <button class="map-pill ${STATE.mapFilter === 'all' ? 'active' : ''}" data-mapfilter="all">All</button>
+            <button class="map-pill ${STATE.mapFilter === 'unresolved' ? 'active' : ''}" data-mapfilter="unresolved">Unresolved</button>
+            <button class="map-pill ${STATE.mapFilter === 'assigned' ? 'active' : ''}" data-mapfilter="assigned">Assigned</button>
+            <button class="map-pill ${STATE.mapFilter === 'resolved' ? 'active' : ''}" data-mapfilter="resolved">Resolved</button>
+          </div>
+          ${renderMap(STATE.mapFilter)}
+        </div>
+        <div class="map-legend">
+          <div class="legend-items">
+            <div class="legend-item"><span class="legend-dot" style="background: var(--urgent);"></span> Unresolved</div>
+            <div class="legend-item"><span class="legend-dot" style="background: var(--gold);"></span> Assigned</div>
+            <div class="legend-item"><span class="legend-dot" style="background: var(--good);"></span> Resolved</div>
+            <div class="legend-item"><span class="legend-dot" style="background: var(--ink);"></span> Overdue</div>
+          </div>
+          <div class="legend-info">LEKMA jurisdiction · ${total} active reports</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Response time by area</div>
+          <div class="card-tag">Target 24h</div>
+        </div>
+        <div class="area-perf-list">
+          ${Object.entries(AREA_PERF).sort((a, b) => a[1].resp - b[1].resp).map(([id, p]) => {
+            const area = areaById(id);
+            const pct = Math.min(100, (p.resp / 48) * 100);
+            const target = 24;
+            const isBad = p.resp > target;
+            const color = p.resp <= 12 ? 'var(--good)' : p.resp <= 24 ? 'var(--gold)' : p.resp <= 36 ? 'var(--terra)' : 'var(--urgent)';
+            return `
+              <div class="area-perf">
+                <div class="area-name">${area.name}<span class="small">${p.total} rep.</span></div>
+                <div class="area-bar">
+                  <div class="area-bar-fill" style="width: ${pct}%; background: ${color};"></div>
+                </div>
+                <div class="area-time ${isBad ? 'bad' : 'good'}">${p.resp.toFixed(1)}h</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-soft);">
+          <strong style="color: var(--ink);">Teshie Old Town</strong> consistently misses the 24h target. The Assembly committed to one additional crew there before the next quarter.
+        </div>
+      </div>
+    </div>
+
+    <div class="public-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Wall of Shame · oldest unresolved</div>
+          <div class="card-tag urgent">Still uncleared</div>
+        </div>
+        <div class="wall-list">
+          ${wallOfShame.map(r => {
+            const cat = catById(r.cat);
+            const area = areaById(r.area);
+            return `
+              <div class="wall-item">
+                <div class="wall-photo ${r.photoCls}"></div>
+                <div>
+                  <div class="wall-info-title">${r.title}</div>
+                  <div class="wall-info-meta">
+                    <span class="key">#${r.id}</span> · ${area.name} · ${cat.name}
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <span class="wall-status ${r.status}">${r.status}</span>
+                  <div style="font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-top: 4px; letter-spacing: 0.04em;">
+                    ${timeAgo(r.age)} old
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-soft);">
+          Reports past their service-level target are auto-published here. The page is shared weekly with the local press.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Recently resolved</div>
+          <div class="card-tag">Last 24 hours</div>
+        </div>
+        <div class="wall-list">
+          ${recentlyResolved.map(r => {
+            const cat = catById(r.cat);
+            const area = areaById(r.area);
+            return `
+              <div class="wall-item">
+                <div class="wall-photo ${r.photoCls}"></div>
+                <div>
+                  <div class="wall-info-title">${r.title}</div>
+                  <div class="wall-info-meta">
+                    <span class="key">#${r.id}</span> · ${area.name} · ${cat.name}
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <span class="wall-status resolved">resolved</span>
+                  <div style="font-family: var(--mono); font-size: 10px; color: var(--good); margin-top: 4px; letter-spacing: 0.04em;">
+                    in ${r.resolvedAt}h
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-soft);">
+          Crews upload an "after" photo to close a ticket — that's how the resolution is verified, not by self-report alone.
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderMap(filter) {
+  const W = 800, H = 480;
+
+  // Map projection: cover Teshie-Nungua area
+  const minLng = -0.13, maxLng = -0.04;
+  const minLat = 5.575, maxLat = 5.645;
+  const project = (lat, lng) => {
+    const x = ((lng - minLng) / (maxLng - minLng)) * W;
+    const y = H - ((lat - minLat) / (maxLat - minLat)) * H * 0.85 - H * 0.08;
+    return { x, y };
+  };
+
+  // Filter reports
+  let filtered = REPORTS;
+  if (filter === 'unresolved') filtered = REPORTS.filter(r => r.status === 'unresolved' || r.status === 'overdue');
+  else if (filter === 'assigned') filtered = REPORTS.filter(r => r.status === 'assigned');
+  else if (filter === 'resolved') filtered = REPORTS.filter(r => r.status === 'resolved');
+
+  // Group reports by area to get clusters
+  const areaPositions = {};
+  AREAS.forEach(a => {
+    const { x, y } = project(a.lat, a.lng);
+    areaPositions[a.id] = { x, y };
+  });
+
+  // Build markers — each report gets jittered position around its area
+  let markers = '';
+  filtered.forEach((r, idx) => {
+    const base = areaPositions[r.area];
+    const seed = (idx * 17 + r.id.charCodeAt(0)) % 100;
+    const jitterX = ((seed * 7) % 70) - 35;
+    const jitterY = (((seed * 13) % 70)) - 35;
+    const x = base.x + jitterX;
+    const y = base.y + jitterY;
+
+    let color;
+    if (r.status === 'overdue') color = 'var(--ink)';
+    else if (r.status === 'unresolved') color = 'var(--urgent)';
+    else if (r.status === 'assigned') color = 'var(--gold)';
+    else color = 'var(--good)';
+
+    const isUrgent = r.status === 'unresolved' || r.status === 'overdue';
+
+    markers += `
+      <g class="map-pin" style="transform-origin: ${x}px ${y}px;">
+        <circle cx="${x}" cy="${y}" r="14" fill="${color}" opacity="0.18"${isUrgent ? '><animate attributeName="r" values="14;22;14" dur="2.4s" repeatCount="indefinite"/></circle>' : '/>'}
+        <circle cx="${x}" cy="${y}" r="7" fill="${color}" opacity="0.4"/>
+        <circle cx="${x}" cy="${y}" r="4" fill="${color}" stroke="white" stroke-width="1.5"/>
+      </g>
+    `;
+  });
+
+  // Area labels
+  let areaLabels = '';
+  AREAS.forEach(a => {
+    const { x, y } = areaPositions[a.id];
+    areaLabels += `
+      <text x="${x}" y="${y - 40}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(26,22,18,0.4)" letter-spacing="1">${a.name.toUpperCase()}</text>
+    `;
+  });
+
+  return `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <pattern id="lekma-grid" patternUnits="userSpaceOnUse" width="50" height="50">
+          <path d="M 50,0 L 0,0 0,50" fill="none" stroke="rgba(15, 61, 46, 0.08)" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+
+      <!-- Background -->
+      <rect width="${W}" height="${H}" fill="url(#lekma-grid)"/>
+
+      <!-- Sea (south) -->
+      <path d="M 0,${H} L ${W},${H} L ${W},${H - 50} Q ${W * 0.7},${H - 35} ${W * 0.5},${H - 45} Q ${W * 0.3},${H - 30} 0,${H - 40} Z"
+            fill="#b4d0c5" opacity="0.55"/>
+      <text x="${W * 0.5}" y="${H - 18}" text-anchor="middle" font-family="Fraunces" font-style="italic" font-size="14" fill="rgba(15,61,46,0.35)">Gulf of Guinea</text>
+
+      <!-- Major roads (Spintex Rd horizontal, Teshie-Nungua Beach Rd along coast) -->
+      <line x1="0" y1="${H * 0.4}" x2="${W}" y2="${H * 0.42}" stroke="rgba(15, 61, 46, 0.18)" stroke-width="3"/>
+      <text x="60" y="${H * 0.4 - 8}" font-family="Fraunces" font-style="italic" font-size="11" fill="rgba(15,61,46,0.35)">Spintex Rd</text>
+      <line x1="0" y1="${H * 0.78}" x2="${W}" y2="${H * 0.74}" stroke="rgba(15, 61, 46, 0.15)" stroke-width="2.5" stroke-dasharray="4,3"/>
+      <text x="${W - 200}" y="${H * 0.77 + 14}" font-family="Fraunces" font-style="italic" font-size="11" fill="rgba(15,61,46,0.35)">Teshie-Nungua Beach Rd</text>
+
+      <!-- N compass -->
+      <g transform="translate(${W - 36}, 36)">
+        <circle r="18" fill="rgba(255,255,255,0.85)" stroke="rgba(26,22,18,0.15)"/>
+        <text y="-5" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#0F3D2E">N</text>
+        <line x1="0" y1="2" x2="0" y2="10" stroke="#0F3D2E" stroke-width="1"/>
+      </g>
+
+      ${areaLabels}
+      ${markers}
+    </svg>
+  `;
+}
+
+// ---------- RENDER: ASSEMBLY OPS ----------
+
+function renderOps() {
+  const totalReports = REPORTS.length;
+  const unresolved = REPORTS.filter(r => r.status === 'unresolved').length;
+  const overdue = REPORTS.filter(r => r.status === 'overdue').length;
+  const assigned = REPORTS.filter(r => r.status === 'assigned').length;
+  const resolved = REPORTS.filter(r => r.status === 'resolved').length;
+
+  // Triage queue: open + assigned, sorted by priority/age
+  const triageReports = REPORTS
+    .filter(r => r.status !== 'resolved')
+    .sort((a, b) => {
+      const sevOrder = { critical: 0, high: 1, med: 2, low: 3 };
+      const sa = sevOrder[a.sev], sb = sevOrder[b.sev];
+      if (sa !== sb) return sa - sb;
+      return b.age - a.age;
+    });
+
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Assembly operations console</div>
+        <h1 class="view-title">Triage and <em>dispatch</em>.</h1>
+        <p class="view-sub">The Assembly's daily working tool. Every report flows here for prioritisation, assignment, and tracking against the service-level agreement.</p>
+      </div>
+      <div class="view-actions">
+        <button class="btn-primary" id="dispatchAllBtn">Auto-dispatch ready (12)</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">In queue right now</div>
+        <div class="stat-value">${unresolved + overdue}</div>
+        <div class="stat-change ${overdue > 0 ? 'down' : ''}">${overdue > 0 ? `${overdue} overdue` : 'all within SLA'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Currently assigned</div>
+        <div class="stat-value">${assigned}</div>
+        <div class="stat-change">↑ being worked</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Cleared today</div>
+        <div class="stat-value">${resolved + 7}<span class="small-unit">/24</span></div>
+        <div class="stat-change">↑ on track</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active crews</div>
+        <div class="stat-value">${CREWS.filter(c => c.status === 'active').length}<span class="small-unit">/6</span></div>
+        <div class="stat-change flat">→ 1 offline · 1 idle</div>
+      </div>
+    </div>
+
+    <div class="ops-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Triage queue</div>
+          <div class="card-tag">Sorted by priority · age</div>
+        </div>
+        <div class="triage-list">
+          ${triageReports.slice(0, 10).map(r => {
+            const cat = catById(r.cat);
+            const sev = sevById(r.sev);
+            const area = areaById(r.area);
+            const cls = sev.id === 'critical' ? 'priority-critical' : sev.id === 'high' ? 'priority-high' : sev.id === 'med' ? 'priority-med' : 'priority-low';
+            const isOverdue = r.status === 'overdue';
+            return `
+              <div class="triage-item">
+                <div class="triage-priority ${cls}"></div>
+                <div class="triage-photo wall-photo ${r.photoCls}"></div>
+                <div>
+                  <div class="triage-info-title">${r.title}</div>
+                  <div class="triage-info-meta">#${r.id} · ${cat.name} · ${area.name}</div>
+                </div>
+                <div class="triage-age ${isOverdue ? 'urgent' : ''}">${timeAgo(r.age)}<span class="small">old</span></div>
+                <button class="triage-assign ${r.status === 'assigned' ? 'assigned' : ''}" data-assign="${r.id}">
+                  ${r.status === 'assigned' ? '◉ Assigned' : '+ Assign crew'}
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Crew status</div>
+          <div class="card-tag">${CREWS.filter(c => c.status === 'active').length} active</div>
+        </div>
+        <div class="crew-list">
+          ${CREWS.map(c => {
+            const area = areaById(c.area);
+            const loadPct = (c.load / c.capacity) * 100;
+            const overloaded = c.load > c.capacity;
+            const busy = loadPct >= 80 && !overloaded;
+            return `
+              <div class="crew-item">
+                <span class="crew-status ${c.status}"></span>
+                <div>
+                  <div class="crew-name">${c.name}</div>
+                  <div class="crew-detail">${c.vehicle} · ${c.status === 'offline' ? 'offline · maintenance' : area.name}</div>
+                </div>
+                <div class="crew-load">
+                  <div class="crew-load-val">${c.load}<span style="font-size: 13px; color: var(--ink-soft); font-family: var(--mono);">/${c.capacity}</span></div>
+                  <div class="crew-load-bar">
+                    <div class="crew-load-fill ${overloaded ? 'overloaded' : busy ? 'busy' : ''}" style="width: ${Math.min(100, loadPct)}%;"></div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Service-level performance · today</div>
+        <div class="card-tag">By category</div>
+      </div>
+      <div class="sla-grid">
+        ${CATEGORIES.map(c => {
+          // Simulate SLA performance for each category
+          const baseHit = { drain: 62, illegal: 71, bin: 84, dead: 92, rubble: 58, medical: 100 }[c.id] || 70;
+          return `
+            <div class="sla-cell">
+              <div class="sla-cell-label">${c.name}</div>
+              <div class="sla-cell-value ${baseHit >= 80 ? 'good' : baseHit < 65 ? 'bad' : ''}">${baseHit}<span style="font-size: 14px; color: var(--ink-soft);">%</span></div>
+              <div class="sla-target">SLA ${c.sla}h target</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ---------- RENDER: DIRECTOR ----------
+
+function renderDirector() {
+  // Performance by area (sorted descending by response time — worst first)
+  const sortedAreas = Object.entries(AREA_PERF)
+    .map(([id, p]) => ({ ...p, area: areaById(id) }))
+    .sort((a, b) => b.resp - a.resp);
+
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Director's view · Strategic dashboard</div>
+        <h1 class="view-title">LEKMA in <em>one screen</em>.</h1>
+        <p class="view-sub">Built for the Municipal Chief Executive and the Environmental Health Department. Track performance against the 2026 sanitation pledge.</p>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Reports YTD</div>
+        <div class="stat-value">3,847</div>
+        <div class="stat-change">↑ 142% vs. baseline</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">SLA compliance</div>
+        <div class="stat-value">68<span class="small-unit">%</span></div>
+        <div class="stat-change">↑ 24 pts vs. baseline</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Cost per resolved</div>
+        <div class="stat-value">₵18<span class="small-unit">.40</span></div>
+        <div class="stat-change">↓ 34% vs. baseline</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Citizen sentiment</div>
+        <div class="stat-value">4.1<span class="small-unit">/5</span></div>
+        <div class="stat-change">↑ 1.2 pts</div>
+      </div>
+    </div>
+
+    <div class="public-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Response time trend · 12 weeks</div>
+          <div class="card-tag">Target ≤24h</div>
+        </div>
+        ${renderTrendChart()}
+        <div class="chart-legend-row">
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--forest);"></span> DumpTrack cohort</div>
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--gold);"></span> Baseline (pre-pilot)</div>
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--terra); height: 0px; border-top: 1px dashed var(--terra); width: 16px;"></span> Target SLA (24h)</div>
+        </div>
+      </div>
+
+      <div class="card heatmap-card">
+        <div class="heatmap-canvas">
+          ${renderHeatmap()}
+          <div class="map-controls">
+            <button class="map-pill active">Complaint density</button>
+          </div>
+        </div>
+        <div class="heatmap-label">
+          <strong>Teshie Old Town</strong> generates 4.2× more complaints per capita than Spintex East. Investment in a dedicated crew there would have the highest marginal impact.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Area performance · accountability table</div>
+        <div class="card-tag">${sortedAreas.length} sub-areas</div>
+      </div>
+      <table class="perf-table">
+        <thead>
+          <tr>
+            <th>Sub-area</th>
+            <th>Reports</th>
+            <th>Resolved</th>
+            <th>Open</th>
+            <th>Resolution rate</th>
+            <th>Avg time</th>
+            <th>SLA status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sortedAreas.map(a => {
+            const rate = (a.resolved / a.total) * 100;
+            const isCompliant = a.resp <= 24;
+            return `
+              <tr>
+                <td class="area-cell-name">${a.area.name}</td>
+                <td>${a.total}</td>
+                <td>${a.resolved}</td>
+                <td><strong>${a.open}</strong></td>
+                <td>${rate.toFixed(0)}%</td>
+                <td class="delta-cell ${isCompliant ? 'up' : 'down'}">${a.resp.toFixed(1)}h</td>
+                <td>
+                  <span class="wall-status ${isCompliant ? 'resolved' : 'unresolved'}">${isCompliant ? 'compliant' : 'breach'}</span>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="director-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Top complaint categories</div>
+          <div class="card-tag">last 30 days</div>
+        </div>
+        <div class="area-perf-list">
+          ${[
+            { name: 'Roadside dumps', val: 142, pct: 88, local: 'Borla wɔ kwan ho' },
+            { name: 'Choked drains', val: 98,  pct: 61, local: 'Achaa abɔ' },
+            { name: 'Overflowing bins', val: 87, pct: 54, local: 'Bin ahyɛ ma' },
+            { name: 'Construction debris', val: 51, pct: 32, local: 'Adansie nneɛma' },
+            { name: 'Dead animals', val: 24, pct: 15, local: 'Aboa awufoɔ' },
+            { name: 'Medical waste', val: 8,  pct: 5, local: 'Aduro nneɛma' }
+          ].map(d => `
+            <div class="area-perf">
+              <div class="area-name">${d.name}<span class="small">${d.local}</span></div>
+              <div class="area-bar">
+                <div class="area-bar-fill" style="width: ${d.pct}%; background: var(--terra);"></div>
+              </div>
+              <div class="area-time">${d.val}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Quarterly commitments</div>
+          <div class="card-tag">2026 sanitation pledge</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+              <span style="font-family: var(--display); font-size: 15px; font-weight: 500;">Achieve 80% SLA compliance</span>
+              <span style="font-family: var(--mono); font-size: 12px; color: var(--good);">68% (on track)</span>
+            </div>
+            <div class="area-bar"><div class="area-bar-fill" style="width: 85%; background: var(--good);"></div></div>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+              <span style="font-family: var(--display); font-size: 15px; font-weight: 500;">Add 2 dedicated Teshie crews</span>
+              <span style="font-family: var(--mono); font-size: 12px; color: var(--gold);">1/2 hired</span>
+            </div>
+            <div class="area-bar"><div class="area-bar-fill" style="width: 50%; background: var(--gold);"></div></div>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+              <span style="font-family: var(--display); font-size: 15px; font-weight: 500;">Clear 90% of drains pre-monsoon</span>
+              <span style="font-family: var(--mono); font-size: 12px; color: var(--terra);">62% (at risk)</span>
+            </div>
+            <div class="area-bar"><div class="area-bar-fill" style="width: 62%; background: var(--terra);"></div></div>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+              <span style="font-family: var(--display); font-size: 15px; font-weight: 500;">Publish public dashboard</span>
+              <span style="font-family: var(--mono); font-size: 12px; color: var(--good);">live</span>
+            </div>
+            <div class="area-bar"><div class="area-bar-fill" style="width: 100%; background: var(--good);"></div></div>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+              <span style="font-family: var(--display); font-size: 15px; font-weight: 500;">10,000 verified citizen reporters</span>
+              <span style="font-family: var(--mono); font-size: 12px; color: var(--good);">3,847</span>
+            </div>
+            <div class="area-bar"><div class="area-bar-fill" style="width: 38%; background: var(--forest);"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTrendChart() {
+  const W = 700, H = 280;
+  const padding = { top: 20, right: 24, bottom: 30, left: 50 };
+  const innerW = W - padding.left - padding.right;
+  const innerH = H - padding.top - padding.bottom;
+
+  // 12 weeks: response time improving over time
+  const baseline = Array.from({ length: 12 }, () => 38 + Math.random() * 6);
+  const cohort = [];
+  let v = 36;
+  for (let i = 0; i < 12; i++) {
+    v -= 1 + Math.random() * 2;
+    v = Math.max(15, v);
+    cohort.push(v);
+  }
+  cohort[cohort.length - 1] = 19;
+
+  const minVal = 0;
+  const maxVal = 50;
+  const range = maxVal - minVal;
+  const stepX = innerW / 11;
+  const yScale = (val) => padding.top + innerH - ((val - minVal) / range) * innerH;
+
+  const yTicks = [0, 12, 24, 36, 48].map(v => ({ val: v, y: yScale(v) }));
+
+  const cohortPath = cohort.map((v, i) => `${padding.left + i * stepX},${yScale(v)}`).join(' ');
+  const baselinePath = baseline.map((v, i) => `${padding.left + i * stepX},${yScale(v)}`).join(' ');
+  const cohortArea = `M ${padding.left},${yScale(0)} L ${cohortPath.split(' ').join(' L ')} L ${padding.left + 11 * stepX},${yScale(0)} Z`;
+
+  const xLabels = [0, 3, 6, 9, 11].map(i => ({
+    i,
+    x: padding.left + i * stepX,
+    label: i === 11 ? 'now' : `${11 - i}w ago`
+  }));
+
+  return `
+    <svg class="big-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="cohortGradResp" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="var(--forest)" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="var(--forest)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+
+      ${yTicks.map(t => `
+        <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(26,22,18,0.06)" stroke-width="1"/>
+        <text x="${padding.left - 8}" y="${t.y + 4}" text-anchor="end" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.5)">${t.val}h</text>
+      `).join('')}
+
+      <line x1="${padding.left}" x2="${W - padding.right}" y1="${yScale(24)}" y2="${yScale(24)}" stroke="var(--terra)" stroke-width="1" stroke-dasharray="4,4" opacity="0.7"/>
+
+      <polyline fill="none" stroke="var(--gold)" stroke-width="2" points="${baselinePath}" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <path d="${cohortArea}" fill="url(#cohortGradResp)"/>
+      <polyline fill="none" stroke="var(--forest)" stroke-width="2.5" points="${cohortPath}" stroke-linecap="round" stroke-linejoin="round"/>
+
+      ${cohort.map((v, i) => `<circle cx="${padding.left + i * stepX}" cy="${yScale(v)}" r="3" fill="var(--forest)"/>`).join('')}
+
+      <text x="${W - padding.right + 4}" y="${yScale(19) - 6}" font-family="Fraunces" font-style="italic" font-size="14" font-weight="500" fill="var(--forest)">19h</text>
+
+      ${xLabels.map(l => `
+        <text x="${l.x}" y="${H - 8}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.5)">${l.label}</text>
+      `).join('')}
+    </svg>
+  `;
+}
+
+function renderHeatmap() {
+  const W = 800, H = 320;
+
+  const minLng = -0.13, maxLng = -0.04;
+  const minLat = 5.575, maxLat = 5.645;
+  const project = (lat, lng) => {
+    const x = ((lng - minLng) / (maxLng - minLng)) * W;
+    const y = H - ((lat - minLat) / (maxLat - minLat)) * H * 0.85 - H * 0.08;
+    return { x, y };
+  };
+
+  // Hotspots: intensity per capita
+  const hotspots = AREAS.map(a => {
+    const p = AREA_PERF[a.id];
+    const intensity = p.total / (a.pop / 1000); // reports per 1000 population
+    return { area: a, intensity, pos: project(a.lat, a.lng) };
+  });
+  const maxIntensity = Math.max(...hotspots.map(h => h.intensity));
+
+  let heatmap = '';
+  hotspots.forEach(h => {
+    const norm = h.intensity / maxIntensity;
+    const radius = 40 + norm * 50;
+    const opacity = 0.15 + norm * 0.55;
+    heatmap += `
+      <circle cx="${h.pos.x}" cy="${h.pos.y}" r="${radius}" fill="var(--urgent)" opacity="${opacity * 0.6}" style="filter: blur(8px);"/>
+      <circle cx="${h.pos.x}" cy="${h.pos.y}" r="${radius * 0.55}" fill="var(--terra)" opacity="${opacity * 0.7}" style="filter: blur(6px);"/>
+    `;
+  });
+
+  // Area labels (on top of heatmap)
+  let areaLabels = '';
+  hotspots.forEach(h => {
+    areaLabels += `
+      <text x="${h.pos.x}" y="${h.pos.y + 4}" text-anchor="middle" font-family="DM Sans" font-size="11" font-weight="600" fill="rgba(26,22,18,0.85)">${h.area.name}</text>
+      <text x="${h.pos.x}" y="${h.pos.y + 18}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.55)">${h.intensity.toFixed(1)}/1k</text>
+    `;
+  });
+
+  return `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <pattern id="heatmap-grid" patternUnits="userSpaceOnUse" width="50" height="50">
+          <path d="M 50,0 L 0,0 0,50" fill="none" stroke="rgba(15, 61, 46, 0.08)" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+
+      <rect width="${W}" height="${H}" fill="url(#heatmap-grid)"/>
+
+      <path d="M 0,${H} L ${W},${H} L ${W},${H - 30} Q ${W * 0.5},${H - 20} 0,${H - 25} Z"
+            fill="#b4d0c5" opacity="0.55"/>
+
+      ${heatmap}
+      ${areaLabels}
+    </svg>
+  `;
+}
+
+// ---------- MAIN RENDER ----------
+
+function render() {
+  const main = document.getElementById('mainContent');
+  let html = '';
+  if (STATE.role === 'citizen') html = renderCitizen();
+  else if (STATE.role === 'public') html = renderPublic();
+  else if (STATE.role === 'ops') html = renderOps();
+  else if (STATE.role === 'director') html = renderDirector();
+  main.innerHTML = html;
+  attachViewListeners();
+  if (STATE.role === 'citizen') renderPhoneScreen();
+}
+
+function attachViewListeners() {
+  // Public dashboard map filters
+  document.querySelectorAll('[data-mapfilter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      STATE.mapFilter = btn.dataset.mapfilter;
+      render();
+    });
+  });
+
+  // Ops dispatch
+  document.querySelectorAll('[data-assign]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.assign;
+      btn.textContent = '◉ Assigned';
+      btn.classList.add('assigned');
+      showToast(`#${id} assigned to nearest available crew`);
+    });
+  });
+  const dispatchAllBtn = document.getElementById('dispatchAllBtn');
+  if (dispatchAllBtn) {
+    dispatchAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('.triage-assign:not(.assigned)').forEach(b => {
+        b.textContent = '◉ Assigned';
+        b.classList.add('assigned');
+      });
+      showToast('12 reports auto-dispatched · routing to nearest crews');
+    });
+  }
+}
+
+function showToast(text) {
+  const toast = document.getElementById('toast');
+  toast.textContent = text;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+function updateTimes() {
+  const now = new Date();
+  const hh = now.getHours().toString().padStart(2, '0');
+  const mm = now.getMinutes().toString().padStart(2, '0');
+  const ss = now.getSeconds().toString().padStart(2, '0');
+  const liveTime = document.getElementById('liveTime');
+  const phoneTime = document.getElementById('phoneTime');
+  if (liveTime) liveTime.textContent = `${hh}:${mm}:${ss}`;
+  if (phoneTime) phoneTime.textContent = `${hh}:${mm}`;
+}
+
+// ---------- INIT ----------
+
+render();
+updateTimes();
+setInterval(updateTimes, 1000);
+
+document.querySelectorAll('.role-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.role = btn.dataset.role;
+    // Reset phone wizard when leaving citizen view
+    if (STATE.role !== 'citizen') {
+      STATE.phoneStep = 1;
+      STATE.selectedCategory = null;
+      STATE.selectedSeverity = null;
+      STATE.hasPhoto = false;
+      STATE.reportNote = '';
+      STATE.reportId = null;
+    }
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+</script>
+
+</body>
+</html>

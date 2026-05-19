@@ -1,0 +1,2752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FarmLens — Cassava disease diagnosis in your pocket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1A1612;
+    --ink-soft: #3a3128;
+    --forest: #0F3D2E;
+    --forest-deep: #0a2a20;
+    --forest-soft: #2a5a47;
+    --leaf: #4a7c52;
+    --leaf-deep: #2f5b3a;
+    --terra: #D97543;
+    --terra-deep: #B85A2E;
+    --gold: #C8956D;
+    --indigo: #3B4A6B;
+    --rust: #A0432E;
+    --cream: #F4EDE0;
+    --cream-warm: #EEE3CF;
+    --paper: #FAF6EE;
+    --line: rgba(26, 22, 18, 0.10);
+    --line-strong: rgba(26, 22, 18, 0.18);
+    --good: #2D6E4E;
+    --bad: #B84A3E;
+    --warn: #C8956D;
+    --urgent: #C9433E;
+
+    --display: 'Fraunces', Georgia, serif;
+    --body: 'DM Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; font-size: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ============ HEADER ============ */
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250, 246, 238, 0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .top-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    background: var(--leaf-deep);
+    border-radius: 6px;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .brand-mark svg {
+    width: 22px;
+    height: 22px;
+  }
+  .brand-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0.55;
+    font-weight: normal;
+    margin-left: 4px;
+  }
+
+  .role-switcher {
+    display: flex;
+    gap: 4px;
+    background: var(--cream);
+    padding: 4px;
+    border-radius: 100px;
+    border: 1px solid var(--line);
+  }
+  .role-btn {
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .role-btn:hover { color: var(--ink); }
+  .role-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .role-btn .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+  }
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--good);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(45, 110, 78, 0.4); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(45, 110, 78, 0); }
+  }
+
+  /* ============ MAIN ============ */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+
+  .view-header {
+    margin-bottom: 32px;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .view-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--terra-deep);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .view-eyebrow::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--terra-deep);
+  }
+  .view-title {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+  }
+  .view-title em { font-style: italic; color: var(--forest); }
+  .view-sub {
+    margin-top: 14px;
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 580px;
+  }
+  .view-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .selector {
+    padding: 10px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--paper);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .selector:hover { border-color: var(--ink); }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary:hover { background: var(--forest); transform: translateY(-1px); }
+
+  /* ============ CARDS ============ */
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 24px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .card-title {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+  .card-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    padding: 4px 10px;
+    background: var(--cream);
+    border-radius: 100px;
+  }
+  .card-tag.urgent {
+    background: rgba(201, 67, 62, 0.15);
+    color: var(--urgent);
+  }
+
+  /* ============ SCAN VIEW ============ */
+  .scan-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 40px;
+    align-items: start;
+  }
+  .scan-context h3 {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .scan-context h3 em { font-style: italic; color: var(--forest); }
+  .scan-context > p {
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+    max-width: 560px;
+  }
+  .feature-card {
+    background: var(--leaf-deep);
+    color: var(--cream);
+    padding: 28px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    bottom: -40%;
+    right: -10%;
+    width: 50%;
+    height: 130%;
+    background: radial-gradient(circle, var(--gold) 0%, transparent 65%);
+    opacity: 0.18;
+  }
+  .feature-card-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 18px;
+    position: relative;
+  }
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+  }
+  .feature-item {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .feature-num {
+    font-family: var(--display);
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 400;
+    color: var(--gold);
+  }
+  .feature-text-title {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .feature-text-body {
+    font-size: 13.5px;
+    opacity: 0.8;
+    line-height: 1.5;
+  }
+  .insight-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 24px;
+    border-radius: 6px;
+    border-left: 3px solid var(--terra);
+  }
+  .insight-title {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .insight-body {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .insight-body strong { color: var(--ink); }
+
+  /* Try samples bar */
+  .sample-leaves {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(244, 237, 224, 0.15);
+    position: relative;
+  }
+  .sl-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .sl-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .sl-leaf {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .sl-leaf:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .sl-leaf.active { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200, 149, 109, 0.3); }
+  .sl-leaf-name {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    right: 4px;
+    font-family: var(--mono);
+    font-size: 8px;
+    text-align: center;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  }
+
+  /* Phone mockup */
+  .phone {
+    background: var(--ink);
+    border-radius: 38px;
+    padding: 14px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 420px;
+    position: sticky;
+    top: 100px;
+  }
+  .phone-screen {
+    background: var(--paper);
+    border-radius: 28px;
+    overflow: hidden;
+    height: 720px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .phone-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 24px;
+    background: var(--ink);
+    border-radius: 0 0 18px 18px;
+    z-index: 10;
+  }
+  .phone-statusbar {
+    height: 38px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    padding-top: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--paper);
+    flex-shrink: 0;
+  }
+  .app-header {
+    background: var(--leaf-deep);
+    color: var(--cream);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .app-header-title {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .app-header-actions {
+    display: flex;
+    gap: 14px;
+    font-size: 16px;
+    opacity: 0.85;
+  }
+  .app-screen {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--paper);
+  }
+  .app-screen::-webkit-scrollbar { width: 4px; }
+  .app-screen::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
+
+  /* Camera viewfinder */
+  .camera-view {
+    position: relative;
+    aspect-ratio: 1;
+    background: #2a2820;
+    overflow: hidden;
+  }
+  .camera-image {
+    position: absolute;
+    inset: 0;
+  }
+  .camera-image.cmd { background: linear-gradient(135deg, #5a7240 0%, #3e4f2c 60%, #4d6437 100%); }
+  .camera-image.cbsd { background: linear-gradient(135deg, #4a5b32 0%, #6b5538 50%, #4a3528 100%); }
+  .camera-image.cbb { background: linear-gradient(135deg, #6b7a48 0%, #5a3d2e 50%, #7a5a3a 100%); }
+  .camera-image.cgm { background: linear-gradient(135deg, #4a5b32 0%, #8a8a4a 40%, #4a5b32 100%); }
+  .camera-image.healthy { background: linear-gradient(135deg, #3e5b2e 0%, #5a7a3a 50%, #3e5b2e 100%); }
+
+  /* Leaf imagery using SVG overlays */
+  .leaf-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .camera-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    mix-blend-mode: multiply;
+    opacity: 0.55;
+  }
+
+  /* Viewfinder reticle */
+  .viewfinder {
+    position: absolute;
+    inset: 40px;
+    border: 2px solid rgba(244, 237, 224, 0.4);
+    border-radius: 8px;
+    pointer-events: none;
+  }
+  .viewfinder::before,
+  .viewfinder::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--gold);
+  }
+  .viewfinder::before {
+    top: -3px;
+    left: -3px;
+    border-right: none;
+    border-bottom: none;
+    border-radius: 8px 0 0 0;
+  }
+  .viewfinder::after {
+    bottom: -3px;
+    right: -3px;
+    border-left: none;
+    border-top: none;
+    border-radius: 0 0 8px 0;
+  }
+  .vf-tl, .vf-tr, .vf-bl, .vf-br {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--gold);
+  }
+  .vf-tr { top: -3px; right: -3px; border-left: none; border-bottom: none; border-radius: 0 8px 0 0; }
+  .vf-bl { bottom: -3px; left: -3px; border-right: none; border-top: none; border-radius: 0 0 0 8px; }
+
+  .camera-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.65);
+    color: var(--cream);
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    backdrop-filter: blur(6px);
+  }
+
+  /* Scanning overlay */
+  .scan-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--cream);
+    backdrop-filter: blur(2px);
+  }
+  .scan-progress-ring {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 18px;
+    position: relative;
+  }
+  .scan-progress-ring svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+  }
+  .scan-progress-ring .ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .scan-text-main {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .scan-text-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+  .scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    box-shadow: 0 0 12px var(--gold);
+    animation: scanLine 1.6s linear infinite;
+  }
+  @keyframes scanLine {
+    0% { top: 0; opacity: 1; }
+    50% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  /* Diagnosis screen */
+  .diagnosis-screen {
+    padding: 20px 18px;
+  }
+  .diag-header {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .diag-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .diag-thumb.cmd { background: linear-gradient(135deg, #5a7240, #4d6437); }
+  .diag-thumb.cbsd { background: linear-gradient(135deg, #4a5b32, #4a3528); }
+  .diag-thumb.cbb { background: linear-gradient(135deg, #6b7a48, #7a5a3a); }
+  .diag-thumb.cgm { background: linear-gradient(135deg, #4a5b32, #8a8a4a); }
+  .diag-thumb.healthy { background: linear-gradient(135deg, #3e5b2e, #5a7a3a); }
+  .diag-thumb::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    mix-blend-mode: multiply;
+  }
+  .diag-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+  .diag-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+  }
+  .diag-title {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+  .diag-title.severity-high { color: var(--bad); }
+  .diag-title.severity-med { color: var(--terra-deep); }
+  .diag-title.severity-low { color: var(--gold); }
+  .diag-title.severity-healthy { color: var(--good); }
+  .diag-twi {
+    font-family: var(--display);
+    font-size: 13px;
+    font-style: italic;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  /* Confidence breakdown */
+  .conf-section {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--cream);
+    border-radius: 8px;
+  }
+  .conf-section-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .conf-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 44px;
+    gap: 10px;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 12px;
+  }
+  .conf-row-label {
+    color: var(--ink-soft);
+  }
+  .conf-row-label.top {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .conf-bar {
+    height: 6px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .conf-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    background: var(--ink-soft);
+    opacity: 0.4;
+  }
+  .conf-bar-fill.top {
+    opacity: 1;
+    background: var(--leaf-deep);
+  }
+  .conf-row-val {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+
+  /* Action section */
+  .action-section {
+    margin-top: 16px;
+    padding: 18px;
+    border-radius: 8px;
+  }
+  .action-section.healthy { background: rgba(45, 110, 78, 0.08); border-left: 3px solid var(--good); }
+  .action-section.warning { background: rgba(217, 117, 67, 0.08); border-left: 3px solid var(--terra); }
+  .action-section.urgent  { background: rgba(184, 74, 62, 0.08);  border-left: 3px solid var(--bad); }
+  .action-title {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .action-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: white;
+  }
+  .action-icon.healthy { background: var(--good); }
+  .action-icon.warning { background: var(--terra); }
+  .action-icon.urgent  { background: var(--bad); }
+  .action-step {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    line-height: 1.4;
+    align-items: start;
+  }
+  .action-step-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    background: rgba(0,0,0,0.06);
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+  .action-step strong { color: var(--ink); font-weight: 500; }
+  .action-step .twi {
+    display: block;
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+
+  /* Phone footer */
+  .phone-footer {
+    padding: 14px 16px;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .phone-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .phone-btn.primary {
+    background: var(--leaf-deep);
+    color: var(--paper);
+  }
+  .phone-btn.primary:hover { background: var(--forest); }
+  .phone-btn.ghost {
+    background: transparent;
+    color: var(--ink-soft);
+  }
+  .phone-btn.ghost:hover { color: var(--ink); }
+  .phone-btn.capture {
+    background: var(--gold);
+    color: var(--ink);
+  }
+  .phone-btn.capture:hover { background: #b8825e; }
+
+  /* ============ DISEASE LIBRARY ============ */
+  .library-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+  }
+  .disease-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  .disease-card:hover {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+  }
+  .disease-img {
+    aspect-ratio: 16 / 9;
+    position: relative;
+    overflow: hidden;
+  }
+  .disease-img::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    mix-blend-mode: multiply;
+    opacity: 0.55;
+  }
+  .disease-img.cmd { background: linear-gradient(135deg, #5a7240 0%, #3e4f2c 60%, #4d6437 100%); }
+  .disease-img.cbsd { background: linear-gradient(135deg, #4a5b32 0%, #6b5538 50%, #4a3528 100%); }
+  .disease-img.cbb { background: linear-gradient(135deg, #6b7a48 0%, #5a3d2e 50%, #7a5a3a 100%); }
+  .disease-img.cgm { background: linear-gradient(135deg, #4a5b32 0%, #8a8a4a 40%, #4a5b32 100%); }
+  .disease-img.healthy { background: linear-gradient(135deg, #3e5b2e 0%, #5a7a3a 50%, #3e5b2e 100%); }
+  .disease-tag {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.65);
+    color: var(--cream);
+    backdrop-filter: blur(6px);
+    z-index: 1;
+  }
+  .disease-tag.healthy { background: var(--good); }
+  .disease-tag.warning { background: var(--terra); }
+  .disease-tag.urgent { background: var(--bad); }
+  .disease-body {
+    padding: 22px 24px;
+  }
+  .disease-name {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    margin-bottom: 4px;
+    line-height: 1.1;
+  }
+  .disease-short {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+  .disease-twi {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--forest);
+    margin-bottom: 14px;
+  }
+  .disease-desc {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .disease-symptoms {
+    background: var(--cream);
+    padding: 14px 16px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+  }
+  .disease-symptoms-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--terra-deep);
+    margin-bottom: 8px;
+  }
+  .disease-symptom {
+    font-size: 13px;
+    padding: 4px 0;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: start;
+    gap: 8px;
+  }
+  .disease-symptom::before {
+    content: '·';
+    color: var(--terra);
+    font-weight: bold;
+    margin-top: -2px;
+  }
+  .disease-stats-row {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .disease-stats-row strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ============ MY FARM ============ */
+  .hero-card {
+    background: linear-gradient(135deg, var(--leaf-deep) 0%, var(--forest-deep) 100%);
+    color: var(--cream);
+    padding: 36px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 60%;
+    height: 140%;
+    background: radial-gradient(circle, var(--gold) 0%, transparent 65%);
+    opacity: 0.18;
+  }
+  .hero-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+    position: relative;
+  }
+  .hero-text { max-width: 580px; }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .hero-title {
+    font-family: var(--display);
+    font-size: 36px;
+    line-height: 1.1;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .hero-title em { font-style: italic; color: var(--gold); }
+  .hero-sub {
+    font-size: 15px;
+    opacity: 0.85;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .btn-accent {
+    background: var(--gold);
+    color: var(--ink);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-accent:hover { background: #b8825e; transform: translateY(-1px); }
+  .btn-ghost-light {
+    background: transparent;
+    color: var(--cream);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid rgba(244, 237, 224, 0.3);
+    transition: all 0.2s;
+  }
+  .btn-ghost-light:hover { background: rgba(244, 237, 224, 0.1); border-color: var(--gold); }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 22px;
+    border-radius: 6px;
+  }
+  .stat-card.accent {
+    background: var(--leaf-deep);
+    color: var(--cream);
+    border-color: var(--leaf-deep);
+  }
+  .stat-card.accent .stat-label { color: var(--gold); }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .stat-value {
+    font-family: var(--display);
+    font-size: 38px;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    margin-bottom: 8px;
+  }
+  .stat-value .small-unit {
+    font-size: 16px;
+    opacity: 0.6;
+    margin-left: 4px;
+  }
+  .stat-change {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--good);
+  }
+  .stat-change.down { color: var(--bad); }
+  .stat-card.accent .stat-change { color: var(--gold); }
+
+  .farm-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* Scan history */
+  .history-list { display: flex; flex-direction: column; }
+  .history-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .history-item:first-child { border-top: none; padding-top: 4px; }
+  .history-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .history-info-title {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  .history-info-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .history-conf {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .history-conf.good { color: var(--good); }
+  .history-conf.warn { color: var(--terra-deep); }
+  .history-conf.bad  { color: var(--bad); }
+  .history-status {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+  .history-status.treated { background: rgba(45, 110, 78, 0.12); color: var(--good); }
+  .history-status.monitor { background: rgba(200, 149, 109, 0.2); color: var(--terra-deep); }
+  .history-status.recover { background: rgba(45, 110, 78, 0.08); color: var(--good); }
+  .history-status.healthy { background: rgba(45, 110, 78, 0.15); color: var(--good); }
+
+  /* Field map */
+  .field-card {
+    padding: 0;
+    overflow: hidden;
+  }
+  .field-canvas {
+    width: 100%;
+    height: 280px;
+    background: linear-gradient(180deg, #d4dcc4 0%, #b8c6a8 100%);
+    position: relative;
+  }
+  .field-canvas svg {
+    width: 100%;
+    height: 100%;
+  }
+  .field-legend {
+    padding: 16px 24px;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .legend-items {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .legend-i {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .legend-i-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  /* Schedule */
+  .schedule-list { display: flex; flex-direction: column; }
+  .schedule-item {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 16px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    align-items: center;
+  }
+  .schedule-item:first-child { border-top: none; padding-top: 4px; }
+  .schedule-date {
+    text-align: center;
+    background: var(--cream);
+    padding: 8px 6px;
+    border-radius: 6px;
+    line-height: 1;
+  }
+  .schedule-date.today {
+    background: var(--terra);
+    color: var(--paper);
+  }
+  .schedule-date.upcoming {
+    background: var(--leaf-deep);
+    color: var(--cream);
+  }
+  .schedule-day {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    opacity: 0.7;
+  }
+  .schedule-num {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .schedule-info-title {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .schedule-info-meta {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .schedule-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: var(--cream);
+    color: var(--ink-soft);
+  }
+  .schedule-tag.spray { background: rgba(217, 117, 67, 0.15); color: var(--terra-deep); }
+  .schedule-tag.inspect { background: rgba(45, 110, 78, 0.15); color: var(--good); }
+  .schedule-tag.harvest { background: rgba(200, 149, 109, 0.2); color: var(--terra-deep); }
+
+  /* Savings card */
+  .savings-card {
+    background: var(--leaf-deep);
+    color: var(--cream);
+    padding: 32px;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .savings-card::before {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 50%;
+    height: 130%;
+    background: radial-gradient(circle, var(--gold) 0%, transparent 65%);
+    opacity: 0.22;
+  }
+  .savings-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .savings-amount {
+    font-family: var(--display);
+    font-size: 64px;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .savings-amount .currency {
+    font-size: 28px;
+    color: var(--gold);
+    margin-right: 6px;
+    vertical-align: top;
+  }
+  .savings-body {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 24px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .savings-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-top: 1px solid rgba(244, 237, 224, 0.15);
+    font-size: 13px;
+    position: relative;
+  }
+  .savings-detail-row:first-of-type { border-top: none; }
+  .savings-detail-label { opacity: 0.75; }
+  .savings-detail-val {
+    font-family: var(--display);
+    font-weight: 500;
+  }
+
+  /* ============ EXTENSION ============ */
+  .extension-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .outbreak-card {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .outbreak-canvas {
+    width: 100%;
+    height: 460px;
+    background: linear-gradient(180deg, #d4dcc4 0%, #b8c6a8 100%);
+    position: relative;
+  }
+  .outbreak-canvas svg {
+    width: 100%;
+    height: 100%;
+  }
+  .outbreak-controls {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    display: flex;
+    gap: 6px;
+  }
+  .ob-pill {
+    padding: 7px 14px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .ob-pill:hover { background: white; }
+  .ob-pill.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+  .outbreak-legend {
+    padding: 16px 24px;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .outbreak-info {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  /* District table */
+  .district-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .district-table th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line-strong);
+    font-weight: 500;
+  }
+  .district-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .district-table tr:last-child td { border-bottom: none; }
+  .district-table tr:hover { background: rgba(216, 117, 67, 0.04); }
+  .district-cell-name {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 15px;
+  }
+  .delta-cell {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .delta-cell.up { color: var(--bad); }
+  .delta-cell.down { color: var(--good); }
+  .severity-pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+  .severity-pill.low { background: rgba(45, 110, 78, 0.12); color: var(--good); }
+  .severity-pill.med { background: rgba(200, 149, 109, 0.2); color: var(--terra-deep); }
+  .severity-pill.high { background: rgba(217, 117, 67, 0.15); color: var(--terra-deep); }
+  .severity-pill.critical { background: rgba(184, 74, 62, 0.15); color: var(--bad); }
+
+  /* Trend chart */
+  .big-chart {
+    width: 100%;
+    height: 280px;
+  }
+  .chart-legend-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .chart-legend-swatch {
+    width: 16px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  /* Alert feed */
+  .alert-feed { max-height: 380px; overflow-y: auto; }
+  .alert-item {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 12px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    align-items: start;
+  }
+  .alert-item:first-child { border-top: none; padding-top: 0; }
+  .alert-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .alert-icon.critical { background: var(--bad); }
+  .alert-icon.high { background: var(--terra); }
+  .alert-icon.med { background: var(--gold); color: var(--ink); }
+  .alert-icon.low { background: var(--good); }
+  .alert-text {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .alert-text .hl { color: var(--leaf-deep); font-weight: 500; }
+  .alert-text strong { color: var(--ink); font-weight: 500; }
+  .alert-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: var(--ink);
+    color: var(--cream);
+    padding: 14px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast::before {
+    content: '✓';
+    color: var(--gold);
+  }
+
+  footer {
+    max-width: 1400px;
+    margin: 60px auto 0;
+    padding: 32px 32px 40px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  footer a {
+    color: var(--terra-deep);
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--ink); }
+
+  @media (max-width: 1100px) {
+    .scan-layout, .farm-grid, .extension-grid {
+      grid-template-columns: 1fr;
+    }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .phone { position: relative; top: 0; margin: 0 auto; }
+  }
+  @media (max-width: 700px) {
+    .top-inner { flex-wrap: wrap; gap: 12px; padding: 14px 20px; }
+    .role-switcher { width: 100%; overflow-x: auto; }
+    .role-btn { white-space: nowrap; padding: 8px 12px; font-size: 12px; }
+    main { padding: 24px 20px; }
+    .view-title { font-size: 36px; }
+    .hero-title { font-size: 26px; }
+    .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-card { padding: 16px; }
+    .stat-value { font-size: 28px; }
+    .savings-amount { font-size: 44px; }
+    .sl-grid { grid-template-columns: repeat(5, 1fr); }
+    footer { flex-direction: column; align-items: start; text-align: left; }
+  }
+
+/* ===== Tech4Good back-nav banner (injected by wiring script) ===== */
+.t4g-back-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: #1A1612;
+  color: #F4EDE0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(244, 237, 224, 0.08);
+}
+.t4g-back-nav .t4g-back-link {
+  color: #F4EDE0;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s;
+  font-weight: 500;
+}
+.t4g-back-nav .t4g-back-link:hover { color: #C8956D; }
+.t4g-back-nav .t4g-back-arrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.t4g-back-nav .t4g-context {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.t4g-back-nav .t4g-mark {
+  width: 16px;
+  height: 16px;
+  background: #0F3D2E;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.t4g-back-nav .t4g-mark::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: #D97543;
+  border-radius: 50%;
+}
+body {
+  padding-top: 36px;
+}
+header.top {
+  top: 36px !important;
+}
+@media (max-width: 700px) {
+  .t4g-back-nav { padding: 0 16px; height: 32px; }
+  .t4g-back-nav .t4g-context { display: none; }
+  body { padding-top: 32px; }
+  header.top { top: 32px !important; }
+}
+
+</style>
+</head>
+<body>
+<div class="t4g-back-nav">
+  <a href="../index.html" class="t4g-back-link">
+    <span class="t4g-mark"></span>
+    <span class="t4g-back-arrow">←</span>
+    Back to Tech4Good
+  </a>
+  <span class="t4g-context">FarmLens · Cohort 01 Demo Day</span>
+</div>
+
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 3 Q6 6, 5 13 Q5 19, 12 21 Q19 19, 19 13 Q18 6, 12 3 Z" fill="#C8956D" stroke="#C8956D" stroke-width="0.5"/>
+          <line x1="12" y1="6" x2="12" y2="20" stroke="#0F3D2E" stroke-width="0.8"/>
+          <path d="M12 9 L9 11 M12 12 L8 13 M12 15 L9 17 M12 9 L15 11 M12 12 L16 13 M12 15 L15 17" stroke="#0F3D2E" stroke-width="0.5" stroke-linecap="round"/>
+          <circle cx="12" cy="13" r="2.5" fill="none" stroke="#1A1612" stroke-width="0.8"/>
+        </svg>
+      </div>
+      <div>
+        FarmLens<span class="brand-sub">St. Thomas Aquinas · Cohort 01</span>
+      </div>
+    </div>
+    <div class="role-switcher" id="roleSwitcher">
+      <button class="role-btn active" data-role="scan"><span class="dot"></span>Scan a Leaf</button>
+      <button class="role-btn" data-role="library"><span class="dot"></span>Disease Library</button>
+      <button class="role-btn" data-role="farm"><span class="dot"></span>My Farm</button>
+      <button class="role-btn" data-role="extension"><span class="dot"></span>Extension View</button>
+    </div>
+    <div class="live-indicator">
+      <span class="live-dot"></span>
+      <span>Live · <span id="liveTime">--:--</span></span>
+    </div>
+  </div>
+</header>
+
+<main id="mainContent"></main>
+
+<footer>
+  <div>FarmLens · Built by Cohort 01 · <a href="#">Tech4Good Nungua</a></div>
+  <div>Trained on 21,367 labeled images · Deployable to Android offline</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   FARMLENS — Cassava disease classifier for Ghanaian farmers
+   Built for the Tech4Good Innovators Bootcamp · Cohort 01
+   On-device image classification · works offline · Twi advice
+   ============================================================ */
+
+// ---------- DATA: real cassava diseases ----------
+
+const DISEASES = {
+  cmd: {
+    id: 'cmd', name: 'Cassava Mosaic Disease', short: 'CMD',
+    twi: 'Bankye yadeɛ a ɛyɛ akokɔɔ',
+    severity: 'high',
+    severityClass: 'high',
+    severityLabel: 'warning',
+    desc: 'A widespread viral disease transmitted by whitefly. The leading cause of cassava loss in West Africa — accounts for 35-50% of yield loss in untreated farms.',
+    symptoms: [
+      'Yellow & green mosaic patches on leaves',
+      'Leaves become twisted and reduced in size',
+      'Stunted plants with fewer tubers',
+      'White flies often visible underneath leaves'
+    ],
+    treatment: [
+      { action: 'Remove and burn affected plants', twi: 'Tu nnua a yadeɛ no aka wɔn no na hyew' },
+      { action: 'Plant CMD-resistant varieties (TME 419, Ampong) next season', twi: 'Dua mfutuo a ɛsɔre yadeɛ no' },
+      { action: 'Spray neem oil to control whiteflies', twi: 'Sere neem ngo de ku nnomaa nketewa' },
+      { action: 'Inspect neighbouring plants within 1 week', twi: 'Hwɛ nnua a ɛbenten no dapɛn 1 mu' }
+    ],
+    stats: { yieldLoss: '35-50%', recovery: '6 weeks', cost: '₵85/acre' }
+  },
+  cbsd: {
+    id: 'cbsd', name: 'Cassava Brown Streak Disease', short: 'CBSD',
+    twi: 'Bankye yadeɛ a ɛyɛ tuntum',
+    severity: 'critical',
+    severityClass: 'urgent',
+    severityLabel: 'urgent',
+    desc: 'The most dangerous cassava disease — destroys the tuber itself, making the crop inedible. Spreading southward from East Africa.',
+    symptoms: [
+      'Brown streaks on stems and petioles',
+      'Yellow chlorotic patches on leaves',
+      'Brown rot inside tubers (visible when cut)',
+      'Symptoms worsen as plant ages'
+    ],
+    treatment: [
+      { action: 'URGENT: Report to your extension officer immediately', twi: 'Frɛ kuayɛ panin no ntɛm' },
+      { action: 'Uproot and destroy ALL infected plants', twi: 'Tu nnua no nyinaa na sɛe' },
+      { action: 'Do NOT use cuttings for replanting', twi: 'Mfa nnua no fa biara nnua bio' },
+      { action: 'Inform neighbouring farmers — disease spreads fast', twi: 'Bɔ akuafoɔ a wɔbenten amaneɛ' }
+    ],
+    stats: { yieldLoss: '70-100%', recovery: 'Full replant', cost: '₵180/acre' }
+  },
+  cbb: {
+    id: 'cbb', name: 'Cassava Bacterial Blight', short: 'CBB',
+    twi: 'Bankye yadeɛ a ɛfiri mmoawa mu',
+    severity: 'med',
+    severityClass: 'warning',
+    severityLabel: 'warning',
+    desc: 'A bacterial disease that spreads during rainy weather. Causes leaves to die and stems to crack. Manageable if caught early.',
+    symptoms: [
+      'Water-soaked angular spots on leaves',
+      'Brown lesions with yellow halos',
+      'Gummy exudate on stems',
+      'Wilting and leaf drop'
+    ],
+    treatment: [
+      { action: 'Prune affected branches with clean tools', twi: 'Twa mman a yadeɛ aka wɔn no' },
+      { action: 'Avoid working in field when leaves are wet', twi: 'Nkɔ afuom bere a osu ato' },
+      { action: 'Apply copper-based bactericide', twi: 'Sere kobre aduro' },
+      { action: 'Improve drainage where water collects', twi: 'Yɛ nsu kwan papa' }
+    ],
+    stats: { yieldLoss: '12-20%', recovery: '4 weeks', cost: '₵45/acre' }
+  },
+  cgm: {
+    id: 'cgm', name: 'Cassava Green Mite', short: 'CGM',
+    twi: 'Bankye mmoa nketewa',
+    severity: 'low',
+    severityClass: 'warning',
+    severityLabel: 'minor',
+    desc: 'A tiny green mite that feeds on cassava leaves, especially during dry season. Visible damage but rarely catastrophic if managed.',
+    symptoms: [
+      'Yellow speckling on upper leaf surface',
+      'Tiny green dots visible (the mites themselves)',
+      'Leaves become silvery and shed early',
+      'Plant looks weak in dry weather'
+    ],
+    treatment: [
+      { action: 'Spray with predatory mite biocontrol if available', twi: 'Fa biocontrol sere' },
+      { action: 'Maintain soil moisture during dry spells', twi: 'Ma asase no nsu sɛ ahyew' },
+      { action: 'Avoid broad-spectrum pesticides (kills helpful insects)', twi: 'Mfa aduro a ɛkum nnoma nyinaa' },
+      { action: 'Damage rarely justifies full chemical treatment', twi: 'Ɛnhia sɛ wode aduro pii' }
+    ],
+    stats: { yieldLoss: '5-10%', recovery: '3 weeks', cost: '₵25/acre' }
+  },
+  healthy: {
+    id: 'healthy', name: 'Healthy', short: 'HEALTHY',
+    twi: 'Bankye apɔw',
+    severity: 'healthy',
+    severityClass: 'healthy',
+    severityLabel: 'healthy',
+    desc: 'Your cassava is in excellent condition. No disease detected. Keep doing what you\'re doing.',
+    symptoms: [
+      'Uniform green colour across leaf surface',
+      'Healthy expanded leaves with proper venation',
+      'No spots, streaks, or yellowing',
+      'No visible pests or feeding damage'
+    ],
+    treatment: [
+      { action: 'Continue weekly monitoring — early detection is key', twi: 'Toa so hwɛ no dapɛn biara' },
+      { action: 'Ensure adequate water and weed control', twi: 'Hwɛ nsu ne nwura' },
+      { action: 'Watch for whiteflies (vectors for CMD)', twi: 'Hwɛ nnoma nketewa' },
+      { action: 'Plan your next scan in 7 days', twi: 'San bra dapɛn 7 mu' }
+    ],
+    stats: { yieldLoss: '0%', recovery: '—', cost: '₵0' }
+  }
+};
+
+// Sample images we'll let users "scan". Each has a true class + a model prediction (with realistic confidence).
+const SAMPLES = [
+  {
+    id: 's1', label: 'Sample A',
+    bgClass: 'cmd',
+    trueClass: 'cmd',
+    confidences: { cmd: 0.91, healthy: 0.04, cbb: 0.03, cgm: 0.01, cbsd: 0.01 }
+  },
+  {
+    id: 's2', label: 'Sample B',
+    bgClass: 'cbsd',
+    trueClass: 'cbsd',
+    confidences: { cbsd: 0.84, cmd: 0.09, cbb: 0.04, cgm: 0.02, healthy: 0.01 }
+  },
+  {
+    id: 's3', label: 'Sample C',
+    bgClass: 'cbb',
+    trueClass: 'cbb',
+    confidences: { cbb: 0.78, cmd: 0.12, cgm: 0.06, healthy: 0.03, cbsd: 0.01 }
+  },
+  {
+    id: 's4', label: 'Sample D',
+    bgClass: 'cgm',
+    trueClass: 'cgm',
+    confidences: { cgm: 0.72, healthy: 0.18, cmd: 0.06, cbb: 0.03, cbsd: 0.01 }
+  },
+  {
+    id: 's5', label: 'Sample E',
+    bgClass: 'healthy',
+    trueClass: 'healthy',
+    confidences: { healthy: 0.96, cgm: 0.02, cmd: 0.01, cbb: 0.005, cbsd: 0.005 }
+  }
+];
+
+const STATE = {
+  role: 'scan',
+  phoneState: 'viewfinder', // viewfinder | scanning | diagnosis
+  selectedSample: null,
+  diagnosis: null,
+  scanProgress: 0,
+  outbreakFilter: 'all' // all | cmd | cbsd | cbb | cgm
+};
+
+// ---------- HELPERS ----------
+
+function diseaseByid(id) { return DISEASES[id]; }
+function sampleById(id) { return SAMPLES.find(s => s.id === id); }
+
+function showToast(text) {
+  const toast = document.getElementById('toast');
+  toast.textContent = text;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+// ---------- RENDER: SCAN VIEW ----------
+
+function renderScan() {
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Scan a leaf · diagnose in 8 seconds</div>
+        <h1 class="view-title">Cassava care, on the <em>spot</em>.</h1>
+        <p class="view-sub">Built for smallholder farmers who can't always wait for an extension officer. Point your phone at any leaf, get a diagnosis with Twi-language treatment advice. Works offline.</p>
+      </div>
+    </div>
+
+    <div class="scan-layout">
+      <div class="scan-context">
+        <div class="feature-card">
+          <div class="feature-card-title">How it works · all on the phone</div>
+          <div class="feature-list">
+            <div class="feature-item">
+              <div class="feature-num">1</div>
+              <div>
+                <div class="feature-text-title">Point your phone at a leaf</div>
+                <div class="feature-text-body">Camera framing guides you to a clean shot. No internet needed — the model runs entirely on the device.</div>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-num">2</div>
+              <div>
+                <div class="feature-text-title">Get a diagnosis in 8 seconds</div>
+                <div class="feature-text-body">Our fine-tuned MobileNet model classifies into 5 categories: CMD, CBSD, CBB, Green Mite, or Healthy.</div>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-num">3</div>
+              <div>
+                <div class="feature-text-title">Read advice in your language</div>
+                <div class="feature-text-body">Every recommendation comes in English and Twi. Critical diseases trigger an alert to the regional extension officer.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sample-leaves">
+            <div class="sl-title">Try one of these samples</div>
+            <div class="sl-grid" id="sampleGrid">
+              ${SAMPLES.map(s => `
+                <div class="sl-leaf ${STATE.selectedSample === s.id ? 'active' : ''}" data-sample="${s.id}">
+                  <div class="camera-image ${s.bgClass}" style="position: absolute; inset: 0;"></div>
+                  <div class="sl-leaf-name">${s.label}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <div class="insight-title">Why this matters in Ghana</div>
+          <div class="insight-body">
+            Cassava (<strong>bankye</strong>) is the second-most important staple food in Ghana — about <strong>20.5 million metric tonnes</strong> are grown each year, mostly by smallholder farmers. Cassava Mosaic Disease alone causes an estimated <strong>30% yield loss</strong> nationally. Most farmers can't afford private agronomists. FarmLens puts a diagnostic tool in every pocket.
+          </div>
+        </div>
+      </div>
+
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar">
+            <span id="phoneTime">--:--</span>
+            <span style="opacity: 0.65;">●●●● MTN GH</span>
+            <span>74%</span>
+          </div>
+          <div class="app-header">
+            <div class="app-header-title">FarmLens</div>
+            <div class="app-header-actions">
+              <span>🌐</span>
+              <span>⋮</span>
+            </div>
+          </div>
+          <div class="app-screen" id="phoneScreen"></div>
+          <div class="phone-footer" id="phoneFooter"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderPhoneState() {
+  const screen = document.getElementById('phoneScreen');
+  const footer = document.getElementById('phoneFooter');
+  if (!screen) return;
+
+  if (STATE.phoneState === 'viewfinder') {
+    const sample = STATE.selectedSample ? sampleById(STATE.selectedSample) : null;
+    screen.innerHTML = `
+      <div class="camera-view">
+        ${sample ? `<div class="camera-image ${sample.bgClass}"></div>` : `<div style="position: absolute; inset: 0; background: #2a2820; display: flex; align-items: center; justify-content: center; color: var(--cream); flex-direction: column; gap: 12px;">
+          <div style="font-size: 56px; opacity: 0.4;">📷</div>
+          <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6;">Select a sample to begin</div>
+        </div>`}
+        ${sample ? `
+        <div class="viewfinder">
+          <div class="vf-tr"></div>
+          <div class="vf-bl"></div>
+        </div>
+        <div class="camera-hint">${sample.label} · Tap capture</div>
+        ` : ''}
+      </div>
+    `;
+    footer.innerHTML = `
+      <button class="phone-btn ghost">Gallery</button>
+      <button class="phone-btn capture" id="captureBtn" ${!sample ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>● Capture</button>
+    `;
+  } else if (STATE.phoneState === 'scanning') {
+    const sample = sampleById(STATE.selectedSample);
+    const progress = STATE.scanProgress;
+    const ringR = 38, ringC = 2 * Math.PI * ringR;
+    const ringOffset = ringC - (progress / 100) * ringC;
+    screen.innerHTML = `
+      <div class="camera-view">
+        <div class="camera-image ${sample.bgClass}"></div>
+        <div class="scan-line"></div>
+        <div class="scan-overlay">
+          <div class="scan-progress-ring">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="${ringR}" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="5"/>
+              <circle cx="50" cy="50" r="${ringR}" fill="none" stroke="var(--gold)" stroke-width="5" stroke-linecap="round"
+                stroke-dasharray="${ringC}" stroke-dashoffset="${ringOffset}"/>
+            </svg>
+            <div class="ring-text">${progress}%</div>
+          </div>
+          <div class="scan-text-main">${getScanMessage(progress)}</div>
+          <div class="scan-text-sub">MobileNetV2 · on-device</div>
+        </div>
+      </div>
+    `;
+    footer.innerHTML = `<button class="phone-btn ghost">Cancel</button>`;
+  } else if (STATE.phoneState === 'diagnosis') {
+    const sample = sampleById(STATE.selectedSample);
+    const topClass = Object.entries(sample.confidences).sort((a, b) => b[1] - a[1])[0][0];
+    const disease = diseaseByid(topClass);
+    const topConf = sample.confidences[topClass];
+
+    // Sorted class predictions
+    const sortedPreds = Object.entries(sample.confidences).sort((a, b) => b[1] - a[1]);
+
+    screen.innerHTML = `
+      <div class="diagnosis-screen">
+        <div class="diag-header">
+          <div class="diag-thumb ${sample.bgClass}"></div>
+          <div class="diag-meta">
+            <div class="diag-eyebrow">Diagnosis · ${Math.round(topConf * 100)}% confident</div>
+            <div class="diag-title severity-${disease.severity}">${disease.name}</div>
+            <div class="diag-twi">${disease.twi}</div>
+          </div>
+        </div>
+
+        <div class="conf-section">
+          <div class="conf-section-title">All class probabilities</div>
+          ${sortedPreds.map(([cls, conf], idx) => {
+            const d = diseaseByid(cls);
+            return `
+              <div class="conf-row">
+                <div class="conf-row-label ${idx === 0 ? 'top' : ''}">${d.name}</div>
+                <div class="conf-bar"><div class="conf-bar-fill ${idx === 0 ? 'top' : ''}" style="width: ${conf * 100}%;"></div></div>
+                <div class="conf-row-val">${Math.round(conf * 100)}%</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <div class="action-section ${disease.severityClass}">
+          <div class="action-title">
+            <div class="action-icon ${disease.severityClass}">${disease.severityClass === 'healthy' ? '✓' : disease.severityClass === 'urgent' ? '!' : '⚠'}</div>
+            What to do
+          </div>
+          ${disease.treatment.map((step, idx) => `
+            <div class="action-step">
+              <div class="action-step-num">${idx + 1}</div>
+              <div>
+                <strong>${step.action}</strong>
+                <span class="twi">${step.twi}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    footer.innerHTML = `
+      <button class="phone-btn ghost" id="rescanBtn">Scan another</button>
+      <button class="phone-btn primary" id="saveBtn">Save to farm log</button>
+    `;
+  }
+
+  attachPhoneListeners();
+}
+
+function getScanMessage(progress) {
+  if (progress < 25) return 'Detecting leaf...';
+  if (progress < 50) return 'Extracting features...';
+  if (progress < 80) return 'Classifying disease...';
+  return 'Almost done...';
+}
+
+function attachPhoneListeners() {
+  // Sample grid
+  document.querySelectorAll('[data-sample]').forEach(el => {
+    el.addEventListener('click', () => {
+      STATE.selectedSample = el.dataset.sample;
+      STATE.phoneState = 'viewfinder';
+      // Update the phone state and the sample grid highlight
+      renderPhoneState();
+      document.querySelectorAll('[data-sample]').forEach(s => s.classList.toggle('active', s.dataset.sample === STATE.selectedSample));
+    });
+  });
+
+  // Capture
+  const captureBtn = document.getElementById('captureBtn');
+  if (captureBtn && STATE.selectedSample) {
+    captureBtn.addEventListener('click', () => {
+      runScan();
+    });
+  }
+
+  // Rescan / save
+  const rescanBtn = document.getElementById('rescanBtn');
+  if (rescanBtn) {
+    rescanBtn.addEventListener('click', () => {
+      STATE.phoneState = 'viewfinder';
+      STATE.selectedSample = null;
+      document.querySelectorAll('[data-sample]').forEach(s => s.classList.remove('active'));
+      renderPhoneState();
+    });
+  }
+  const saveBtn = document.getElementById('saveBtn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const sample = sampleById(STATE.selectedSample);
+      const topClass = Object.entries(sample.confidences).sort((a, b) => b[1] - a[1])[0][0];
+      const disease = diseaseByid(topClass);
+      showToast(`Saved · ${disease.name} added to your farm log`);
+    });
+  }
+}
+
+function runScan() {
+  STATE.phoneState = 'scanning';
+  STATE.scanProgress = 0;
+  renderPhoneState();
+
+  const interval = setInterval(() => {
+    STATE.scanProgress += 4 + Math.random() * 6;
+    if (STATE.scanProgress >= 100) {
+      STATE.scanProgress = 100;
+      clearInterval(interval);
+      setTimeout(() => {
+        STATE.phoneState = 'diagnosis';
+        renderPhoneState();
+      }, 400);
+    }
+    renderPhoneState();
+  }, 180);
+}
+
+// ---------- RENDER: DISEASE LIBRARY ----------
+
+function renderLibrary() {
+  const diseaseList = ['cmd', 'cbsd', 'cbb', 'cgm', 'healthy'].map(id => DISEASES[id]);
+
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Disease library</div>
+        <h1 class="view-title">Know what to <em>look for</em>.</h1>
+        <p class="view-sub">Reference field guide to all five cassava conditions FarmLens detects. Symptoms, treatment, and Twi vocabulary for every farmer.</p>
+      </div>
+    </div>
+
+    <div class="library-grid">
+      ${diseaseList.map(d => `
+        <div class="disease-card">
+          <div class="disease-img ${d.id}">
+            <div class="disease-tag ${d.severityClass}">${d.severityLabel}</div>
+          </div>
+          <div class="disease-body">
+            <div class="disease-name">${d.name}</div>
+            <div class="disease-short">${d.short}</div>
+            <div class="disease-twi">${d.twi}</div>
+            <div class="disease-desc">${d.desc}</div>
+            <div class="disease-symptoms">
+              <div class="disease-symptoms-title">Symptoms to watch for</div>
+              ${d.symptoms.map(s => `<div class="disease-symptom">${s}</div>`).join('')}
+            </div>
+            <div class="disease-stats-row">
+              <span>Yield loss <strong>${d.stats.yieldLoss}</strong></span>
+              <span>Recovery <strong>${d.stats.recovery}</strong></span>
+              <span>Cost <strong>${d.stats.cost}</strong></span>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ---------- RENDER: MY FARM ----------
+
+function renderFarm() {
+  const history = [
+    { date: '21 May', diag: 'Healthy', bg: 'healthy', conf: 94, status: 'healthy', area: 'Plot A · Row 12' },
+    { date: '14 May', diag: 'Cassava Green Mite', bg: 'cgm', conf: 78, status: 'recover', area: 'Plot B · Row 4' },
+    { date: '07 May', diag: 'Cassava Green Mite', bg: 'cgm', conf: 82, status: 'treated', area: 'Plot B · Row 4' },
+    { date: '30 Apr', diag: 'Cassava Mosaic Disease', bg: 'cmd', conf: 91, status: 'treated', area: 'Plot B · Row 7' },
+    { date: '23 Apr', diag: 'Cassava Mosaic Disease', bg: 'cmd', conf: 88, status: 'monitor', area: 'Plot B · Row 7' },
+    { date: '16 Apr', diag: 'Cassava Bacterial Blight', bg: 'cbb', conf: 73, status: 'treated', area: 'Plot A · Row 3' },
+    { date: '09 Apr', diag: 'Healthy', bg: 'healthy', conf: 96, status: 'healthy', area: 'Plot A · Row 1' }
+  ];
+
+  const schedule = [
+    { day: 'TODAY', num: '21', dateClass: 'today', title: 'Inspect Plot B · Row 4', meta: 'CGM follow-up scan · check for re-infection', tag: 'inspect' },
+    { day: 'WED', num: '22', dateClass: 'upcoming', title: 'Spray neem oil · Plot B', meta: 'Whitefly prevention · early morning is best', tag: 'spray' },
+    { day: 'SAT', num: '25', dateClass: 'upcoming', title: 'Weekly scan · all 4 plots', meta: 'Routine 10-minute walk-through', tag: 'inspect' },
+    { day: 'JUN', num: '15', dateClass: '', title: 'Harvest window opens · Plot A', meta: '11-month-old crop · check tuber maturity', tag: 'harvest' }
+  ];
+
+  return `
+    <div class="hero-card">
+      <div class="hero-row">
+        <div class="hero-text">
+          <div class="hero-eyebrow">Adwoa's Farm · Asuogyaman District</div>
+          <h1 class="hero-title">Maakye, <em>Adwoa</em>.</h1>
+          <p class="hero-sub">Your 4 plots are 96% healthy this week. The CGM on Plot B is in remission — well done on the early intervention. You have one inspection due today.</p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn-accent" id="scanNowBtn">+ New scan</button>
+          <button class="btn-ghost-light">Open field map</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Scans this month</div>
+        <div class="stat-value">47</div>
+        <div class="stat-change">↑ 14 vs. last month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active diseases</div>
+        <div class="stat-value">1</div>
+        <div class="stat-change">↓ down from 3 in April</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Plot health score</div>
+        <div class="stat-value">96<span class="small-unit">%</span></div>
+        <div class="stat-change">↑ 12 points vs. baseline</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Next scheduled action</div>
+        <div class="stat-value">2<span class="small-unit">hr</span></div>
+        <div class="stat-change">→ Plot B inspection</div>
+      </div>
+    </div>
+
+    <div class="farm-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Scan history</div>
+          <div class="card-tag">Last 7 scans</div>
+        </div>
+        <div class="history-list">
+          ${history.map(h => `
+            <div class="history-item">
+              <div class="history-thumb">
+                <div class="camera-image ${h.bg}" style="position: absolute; inset: 0;"></div>
+              </div>
+              <div>
+                <div class="history-info-title">${h.diag}</div>
+                <div class="history-info-meta">${h.date} · ${h.area}</div>
+              </div>
+              <div class="history-conf ${h.conf >= 90 ? 'good' : h.conf >= 75 ? 'warn' : 'bad'}">${h.conf}%</div>
+              <span class="history-status ${h.status}">${h.status}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="card field-card">
+        <div class="field-canvas">${renderFieldMap()}</div>
+        <div class="field-legend">
+          <div class="legend-items">
+            <div class="legend-i"><span class="legend-i-dot" style="background: var(--good);"></span>Healthy</div>
+            <div class="legend-i"><span class="legend-i-dot" style="background: var(--gold);"></span>Recovering</div>
+            <div class="legend-i"><span class="legend-i-dot" style="background: var(--terra);"></span>Treating</div>
+            <div class="legend-i"><span class="legend-i-dot" style="background: var(--bad);"></span>Diseased</div>
+          </div>
+          <span style="font-family: var(--mono); font-size: 11px; color: var(--ink-soft);">4 plots · 3.2 acres</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="farm-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Upcoming actions</div>
+          <div class="card-tag">${schedule.length} scheduled</div>
+        </div>
+        <div class="schedule-list">
+          ${schedule.map(s => `
+            <div class="schedule-item">
+              <div class="schedule-date ${s.dateClass}">
+                <div class="schedule-day">${s.day}</div>
+                <div class="schedule-num">${s.num}</div>
+              </div>
+              <div>
+                <div class="schedule-info-title">${s.title}</div>
+                <div class="schedule-info-meta">${s.meta}</div>
+              </div>
+              <span class="schedule-tag ${s.tag}">${s.tag}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="savings-card">
+        <div class="savings-eyebrow">Estimated savings · this season</div>
+        <div class="savings-amount"><span class="currency">₵</span>2,840</div>
+        <div class="savings-body">
+          Early detection of CMD on Plot B in April saved roughly 38% of expected yield on that section. CGM was caught when it would have spread to neighbouring rows.
+        </div>
+        <div class="savings-detail-row">
+          <span class="savings-detail-label">CMD outbreak averted (Plot B)</span>
+          <span class="savings-detail-val">₵1,920</span>
+        </div>
+        <div class="savings-detail-row">
+          <span class="savings-detail-label">CGM contained (Plot B)</span>
+          <span class="savings-detail-val">₵620</span>
+        </div>
+        <div class="savings-detail-row">
+          <span class="savings-detail-label">CBB pruning timing (Plot A)</span>
+          <span class="savings-detail-val">₵300</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderFieldMap() {
+  const W = 700, H = 280;
+
+  // Draw 4 plots
+  const plots = [
+    { x: 60, y: 40, w: 280, h: 90, name: 'Plot A · 0.9 acre', status: 'healthy', color: 'var(--good)' },
+    { x: 360, y: 40, w: 280, h: 90, name: 'Plot B · 1.0 acre', status: 'recovering', color: 'var(--gold)' },
+    { x: 60, y: 150, w: 200, h: 90, name: 'Plot C · 0.6 acre', status: 'healthy', color: 'var(--good)' },
+    { x: 280, y: 150, w: 360, h: 90, name: 'Plot D · 0.7 acre', status: 'healthy', color: 'var(--good)' }
+  ];
+
+  let svg = '';
+
+  // Plot rectangles with row grids
+  plots.forEach(p => {
+    svg += `
+      <rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${p.color}" fill-opacity="0.18" stroke="${p.color}" stroke-width="1.5" rx="4"/>
+    `;
+    // Add row lines (cassava planting rows)
+    const rows = Math.floor(p.h / 12);
+    for (let i = 1; i < rows; i++) {
+      svg += `<line x1="${p.x + 4}" y1="${p.y + i * 12}" x2="${p.x + p.w - 4}" y2="${p.y + i * 12}" stroke="${p.color}" stroke-opacity="0.3" stroke-width="0.5" stroke-dasharray="2,2"/>`;
+    }
+    // Plot label
+    svg += `<text x="${p.x + 8}" y="${p.y - 6}" font-family="DM Sans" font-size="11" font-weight="500" fill="var(--ink)">${p.name}</text>`;
+  });
+
+  // Disease pin on Plot B (CGM in remission)
+  svg += `
+    <g>
+      <circle cx="500" cy="85" r="14" fill="var(--gold)" opacity="0.2">
+        <animate attributeName="r" values="14;22;14" dur="2.4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="500" cy="85" r="8" fill="var(--gold)" stroke="white" stroke-width="2"/>
+      <text x="500" y="118" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.7)">CGM · Row 4</text>
+    </g>
+  `;
+
+  // Compass
+  svg += `
+    <g transform="translate(660, 30)">
+      <circle r="16" fill="rgba(255,255,255,0.85)" stroke="rgba(26,22,18,0.15)"/>
+      <text y="-4" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#0F3D2E">N</text>
+      <line x1="0" y1="2" x2="0" y2="10" stroke="#0F3D2E" stroke-width="1"/>
+    </g>
+  `;
+
+  // Path / dirt road
+  svg += `<line x1="0" y1="265" x2="700" y2="265" stroke="var(--gold)" stroke-width="2" stroke-dasharray="5,4" opacity="0.5"/>
+          <text x="350" y="260" text-anchor="middle" font-family="Fraunces" font-style="italic" font-size="11" fill="rgba(26,22,18,0.4)">access path</text>`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${svg}</svg>`;
+}
+
+// ---------- RENDER: EXTENSION OFFICER ----------
+
+function renderExtension() {
+  const districts = [
+    { name: 'Asuogyaman',     scans: 487, farmers: 142, cmdRate: 18, cbsdRate: 0,  cbbRate: 6,  cgmRate: 11, change: -4.2, severity: 'med' },
+    { name: 'Akuapem North',  scans: 392, farmers: 118, cmdRate: 24, cbsdRate: 0,  cbbRate: 9,  cgmRate: 14, change: -1.8, severity: 'med' },
+    { name: 'Lower Manya',    scans: 612, farmers: 178, cmdRate: 31, cbsdRate: 2,  cbbRate: 12, cgmRate: 18, change: +5.4, severity: 'high' },
+    { name: 'Upper Manya',    scans: 234, farmers: 67,  cmdRate: 41, cbsdRate: 3,  cbbRate: 8,  cgmRate: 16, change: +8.7, severity: 'critical' },
+    { name: 'Yilo Krobo',     scans: 318, farmers: 92,  cmdRate: 28, cbsdRate: 0,  cbbRate: 11, cgmRate: 13, change: +2.1, severity: 'high' },
+    { name: 'Akwapim South',  scans: 421, farmers: 134, cmdRate: 15, cbsdRate: 0,  cbbRate: 5,  cgmRate: 9,  change: -2.6, severity: 'low' },
+    { name: 'Suhum',          scans: 387, farmers: 109, cmdRate: 19, cbsdRate: 0,  cbbRate: 7,  cgmRate: 12, change: -0.8, severity: 'med' },
+    { name: 'Birim Central',  scans: 195, farmers: 58,  cmdRate: 22, cbsdRate: 0,  cbbRate: 8,  cgmRate: 14, change: +1.4, severity: 'med' }
+  ];
+
+  const alerts = [
+    { sev: 'critical', icon: '⚠', text: '<span class="hl">Upper Manya</span> CMD detection rate jumped <strong>+8.7%</strong> this week. 41% of 234 scans positive. Consider emergency advisory.', time: '12 min ago' },
+    { sev: 'high', icon: '!', text: '<span class="hl">Lower Manya</span> reported first confirmed <strong>CBSD case</strong> this season — 2nd report in Eastern Region this month.', time: '2 hrs ago' },
+    { sev: 'high', icon: '!', text: 'CMD spreading along the <span class="hl">Volta corridor</span> — likely whitefly migration from Lower Manya cluster.', time: '5 hrs ago' },
+    { sev: 'med', icon: 'i', text: '<span class="hl">142 farmers</span> in Asuogyaman are now active users. Pass mark for district pilot reached.', time: 'yesterday' },
+    { sev: 'med', icon: 'i', text: 'CBB cases falling across the region — <strong>23% decline</strong> after the dry-season pruning campaign in April.', time: '2 days ago' },
+    { sev: 'low', icon: '✓', text: '<span class="hl">Akwapim South</span> all 4 indicators improving. Recommended as a model district for upcoming MoFA showcase.', time: '3 days ago' }
+  ];
+
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Extension officer console · Eastern Region</div>
+        <h1 class="view-title">An early warning <em>system</em>.</h1>
+        <p class="view-sub">Every farmer who scans a leaf contributes a real-time data point. The Ministry of Food and Agriculture sees outbreaks weeks before traditional reporting would catch them.</p>
+      </div>
+      <div class="view-actions">
+        <button class="btn-primary">+ Issue regional alert</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Active farmers</div>
+        <div class="stat-value">898</div>
+        <div class="stat-change">↑ 142 this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Scans this week</div>
+        <div class="stat-value">3,046</div>
+        <div class="stat-change">↑ 18% vs. last week</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Active CMD hotspots</div>
+        <div class="stat-value">3</div>
+        <div class="stat-change down">↑ 1 new this week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">CBSD cases (alert)</div>
+        <div class="stat-value">5</div>
+        <div class="stat-change down">↑ 2 new districts</div>
+      </div>
+    </div>
+
+    <div class="extension-grid">
+      <div class="card outbreak-card">
+        <div class="outbreak-canvas">
+          <div class="outbreak-controls">
+            <button class="ob-pill ${STATE.outbreakFilter === 'all' ? 'active' : ''}" data-obfilter="all">All diseases</button>
+            <button class="ob-pill ${STATE.outbreakFilter === 'cmd' ? 'active' : ''}" data-obfilter="cmd">CMD</button>
+            <button class="ob-pill ${STATE.outbreakFilter === 'cbsd' ? 'active' : ''}" data-obfilter="cbsd">CBSD</button>
+            <button class="ob-pill ${STATE.outbreakFilter === 'cbb' ? 'active' : ''}" data-obfilter="cbb">CBB</button>
+            <button class="ob-pill ${STATE.outbreakFilter === 'cgm' ? 'active' : ''}" data-obfilter="cgm">CGM</button>
+          </div>
+          ${renderOutbreakMap(STATE.outbreakFilter)}
+        </div>
+        <div class="outbreak-legend">
+          <div class="legend-items">
+            <div class="legend-i"><span class="legend-i-dot" style="background: var(--good);"></span>Low (&lt;15%)</div>
+            <div class="legend-i"><span class="legend-i-dot" style="background: var(--gold);"></span>Medium (15-25%)</div>
+            <div class="legend-i"><span class="legend-i-dot" style="background: var(--terra);"></span>High (25-35%)</div>
+            <div class="legend-i"><span class="legend-i-dot" style="background: var(--bad);"></span>Critical (&gt;35%)</div>
+          </div>
+          <span class="outbreak-info">Eastern Region · 8 districts</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Recent alerts</div>
+          <div class="card-tag urgent">2 critical</div>
+        </div>
+        <div class="alert-feed">
+          ${alerts.map(a => `
+            <div class="alert-item">
+              <div class="alert-icon ${a.sev}">${a.icon}</div>
+              <div>
+                <div class="alert-text">${a.text}</div>
+                <div class="alert-time">${a.time}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-head">
+        <div class="card-title">District-level disease incidence · last 30 days</div>
+        <div class="card-tag">% of scans positive</div>
+      </div>
+      <table class="district-table">
+        <thead>
+          <tr>
+            <th>District</th>
+            <th>Active farmers</th>
+            <th>Scans</th>
+            <th>CMD</th>
+            <th>CBSD</th>
+            <th>CBB</th>
+            <th>CGM</th>
+            <th>Week Δ</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${districts.sort((a, b) => b.change - a.change).map(d => `
+            <tr>
+              <td class="district-cell-name">${d.name}</td>
+              <td>${d.farmers}</td>
+              <td>${d.scans}</td>
+              <td>${d.cmdRate}%</td>
+              <td>${d.cbsdRate ? `<strong style="color: var(--bad);">${d.cbsdRate}%</strong>` : '0%'}</td>
+              <td>${d.cbbRate}%</td>
+              <td>${d.cgmRate}%</td>
+              <td class="delta-cell ${d.change > 0 ? 'up' : 'down'}">${d.change > 0 ? '+' : ''}${d.change.toFixed(1)}%</td>
+              <td><span class="severity-pill ${d.severity}">${d.severity}</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="extension-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Disease prevalence trend · 12 weeks</div>
+          <div class="card-tag">Region-wide</div>
+        </div>
+        ${renderTrendChart()}
+        <div class="chart-legend-row">
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--terra);"></span>CMD prevalence</div>
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--gold);"></span>CGM prevalence</div>
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--leaf-deep);"></span>CBB prevalence</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Impact summary</div>
+          <div class="card-tag">Since pilot launch</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <div>
+            <div style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px;">Estimated yield protected</div>
+            <div style="font-family: var(--display); font-size: 36px; font-weight: 400; letter-spacing: -0.025em; color: var(--leaf-deep);">412 tonnes</div>
+            <div style="font-family: var(--mono); font-size: 11px; color: var(--ink-soft); margin-top: 4px;">~ ₵ 1.65 million at farmgate prices</div>
+          </div>
+          <div>
+            <div style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px;">Avg time to outbreak detection</div>
+            <div style="font-family: var(--display); font-size: 36px; font-weight: 400; letter-spacing: -0.025em; color: var(--leaf-deep);">2.4 days</div>
+            <div style="font-family: var(--mono); font-size: 11px; color: var(--ink-soft); margin-top: 4px;">↓ from 14-21 days under traditional reporting</div>
+          </div>
+          <div>
+            <div style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px;">Households reached</div>
+            <div style="font-family: var(--display); font-size: 36px; font-weight: 400; letter-spacing: -0.025em; color: var(--leaf-deep);">3,200+</div>
+            <div style="font-family: var(--mono); font-size: 11px; color: var(--ink-soft); margin-top: 4px;">Across 8 districts · target 12 by Q4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderOutbreakMap(filter) {
+  const W = 800, H = 460;
+
+  const districts = [
+    { name: 'Akwapim South', x: 200, y: 100, cmd: 15, cbsd: 0, cbb: 5, cgm: 9, scans: 421 },
+    { name: 'Akuapem North', x: 300, y: 140, cmd: 24, cbsd: 0, cbb: 9, cgm: 14, scans: 392 },
+    { name: 'Suhum',         x: 180, y: 200, cmd: 19, cbsd: 0, cbb: 7, cgm: 12, scans: 387 },
+    { name: 'Asuogyaman',    x: 400, y: 130, cmd: 18, cbsd: 0, cbb: 6, cgm: 11, scans: 487 },
+    { name: 'Yilo Krobo',    x: 500, y: 190, cmd: 28, cbsd: 0, cbb: 11, cgm: 13, scans: 318 },
+    { name: 'Lower Manya',   x: 580, y: 240, cmd: 31, cbsd: 2, cbb: 12, cgm: 18, scans: 612 },
+    { name: 'Upper Manya',   x: 650, y: 310, cmd: 41, cbsd: 3, cbb: 8, cgm: 16, scans: 234 },
+    { name: 'Birim Central', x: 320, y: 290, cmd: 22, cbsd: 0, cbb: 8, cgm: 14, scans: 195 }
+  ];
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <pattern id="region-grid" patternUnits="userSpaceOnUse" width="50" height="50">
+        <path d="M 50,0 L 0,0 0,50" fill="none" stroke="rgba(15, 61, 46, 0.08)" stroke-width="0.5"/>
+      </pattern>
+    </defs>
+    <rect width="${W}" height="${H}" fill="url(#region-grid)"/>
+  `;
+
+  // Region outline (rough Eastern Region shape)
+  svg += `
+    <path d="M 100,80 Q 200,60 320,75 Q 480,70 600,100 L 720,180 Q 740,280 700,360 L 580,400 Q 380,420 240,390 L 130,330 Q 80,220 100,80 Z"
+          fill="#EEE3CF" stroke="#C8956D" stroke-width="2" opacity="0.5"/>
+  `;
+
+  // Region label
+  svg += `<text x="400" y="50" text-anchor="middle" font-family="Fraunces" font-style="italic" font-size="14" fill="rgba(26,22,18,0.55)">Eastern Region</text>`;
+
+  // Volta River (eastern boundary)
+  svg += `<path d="M 670,90 Q 700,200 720,300 Q 730,380 690,420" fill="none" stroke="#7BA8C4" stroke-width="3" opacity="0.5"/>
+          <text x="710" y="240" font-family="Fraunces" font-style="italic" font-size="10" fill="rgba(26,22,18,0.45)" transform="rotate(85, 710, 240)">Volta River</text>`;
+
+  // District markers based on filter
+  districts.forEach(d => {
+    let val;
+    if (filter === 'all') {
+      // Overall disease load (sum of cmd, cbsd weighted, cbb, cgm)
+      val = d.cmd + d.cbsd * 3 + d.cbb + d.cgm * 0.5;
+    } else {
+      val = d[filter] * (filter === 'cbsd' ? 4 : 1); // CBSD is more severe
+    }
+    let color, size;
+    if (val < 15) { color = 'var(--good)'; size = 14; }
+    else if (val < 25) { color = 'var(--gold)'; size = 18; }
+    else if (val < 35) { color = 'var(--terra)'; size = 22; }
+    else { color = 'var(--bad)'; size = 28; }
+
+    // Critical pulse
+    const isCritical = val >= 35;
+
+    svg += `
+      <g>
+        <circle cx="${d.x}" cy="${d.y}" r="${size + 8}" fill="${color}" opacity="0.15"${isCritical ? '><animate attributeName="r" values="' + (size + 8) + ';' + (size + 18) + ';' + (size + 8) + '" dur="2.4s" repeatCount="indefinite"/></circle>' : '/>'}
+        <circle cx="${d.x}" cy="${d.y}" r="${size}" fill="${color}" opacity="0.4"/>
+        <circle cx="${d.x}" cy="${d.y}" r="${size - 4}" fill="${color}" stroke="white" stroke-width="2"/>
+        <text x="${d.x}" y="${d.y - size - 8}" text-anchor="middle" font-family="DM Sans" font-size="11" font-weight="600" fill="rgba(26,22,18,0.9)">${d.name}</text>
+        <text x="${d.x}" y="${d.y + 4}" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="white">${filter === 'all' ? Math.round(val) : d[filter]}%</text>
+      </g>
+    `;
+  });
+
+  // Compass
+  svg += `
+    <g transform="translate(${W - 36}, 36)">
+      <circle r="18" fill="rgba(255,255,255,0.85)" stroke="rgba(26,22,18,0.15)"/>
+      <text y="-5" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#0F3D2E">N</text>
+      <line x1="0" y1="2" x2="0" y2="10" stroke="#0F3D2E" stroke-width="1"/>
+    </g>
+  `;
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function renderTrendChart() {
+  const W = 700, H = 280;
+  const padding = { top: 20, right: 24, bottom: 30, left: 50 };
+  const innerW = W - padding.left - padding.right;
+  const innerH = H - padding.top - padding.bottom;
+
+  const cmd = Array.from({ length: 12 }, (_, i) => 18 + Math.sin(i / 2) * 5 + i * 0.4 + Math.random() * 2);
+  const cgm = Array.from({ length: 12 }, (_, i) => 14 - i * 0.2 + Math.sin(i / 3) * 2 + Math.random() * 1.5);
+  const cbb = Array.from({ length: 12 }, (_, i) => 12 - i * 0.4 + Math.random() * 1.5);
+
+  const minVal = 0;
+  const maxVal = 40;
+  const range = maxVal - minVal;
+  const stepX = innerW / 11;
+  const yScale = (val) => padding.top + innerH - ((val - minVal) / range) * innerH;
+
+  const yTicks = [0, 10, 20, 30, 40].map(v => ({ val: v, y: yScale(v) }));
+
+  function makePath(arr) {
+    return arr.map((v, i) => `${padding.left + i * stepX},${yScale(v)}`).join(' ');
+  }
+
+  const xLabels = [0, 3, 6, 9, 11].map(i => ({
+    x: padding.left + i * stepX,
+    label: i === 11 ? 'now' : `${11 - i}w ago`
+  }));
+
+  return `
+    <svg class="big-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      ${yTicks.map(t => `
+        <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(26,22,18,0.06)" stroke-width="1"/>
+        <text x="${padding.left - 8}" y="${t.y + 4}" text-anchor="end" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.5)">${t.val}%</text>
+      `).join('')}
+      <polyline fill="none" stroke="var(--terra)" stroke-width="2.5" points="${makePath(cmd)}" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline fill="none" stroke="var(--gold)" stroke-width="2" points="${makePath(cgm)}" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline fill="none" stroke="var(--leaf-deep)" stroke-width="2" points="${makePath(cbb)}" stroke-linecap="round" stroke-linejoin="round"/>
+      ${cmd.map((v, i) => `<circle cx="${padding.left + i * stepX}" cy="${yScale(v)}" r="3" fill="var(--terra)"/>`).join('')}
+
+      <text x="${W - padding.right + 4}" y="${yScale(cmd[cmd.length-1]) + 4}" font-family="Fraunces" font-style="italic" font-size="12" fill="var(--terra)" font-weight="500">${cmd[cmd.length-1].toFixed(0)}%</text>
+
+      ${xLabels.map(l => `
+        <text x="${l.x}" y="${H - 8}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.5)">${l.label}</text>
+      `).join('')}
+    </svg>
+  `;
+}
+
+// ---------- MAIN RENDER ----------
+
+function render() {
+  const main = document.getElementById('mainContent');
+  let html = '';
+  if (STATE.role === 'scan') html = renderScan();
+  else if (STATE.role === 'library') html = renderLibrary();
+  else if (STATE.role === 'farm') html = renderFarm();
+  else if (STATE.role === 'extension') html = renderExtension();
+  main.innerHTML = html;
+  attachViewListeners();
+  if (STATE.role === 'scan') renderPhoneState();
+}
+
+function attachViewListeners() {
+  // My Farm view
+  const scanNowBtn = document.getElementById('scanNowBtn');
+  if (scanNowBtn) {
+    scanNowBtn.addEventListener('click', () => {
+      STATE.role = 'scan';
+      STATE.phoneState = 'viewfinder';
+      STATE.selectedSample = null;
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === 'scan'));
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // Extension view — outbreak map filter
+  document.querySelectorAll('[data-obfilter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      STATE.outbreakFilter = btn.dataset.obfilter;
+      render();
+    });
+  });
+}
+
+function updateTimes() {
+  const now = new Date();
+  const hh = now.getHours().toString().padStart(2, '0');
+  const mm = now.getMinutes().toString().padStart(2, '0');
+  const ss = now.getSeconds().toString().padStart(2, '0');
+  const liveTime = document.getElementById('liveTime');
+  const phoneTime = document.getElementById('phoneTime');
+  if (liveTime) liveTime.textContent = `${hh}:${mm}:${ss}`;
+  if (phoneTime) phoneTime.textContent = `${hh}:${mm}`;
+}
+
+// ---------- INIT ----------
+
+render();
+updateTimes();
+setInterval(updateTimes, 1000);
+
+document.querySelectorAll('.role-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.role = btn.dataset.role;
+    // Reset scan state when leaving
+    if (STATE.role !== 'scan') {
+      STATE.phoneState = 'viewfinder';
+      STATE.selectedSample = null;
+    }
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+</script>
+
+</body>
+</html>

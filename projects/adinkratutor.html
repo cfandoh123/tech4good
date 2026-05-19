@@ -1,0 +1,3047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AdinkraTutor — Peer tutoring for Ghana's JHS students</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1A1612;
+    --ink-soft: #3a3128;
+    --forest: #0F3D2E;
+    --forest-deep: #0a2a20;
+    --forest-soft: #2a5a47;
+    --terra: #D97543;
+    --terra-deep: #B85A2E;
+    --gold: #C8956D;
+    --indigo: #3B4A6B;
+    --cream: #F4EDE0;
+    --cream-warm: #EEE3CF;
+    --paper: #FAF6EE;
+    --line: rgba(26, 22, 18, 0.10);
+    --line-strong: rgba(26, 22, 18, 0.18);
+    --good: #2D6E4E;
+    --bad: #B84A3E;
+    --warn: #C8956D;
+
+    --display: 'Fraunces', Georgia, serif;
+    --body: 'DM Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; font-size: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ============ HEADER ============ */
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250, 246, 238, 0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .top-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    background: var(--ink);
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Adinkra Nyansapo (wisdom knot) inspired mark */
+  .brand-mark svg {
+    width: 22px;
+    height: 22px;
+  }
+  .brand-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0.55;
+    font-weight: normal;
+    margin-left: 4px;
+  }
+
+  .role-switcher {
+    display: flex;
+    gap: 4px;
+    background: var(--cream);
+    padding: 4px;
+    border-radius: 100px;
+    border: 1px solid var(--line);
+  }
+  .role-btn {
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .role-btn:hover { color: var(--ink); }
+  .role-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .role-btn .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+  }
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--good);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(45, 110, 78, 0.4); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(45, 110, 78, 0); }
+  }
+
+  /* ============ MAIN ============ */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+
+  .view-header {
+    margin-bottom: 32px;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .view-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--terra-deep);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .view-eyebrow::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--terra-deep);
+  }
+  .view-title {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+  }
+  .view-title em { font-style: italic; color: var(--forest); }
+  .view-sub {
+    margin-top: 14px;
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 560px;
+  }
+  .view-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .selector {
+    padding: 10px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--paper);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .selector:hover { border-color: var(--ink); }
+
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary:hover { background: var(--forest); transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--cream);
+    color: var(--ink);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid var(--line);
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: var(--cream-warm); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { background: var(--cream); }
+
+  /* ============ CARDS ============ */
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 24px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .card-title {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+  .card-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    padding: 4px 10px;
+    background: var(--cream);
+    border-radius: 100px;
+  }
+
+  /* ============ STATS ============ */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 22px;
+    border-radius: 6px;
+  }
+  .stat-card.accent {
+    background: var(--forest);
+    color: var(--cream);
+    border-color: var(--forest);
+  }
+  .stat-card.accent .stat-label { color: var(--gold); }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .stat-value {
+    font-family: var(--display);
+    font-size: 38px;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    margin-bottom: 8px;
+  }
+  .stat-value .small-unit {
+    font-size: 16px;
+    opacity: 0.6;
+    margin-left: 4px;
+  }
+  .stat-change {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--good);
+  }
+  .stat-change.down { color: var(--bad); }
+  .stat-change.flat { color: var(--ink-soft); }
+  .stat-card.accent .stat-change { color: var(--gold); }
+
+  /* ============ STUDENT VIEW ============ */
+  .hero-card {
+    background: linear-gradient(135deg, var(--forest) 0%, var(--forest-deep) 100%);
+    color: var(--cream);
+    padding: 36px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 60%;
+    height: 140%;
+    background: radial-gradient(circle, var(--gold) 0%, transparent 65%);
+    opacity: 0.18;
+  }
+  .hero-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+    position: relative;
+  }
+  .hero-text { max-width: 580px; }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .hero-title {
+    font-family: var(--display);
+    font-size: 36px;
+    line-height: 1.1;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .hero-title em { font-style: italic; color: var(--gold); }
+  .hero-sub {
+    font-size: 15px;
+    opacity: 0.85;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .btn-accent {
+    background: var(--terra);
+    color: var(--paper);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-accent:hover { background: var(--terra-deep); transform: translateY(-1px); }
+  .btn-ghost-light {
+    background: transparent;
+    color: var(--cream);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid rgba(244, 237, 224, 0.3);
+    transition: all 0.2s;
+  }
+  .btn-ghost-light:hover { background: rgba(244, 237, 224, 0.1); border-color: var(--gold); }
+
+  /* BECE countdown */
+  .bece-countdown {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 20px 24px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .bece-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .bece-num {
+    font-family: var(--display);
+    font-size: 56px;
+    line-height: 1;
+    font-weight: 400;
+    color: var(--terra);
+    letter-spacing: -0.03em;
+  }
+  .bece-num .small {
+    font-size: 16px;
+    color: var(--cream);
+    opacity: 0.6;
+    margin-left: 4px;
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+  }
+  .bece-text-title {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .bece-text-sub {
+    font-size: 13px;
+    opacity: 0.7;
+  }
+  .bece-progress {
+    flex: 1;
+    max-width: 320px;
+    min-width: 220px;
+  }
+  .bece-progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+    opacity: 0.7;
+  }
+  .bece-bar {
+    height: 8px;
+    background: rgba(244, 237, 224, 0.15);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .bece-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--terra));
+    border-radius: 100px;
+    transition: width 0.8s ease-out;
+  }
+
+  .student-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* Subject progress */
+  .subject-list { display: flex; flex-direction: column; gap: 16px; }
+  .subject-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+  .subject-icon {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .sub-math { background: var(--forest); color: var(--gold); }
+  .sub-eng  { background: var(--terra); color: var(--cream); }
+  .sub-sci  { background: var(--indigo); color: var(--cream); }
+  .sub-soc  { background: var(--gold); color: var(--ink); }
+  .sub-ict  { background: var(--ink); color: var(--cream); }
+  .sub-tw   { background: var(--cream-warm); color: var(--forest); }
+  .sub-row-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .subject-name {
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .subject-name .grade {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .subject-bar {
+    height: 6px;
+    background: var(--cream);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .subject-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.8s ease-out;
+  }
+  .subject-pct {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  /* Upcoming sessions */
+  .session-list { display: flex; flex-direction: column; }
+  .session-item {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+    align-items: center;
+  }
+  .session-item:first-child { border-top: none; padding-top: 4px; }
+  .session-date {
+    text-align: center;
+    background: var(--forest);
+    color: var(--cream);
+    padding: 10px 6px;
+    border-radius: 6px;
+    line-height: 1;
+  }
+  .session-date.today {
+    background: var(--terra);
+  }
+  .session-date.past {
+    background: var(--cream);
+    color: var(--ink-soft);
+  }
+  .session-day {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    opacity: 0.7;
+  }
+  .session-num {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .session-info-title {
+    font-weight: 500;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .session-info-meta {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .session-info-meta::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--good);
+  }
+  .session-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: var(--cream);
+    color: var(--ink-soft);
+  }
+  .session-tag.online { background: rgba(59, 74, 107, 0.15); color: var(--indigo); }
+  .session-tag.inperson { background: rgba(45, 110, 78, 0.15); color: var(--good); }
+
+  /* Recommended tutors strip */
+  .recommended-tutors {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .tutor-mini-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tutor-mini-card:hover {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+  }
+  .tmc-head {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .tutor-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .av-1 { background: var(--cream-warm); color: var(--forest); }
+  .av-2 { background: var(--forest); color: var(--cream); }
+  .av-3 { background: var(--terra); color: var(--cream); }
+  .av-4 { background: var(--gold); color: var(--ink); }
+  .av-5 { background: var(--ink); color: var(--cream); }
+  .av-6 { background: var(--indigo); color: var(--cream); }
+  .av-7 { background: rgba(45, 110, 78, 0.2); color: var(--good); }
+  .tmc-name {
+    font-weight: 500;
+    font-size: 15px;
+  }
+  .tmc-school {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .tmc-stats {
+    display: flex;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .tmc-stats .rating {
+    color: var(--terra-deep);
+    font-weight: 500;
+  }
+  .tmc-subjects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .subject-pill {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    background: var(--cream);
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ============ TUTOR VIEW ============ */
+  .tutor-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .earnings-card {
+    background: linear-gradient(135deg, var(--ink) 0%, var(--ink-soft) 100%);
+    color: var(--cream);
+    padding: 32px;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .earnings-card::before {
+    content: '';
+    position: absolute;
+    bottom: -40%;
+    left: -20%;
+    width: 70%;
+    height: 130%;
+    background: radial-gradient(circle, var(--terra) 0%, transparent 65%);
+    opacity: 0.25;
+  }
+  .earnings-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .earnings-amount {
+    font-family: var(--display);
+    font-size: 56px;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .earnings-amount .currency {
+    font-size: 28px;
+    color: var(--gold);
+    margin-right: 4px;
+    vertical-align: top;
+  }
+  .earnings-stats {
+    display: flex;
+    gap: 28px;
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .earn-stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+  .earn-stat-value {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 500;
+  }
+  .earnings-actions {
+    display: flex;
+    gap: 10px;
+    position: relative;
+  }
+  .btn-momo {
+    background: var(--terra);
+    color: var(--paper);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-momo:hover { background: var(--terra-deep); }
+
+  /* Tutor schedule grid */
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(7, 1fr);
+    gap: 4px;
+    margin-top: 12px;
+  }
+  .schedule-time-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    padding: 8px 4px;
+    text-align: right;
+    letter-spacing: 0.04em;
+  }
+  .schedule-day-header {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .schedule-cell {
+    height: 36px;
+    border-radius: 4px;
+    background: var(--cream);
+    transition: background 0.15s;
+    cursor: pointer;
+    position: relative;
+  }
+  .schedule-cell:hover { background: var(--cream-warm); }
+  .schedule-cell.booked {
+    background: var(--forest);
+    cursor: default;
+  }
+  .schedule-cell.booked::after {
+    content: attr(data-student);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-align: center;
+    padding: 0 4px;
+  }
+  .schedule-cell.available {
+    background: rgba(45, 110, 78, 0.15);
+  }
+  .schedule-cell.available:hover { background: rgba(45, 110, 78, 0.25); }
+  .schedule-cell.unavailable {
+    background: transparent;
+    border: 1px dashed rgba(26, 22, 18, 0.08);
+    cursor: default;
+  }
+  .schedule-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    flex-wrap: wrap;
+  }
+  .sl-item { display: flex; align-items: center; gap: 6px; }
+  .sl-swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* My students list */
+  .my-students-list { display: flex; flex-direction: column; }
+  .my-student-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .my-student-item:first-child { border-top: none; padding-top: 4px; }
+  .mys-name {
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .mys-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+  .mys-sessions {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--forest);
+  }
+  .mys-sessions .small {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-left: 2px;
+    letter-spacing: 0.08em;
+  }
+  .mys-action {
+    padding: 6px 14px;
+    background: var(--cream);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+  }
+  .mys-action:hover {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  /* Reviews */
+  .review-list { display: flex; flex-direction: column; }
+  .review-item {
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+  .review-item:first-child { border-top: none; padding-top: 0; }
+  .review-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .review-author {
+    font-weight: 500;
+    font-size: 13px;
+  }
+  .review-stars {
+    color: var(--terra);
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .review-text {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .review-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ============ BROWSE / MATCH VIEW ============ */
+  .match-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .filter-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 28px;
+    border-radius: 6px;
+    position: sticky;
+    top: 100px;
+  }
+  .filter-card h3 {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: -0.015em;
+  }
+  .filter-card .filter-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .filter-group {
+    margin-bottom: 22px;
+  }
+  .filter-group:last-of-type { margin-bottom: 0; }
+  .filter-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .filter-pill {
+    padding: 7px 14px;
+    border-radius: 100px;
+    background: var(--cream);
+    color: var(--ink-soft);
+    font-size: 13px;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+  .filter-pill:hover { background: var(--cream-warm); color: var(--ink); }
+  .filter-pill.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+  .filter-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .filter-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--cream);
+    border-radius: 100px;
+    outline: none;
+  }
+  .filter-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--ink);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .filter-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  .filter-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--ink);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+  .filter-slider-value {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 500;
+    min-width: 64px;
+    text-align: right;
+  }
+  .filter-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--paper);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  .filter-input:focus { outline: none; border-color: var(--forest); }
+  .filter-reset {
+    margin-top: 24px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    padding: 8px;
+    transition: color 0.2s;
+  }
+  .filter-reset:hover { color: var(--ink); }
+
+  /* Results */
+  .results-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .results-count {
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+  .results-count em {
+    font-style: italic;
+    color: var(--forest);
+  }
+  .results-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  .results-sort {
+    display: flex;
+    gap: 4px;
+    font-size: 12px;
+    background: var(--cream);
+    padding: 3px;
+    border-radius: 100px;
+  }
+  .results-sort button {
+    padding: 6px 12px;
+    border-radius: 100px;
+    color: var(--ink-soft);
+    transition: all 0.15s;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .results-sort button.active {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  /* Tutor result card */
+  .tutor-result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .tutor-result {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: start;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .tutor-result:hover {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+  }
+  .tutor-result.top-match {
+    border-color: var(--terra);
+    background: linear-gradient(135deg, var(--paper) 0%, #fbeede 100%);
+  }
+  .tutor-result.top-match::before {
+    content: 'Top Match';
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--terra);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+  .tr-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .tr-body { min-width: 0; }
+  .tr-name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .tr-name {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+  .tr-school {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .tr-bio {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    max-width: 580px;
+  }
+  .tr-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 12px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    align-items: center;
+  }
+  .tr-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .tr-meta-item .key {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .tr-meta-item .val {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .tr-meta-item.rating .val { color: var(--terra-deep); }
+  .tr-divider {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--ink-soft);
+    opacity: 0.4;
+  }
+  .tr-subjects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tr-subjects .subject-pill {
+    font-size: 10px;
+  }
+  .tr-subjects .subject-pill.matched {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .tr-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+    text-align: right;
+  }
+  .match-score-ring {
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+  .match-score-ring svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+  }
+  .match-score-ring .score-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .match-score-val {
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .match-score-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+  .tr-price {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .tr-price .small {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-left: 2px;
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+  }
+  .tr-book {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 20px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tr-book:hover { background: var(--forest); }
+
+  /* Match breakdown */
+  .match-breakdown {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    display: none;
+    grid-column: 1 / -1;
+  }
+  .tutor-result.expanded .match-breakdown { display: block; }
+  .mb-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .mb-row {
+    display: grid;
+    grid-template-columns: 130px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 12.5px;
+  }
+  .mb-row-label {
+    color: var(--ink-soft);
+  }
+  .mb-row-bar {
+    height: 4px;
+    background: var(--cream);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .mb-row-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: var(--forest);
+    transition: width 0.6s ease-out;
+  }
+  .mb-row-fill.partial { background: var(--gold); }
+  .mb-row-fill.low { background: var(--bad); opacity: 0.6; }
+  .mb-row-pct {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: right;
+    min-width: 40px;
+  }
+
+  /* ============ ADMIN VIEW ============ */
+  .admin-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .admin-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .big-chart {
+    width: 100%;
+    height: 280px;
+  }
+  .chart-legend-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .chart-legend-swatch {
+    width: 16px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  /* Subject demand */
+  .demand-list { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+  .demand-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 80px;
+    gap: 14px;
+    align-items: center;
+    font-size: 13px;
+  }
+  .demand-name {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 15px;
+  }
+  .demand-bar-wrap {
+    position: relative;
+    height: 22px;
+  }
+  .demand-bar-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--cream);
+    border-radius: 4px;
+  }
+  .demand-bar-supply {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: var(--gold);
+    border-radius: 4px;
+    opacity: 0.85;
+    transition: width 0.8s ease-out;
+  }
+  .demand-bar-demand {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: var(--terra);
+    border-radius: 4px;
+    transition: width 0.8s ease-out;
+    mix-blend-mode: multiply;
+  }
+  .demand-val {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+
+  /* School outcomes table */
+  .outcomes-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .outcomes-table th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line-strong);
+    font-weight: 500;
+  }
+  .outcomes-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .outcomes-table tr:last-child td { border-bottom: none; }
+  .outcomes-table tr:hover { background: rgba(216, 117, 67, 0.04); }
+  .school-cell {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 15px;
+  }
+  .delta-cell {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .delta-cell.up { color: var(--good); }
+  .delta-cell.down { color: var(--bad); }
+
+  /* Safety panel */
+  .safety-card {
+    background: var(--cream);
+    padding: 24px;
+    border-radius: 6px;
+    border-left: 3px solid var(--forest);
+    margin-top: 16px;
+  }
+  .safety-title {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .safety-body {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: var(--ink);
+    color: var(--cream);
+    padding: 14px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast::before {
+    content: '✓';
+    color: var(--gold);
+  }
+
+  /* Footer */
+  footer {
+    max-width: 1400px;
+    margin: 60px auto 0;
+    padding: 32px 32px 40px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  footer a {
+    color: var(--terra-deep);
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--ink); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1100px) {
+    .student-grid, .tutor-grid, .match-layout, .admin-grid, .admin-grid-2 {
+      grid-template-columns: 1fr;
+    }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .filter-card { position: relative; top: 0; }
+    .tutor-result { grid-template-columns: auto 1fr; }
+    .tr-right { grid-column: 2; flex-direction: row; align-items: center; justify-content: space-between; text-align: left; }
+  }
+  @media (max-width: 700px) {
+    .top-inner { flex-wrap: wrap; gap: 12px; padding: 14px 20px; }
+    .role-switcher { width: 100%; overflow-x: auto; }
+    .role-btn { white-space: nowrap; padding: 8px 12px; font-size: 12px; }
+    main { padding: 24px 20px; }
+    .view-title { font-size: 36px; }
+    .hero-title { font-size: 26px; }
+    .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-card { padding: 16px; }
+    .stat-value { font-size: 28px; }
+    .bece-num { font-size: 42px; }
+    .earnings-amount { font-size: 40px; }
+    .schedule-grid { font-size: 10px; }
+    .schedule-time-label { padding: 4px 2px; }
+    .schedule-day-header { font-size: 9px; padding: 4px 2px; }
+    .schedule-cell { height: 28px; }
+    .tutor-result { grid-template-columns: 1fr; gap: 16px; }
+    .tr-avatar { width: 48px; height: 48px; font-size: 18px; }
+    .mb-row { grid-template-columns: 100px 1fr 40px; gap: 8px; font-size: 11px; }
+    footer { flex-direction: column; align-items: start; text-align: left; }
+  }
+
+/* ===== Tech4Good back-nav banner (injected by wiring script) ===== */
+.t4g-back-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: #1A1612;
+  color: #F4EDE0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(244, 237, 224, 0.08);
+}
+.t4g-back-nav .t4g-back-link {
+  color: #F4EDE0;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s;
+  font-weight: 500;
+}
+.t4g-back-nav .t4g-back-link:hover { color: #C8956D; }
+.t4g-back-nav .t4g-back-arrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.t4g-back-nav .t4g-context {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.t4g-back-nav .t4g-mark {
+  width: 16px;
+  height: 16px;
+  background: #0F3D2E;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.t4g-back-nav .t4g-mark::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: #D97543;
+  border-radius: 50%;
+}
+body {
+  padding-top: 36px;
+}
+header.top {
+  top: 36px !important;
+}
+@media (max-width: 700px) {
+  .t4g-back-nav { padding: 0 16px; height: 32px; }
+  .t4g-back-nav .t4g-context { display: none; }
+  body { padding-top: 32px; }
+  header.top { top: 32px !important; }
+}
+
+</style>
+</head>
+<body>
+<div class="t4g-back-nav">
+  <a href="../index.html" class="t4g-back-link">
+    <span class="t4g-mark"></span>
+    <span class="t4g-back-arrow">←</span>
+    Back to Tech4Good
+  </a>
+  <span class="t4g-context">AdinkraTutor · Cohort 01 Demo Day</span>
+</div>
+
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="brand-mark">
+        <!-- Adinkra Nyansapo (wisdom knot) inspired -->
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M6 6 Q12 2, 18 6 Q22 12, 18 18 Q12 22, 6 18 Q2 12, 6 6 Z" stroke="#C8956D" stroke-width="1.6" fill="none"/>
+          <path d="M9 9 Q12 7, 15 9 Q17 12, 15 15 Q12 17, 9 15 Q7 12, 9 9 Z" stroke="#D97543" stroke-width="1.4" fill="none"/>
+          <circle cx="12" cy="12" r="1.5" fill="#C8956D"/>
+        </svg>
+      </div>
+      <div>
+        AdinkraTutor<span class="brand-sub">Wesley Girls · Cohort 01</span>
+      </div>
+    </div>
+    <div class="role-switcher" id="roleSwitcher">
+      <button class="role-btn active" data-role="student"><span class="dot"></span>Student</button>
+      <button class="role-btn" data-role="browse"><span class="dot"></span>Find a Tutor</button>
+      <button class="role-btn" data-role="tutor"><span class="dot"></span>Tutor</button>
+      <button class="role-btn" data-role="admin"><span class="dot"></span>School Admin</button>
+    </div>
+    <div class="live-indicator">
+      <span class="live-dot"></span>
+      <span>Live · <span id="liveTime">--:--</span></span>
+    </div>
+  </div>
+</header>
+
+<main id="mainContent"></main>
+
+<footer>
+  <div>AdinkraTutor · Built by Cohort 01 · <a href="#">Tech4Good Nungua</a></div>
+  <div>Verified by school coordinators · Payments via MTN MoMo</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   ADINKRATUTOR — Peer tutoring matcher for JHS students
+   Built for the Tech4Good Innovators Bootcamp · Cohort 01
+   Focus: BECE prep · SHS-to-JHS mentorship · Greater Accra
+   ============================================================ */
+
+// ---------- DATA ----------
+
+const SUBJECTS = [
+  { id: 'math',    name: 'Mathematics',     short: 'Math',  iconClass: 'sub-math',  color: '#0F3D2E' },
+  { id: 'english', name: 'English Language',short: 'English',iconClass: 'sub-eng',  color: '#D97543' },
+  { id: 'science', name: 'Integrated Science',short: 'Science',iconClass: 'sub-sci', color: '#3B4A6B' },
+  { id: 'social',  name: 'Social Studies',  short: 'Social', iconClass: 'sub-soc',  color: '#C8956D' },
+  { id: 'ict',     name: 'Computing / ICT', short: 'ICT',    iconClass: 'sub-ict',  color: '#1A1612' },
+  { id: 'twi',     name: 'Ghanaian Language',short: 'Twi',   iconClass: 'sub-tw',   color: '#0F3D2E' },
+  { id: 'rme',     name: 'Religious & Moral Ed.', short: 'RME', iconClass: 'sub-soc', color: '#C8956D' },
+  { id: 'cad',     name: 'Career Tech / Pre-Tech', short: 'Pre-Tech', iconClass: 'sub-ict', color: '#1A1612' }
+];
+
+const AREAS = [
+  'East Legon', 'Madina', 'Adenta', 'Spintex', 'Tema', 'La', 'Teshie',
+  'Nungua', 'Dansoman', 'Achimota', 'Ashaiman', 'Lapaz'
+];
+
+const SHS_SCHOOLS = [
+  'Wesley Girls SHS', 'Presec Legon', 'Achimota School',
+  'Accra Academy', 'Holy Child SHS', 'Mfantsipim School',
+  'St. Thomas Aquinas', 'Aburi Girls SHS', 'Ghana National College',
+  'Adisadel College'
+];
+
+const TUTORS = [
+  {
+    id: 't01', name: 'Adwoa Owusu', initials: 'AO', avatar: 'av-1', gender: 'F',
+    school: 'Wesley Girls SHS', form: 'SHS 3',
+    bio: "Top of my form in Math and Science. I love showing JHS girls that the trick isn't being a genius — it's understanding the question.",
+    subjects: ['math', 'science'],
+    languages: ['en', 'twi'],
+    area: 'Cape Coast (online)',
+    modes: ['online'],
+    rate: 15,
+    rating: 4.9,
+    sessions: 87,
+    yearsTutoring: 2,
+    style: 'patient',
+    availability: ['weekday-eve', 'weekend-am']
+  },
+  {
+    id: 't02', name: 'Kwesi Asante', initials: 'KA', avatar: 'av-2', gender: 'M',
+    school: 'Presec Legon', form: 'SHS 3',
+    bio: "Aggregate 6 in BECE. I now coach the math club — I'll walk you through every past question step by step.",
+    subjects: ['math', 'ict', 'science'],
+    languages: ['en'],
+    area: 'East Legon',
+    modes: ['inperson', 'online'],
+    rate: 20,
+    rating: 4.8,
+    sessions: 142,
+    yearsTutoring: 3,
+    style: 'structured',
+    availability: ['weekday-eve', 'weekend-pm']
+  },
+  {
+    id: 't03', name: 'Naa Adoley Quaye', initials: 'NA', avatar: 'av-3', gender: 'F',
+    school: 'Holy Child SHS', form: 'SHS 2',
+    bio: "I tutor English and Social Studies — strong on essay-writing technique and how examiners actually grade.",
+    subjects: ['english', 'social', 'rme'],
+    languages: ['en', 'ga'],
+    area: 'La',
+    modes: ['inperson', 'online'],
+    rate: 12,
+    rating: 4.7,
+    sessions: 64,
+    yearsTutoring: 1,
+    style: 'patient',
+    availability: ['weekend-am', 'weekend-pm']
+  },
+  {
+    id: 't04', name: 'Yaw Boateng', initials: 'YB', avatar: 'av-4', gender: 'M',
+    school: 'Achimota School', form: 'SHS 3',
+    bio: "I broke into Achimota with Aggregate 8. I tutor JHS3 students for BECE — focused, no nonsense, results-driven.",
+    subjects: ['math', 'science', 'social'],
+    languages: ['en', 'twi'],
+    area: 'Achimota',
+    modes: ['inperson'],
+    rate: 18,
+    rating: 4.9,
+    sessions: 103,
+    yearsTutoring: 2,
+    style: 'structured',
+    availability: ['weekday-eve', 'weekend-am', 'weekend-pm']
+  },
+  {
+    id: 't05', name: 'Esi Aidoo', initials: 'EA', avatar: 'av-5', gender: 'F',
+    school: 'Aburi Girls SHS', form: 'SHS 2',
+    bio: "English and Twi. I help students who feel English is 'not their language' — I teach in both.",
+    subjects: ['english', 'twi'],
+    languages: ['en', 'twi'],
+    area: 'Madina',
+    modes: ['inperson', 'online'],
+    rate: 10,
+    rating: 4.6,
+    sessions: 42,
+    yearsTutoring: 1,
+    style: 'patient',
+    availability: ['weekday-eve', 'weekend-am']
+  },
+  {
+    id: 't06', name: 'Kojo Mensah', initials: 'KM', avatar: 'av-6', gender: 'M',
+    school: 'Mfantsipim School', form: 'SHS 3',
+    bio: "ICT, Math, Pre-Tech. I learned to code from YouTube — I'll show you the same path. JHS3 → SHS prep especially.",
+    subjects: ['ict', 'math', 'cad'],
+    languages: ['en'],
+    area: 'Cape Coast (online)',
+    modes: ['online'],
+    rate: 22,
+    rating: 5.0,
+    sessions: 56,
+    yearsTutoring: 2,
+    style: 'structured',
+    availability: ['weekday-eve']
+  },
+  {
+    id: 't07', name: 'Akua Tetteh', initials: 'AT', avatar: 'av-7', gender: 'F',
+    school: 'Wesley Girls SHS', form: 'SHS 2',
+    bio: "I love science and I'm good at explaining tricky topics like photosynthesis and electricity in everyday language.",
+    subjects: ['science', 'math'],
+    languages: ['en', 'twi'],
+    area: 'Spintex',
+    modes: ['inperson', 'online'],
+    rate: 14,
+    rating: 4.8,
+    sessions: 71,
+    yearsTutoring: 2,
+    style: 'patient',
+    availability: ['weekday-eve', 'weekend-pm']
+  },
+  {
+    id: 't08', name: 'Nii Tetteh Lartey', initials: 'NT', avatar: 'av-2', gender: 'M',
+    school: 'Accra Academy', form: 'SHS 3',
+    bio: "Social Studies, RME, and English. I make the syllabus into stories — Mansa Musa, the Asantehene, all of it.",
+    subjects: ['social', 'rme', 'english'],
+    languages: ['en', 'ga'],
+    area: 'Dansoman',
+    modes: ['inperson'],
+    rate: 15,
+    rating: 4.7,
+    sessions: 89,
+    yearsTutoring: 2,
+    style: 'patient',
+    availability: ['weekend-am', 'weekend-pm']
+  },
+  {
+    id: 't09', name: 'Adwoa Foriwaa', initials: 'AF', avatar: 'av-3', gender: 'F',
+    school: 'St. Thomas Aquinas', form: 'SHS 3',
+    bio: "Math specialist. Algebra, geometry, mensuration — the trio that wrecks BECE candidates. We'll fix it.",
+    subjects: ['math'],
+    languages: ['en', 'twi'],
+    area: 'Tema',
+    modes: ['inperson', 'online'],
+    rate: 18,
+    rating: 4.9,
+    sessions: 124,
+    yearsTutoring: 3,
+    style: 'structured',
+    availability: ['weekday-eve', 'weekend-am', 'weekend-pm']
+  },
+  {
+    id: 't10', name: 'Sefa Asante', initials: 'SA', avatar: 'av-4', gender: 'F',
+    school: 'Holy Child SHS', form: 'SHS 3',
+    bio: "English Language. Comprehension, summary, composition. I scored A1 in BECE English — I know what they want.",
+    subjects: ['english'],
+    languages: ['en', 'twi'],
+    area: 'Adenta',
+    modes: ['inperson', 'online'],
+    rate: 13,
+    rating: 4.8,
+    sessions: 95,
+    yearsTutoring: 2,
+    style: 'structured',
+    availability: ['weekday-eve', 'weekend-am']
+  },
+  {
+    id: 't11', name: 'Kojo Yeboah', initials: 'KY', avatar: 'av-5', gender: 'M',
+    school: 'Adisadel College', form: 'SHS 2',
+    bio: "Math and ICT. Aggregate 7. I want to study computer engineering — let me help you build a foundation.",
+    subjects: ['math', 'ict'],
+    languages: ['en', 'twi'],
+    area: 'Cape Coast (online)',
+    modes: ['online'],
+    rate: 16,
+    rating: 4.7,
+    sessions: 38,
+    yearsTutoring: 1,
+    style: 'patient',
+    availability: ['weekday-eve', 'weekend-pm']
+  },
+  {
+    id: 't12', name: 'Naa Korkor Okine', initials: 'NK', avatar: 'av-6', gender: 'F',
+    school: 'Ghana National College', form: 'SHS 3',
+    bio: "Science and Pre-Tech. Practical work and project-based learning are my thing. JHS girls especially welcome.",
+    subjects: ['science', 'cad', 'math'],
+    languages: ['en', 'ga'],
+    area: 'Teshie',
+    modes: ['inperson', 'online'],
+    rate: 17,
+    rating: 4.9,
+    sessions: 67,
+    yearsTutoring: 2,
+    style: 'patient',
+    availability: ['weekend-am', 'weekend-pm']
+  }
+];
+
+// Current student profile (the JHS learner using the app)
+const CURRENT_STUDENT = {
+  name: 'Afia',
+  fullName: 'Afia Adomako',
+  initials: 'AA',
+  jhsForm: 'JHS 3',
+  school: 'Datus Memorial JHS',
+  area: 'Adenta',
+  gender: 'F',
+  language: 'twi',
+  beceDateISO: '2026-06-08', // simulated BECE date
+  weakSubjects: ['math', 'science'],
+  goals: ['Aggregate 12 or better', 'Holy Child SHS placement']
+};
+
+// Current tutor profile (for tutor view)
+const CURRENT_TUTOR_ID = 't09'; // Adwoa Foriwaa
+
+// ---------- STATE ----------
+
+const STATE = {
+  role: 'student',
+  filters: {
+    subject: 'math',
+    mode: 'any',         // any | inperson | online
+    maxRate: 25,
+    gender: 'any',       // any | F | M
+    language: 'any',     // any | en | twi | ga
+    area: 'any',         // any | one of AREAS
+    style: 'any',        // any | patient | structured
+    availability: 'any'  // any | weekday-eve | weekend-am | weekend-pm
+  },
+  sortBy: 'match',       // match | rating | price | sessions
+  expandedTutor: null,
+  selectedSubject: 'math'
+};
+
+// ---------- HELPERS ----------
+
+const subjectById = (id) => SUBJECTS.find(s => s.id === id);
+const tutorById = (id) => TUTORS.find(t => t.id === id);
+
+function fmtCedi(n) { return `₵${n}`; }
+
+function timeAgo(ts) {
+  const seconds = Math.floor((Date.now() - ts) / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+}
+
+function daysUntil(dateISO) {
+  const d = new Date(dateISO);
+  const diff = d.getTime() - Date.now();
+  return Math.max(0, Math.floor(diff / (24 * 60 * 60 * 1000)));
+}
+
+function starString(rating) {
+  const full = Math.floor(rating);
+  const half = (rating - full) >= 0.5 ? 1 : 0;
+  return '★'.repeat(full) + (half ? '½' : '');
+}
+
+// ---------- MATCHING ALGORITHM ----------
+
+/**
+ * Computes a match score (0–100) for a tutor given the current filters.
+ * The score is also returned broken down by component so we can show users *why*.
+ * This is the centerpiece of the app — the explainable matcher.
+ */
+function scoreTutor(tutor, filters) {
+  const breakdown = {};
+  let score = 0;
+
+  // 1. Subject match (40 points) — hard requirement
+  const subjectMatch = tutor.subjects.includes(filters.subject) ? 1 : 0;
+  breakdown.subject = { weight: 40, fraction: subjectMatch, label: subjectMatch ? `Teaches ${subjectById(filters.subject).short}` : `Does not teach ${subjectById(filters.subject).short}` };
+  score += subjectMatch * 40;
+
+  // 2. Mode (10 points)
+  let modeFrac = 1;
+  if (filters.mode !== 'any') {
+    modeFrac = tutor.modes.includes(filters.mode) ? 1 : 0;
+  }
+  breakdown.mode = { weight: 10, fraction: modeFrac, label: filters.mode === 'any' ? 'Any mode' : (modeFrac ? `Offers ${filters.mode}` : `No ${filters.mode}`) };
+  score += modeFrac * 10;
+
+  // 3. Price fit (10 points) — under cap = full marks, scales down above
+  let priceFrac;
+  if (tutor.rate <= filters.maxRate) {
+    priceFrac = 1;
+  } else {
+    const overshoot = (tutor.rate - filters.maxRate) / filters.maxRate;
+    priceFrac = Math.max(0, 1 - overshoot * 2);
+  }
+  breakdown.price = { weight: 10, fraction: priceFrac, label: `${fmtCedi(tutor.rate)}/hr · budget ${fmtCedi(filters.maxRate)}` };
+  score += priceFrac * 10;
+
+  // 4. Language (10 points)
+  let langFrac = 1;
+  if (filters.language !== 'any') {
+    langFrac = tutor.languages.includes(filters.language) ? 1 : 0.3;
+  }
+  breakdown.language = { weight: 10, fraction: langFrac, label: filters.language === 'any' ? 'Any language' : (tutor.languages.includes(filters.language) ? `Speaks ${filters.language.toUpperCase()}` : 'Other language') };
+  score += langFrac * 10;
+
+  // 5. Gender preference (5 points)
+  let genFrac = 1;
+  if (filters.gender !== 'any') {
+    genFrac = tutor.gender === filters.gender ? 1 : 0;
+  }
+  breakdown.gender = { weight: 5, fraction: genFrac, label: filters.gender === 'any' ? 'Any gender' : (genFrac ? `Same gender (${filters.gender})` : 'Different gender') };
+  score += genFrac * 5;
+
+  // 6. Area / proximity (10 points) — only meaningful for in-person
+  let areaFrac = 1;
+  if (filters.area !== 'any' && (filters.mode === 'inperson' || filters.mode === 'any')) {
+    if (tutor.area === filters.area) areaFrac = 1;
+    else if (tutor.area.includes('online')) areaFrac = 0.7;
+    else areaFrac = 0.4;
+  }
+  breakdown.area = { weight: 10, fraction: areaFrac, label: filters.area === 'any' ? 'Any area' : (areaFrac === 1 ? `Same area · ${tutor.area}` : tutor.area) };
+  score += areaFrac * 10;
+
+  // 7. Teaching style (5 points)
+  let styleFrac = 1;
+  if (filters.style !== 'any') {
+    styleFrac = tutor.style === filters.style ? 1 : 0.4;
+  }
+  breakdown.style = { weight: 5, fraction: styleFrac, label: filters.style === 'any' ? 'Any style' : (styleFrac === 1 ? `${filters.style} match` : 'different style') };
+  score += styleFrac * 5;
+
+  // 8. Availability (5 points)
+  let availFrac = 1;
+  if (filters.availability !== 'any') {
+    availFrac = tutor.availability.includes(filters.availability) ? 1 : 0;
+  }
+  breakdown.availability = { weight: 5, fraction: availFrac, label: filters.availability === 'any' ? 'Any time' : (availFrac ? 'Available' : 'Not available') };
+  score += availFrac * 5;
+
+  // 9. Track record bonus (5 points) — rating × experience
+  const ratingFrac = (tutor.rating - 4.0) / 1.0; // 0.0 at 4.0, 1.0 at 5.0
+  breakdown.track = { weight: 5, fraction: ratingFrac, label: `${tutor.rating}★ · ${tutor.sessions} sessions` };
+  score += ratingFrac * 5;
+
+  return { score: Math.round(score), breakdown };
+}
+
+function rankedTutors(filters, sortBy) {
+  let arr = TUTORS.map(t => ({ ...t, ...scoreTutor(t, filters) }));
+  // Filter out clearly non-matching (no subject)
+  arr = arr.filter(t => t.breakdown.subject.fraction > 0);
+  // Sort
+  if (sortBy === 'match') arr.sort((a, b) => b.score - a.score);
+  else if (sortBy === 'rating') arr.sort((a, b) => b.rating - a.rating);
+  else if (sortBy === 'price') arr.sort((a, b) => a.rate - b.rate);
+  else if (sortBy === 'sessions') arr.sort((a, b) => b.sessions - a.sessions);
+  return arr;
+}
+
+// ---------- RENDER: STUDENT ----------
+
+function renderStudent() {
+  const beceDays = daysUntil(CURRENT_STUDENT.beceDateISO);
+  const totalPrep = 180; // simulated total prep window
+  const prepProgress = Math.min(100, ((totalPrep - beceDays) / totalPrep) * 100);
+
+  const subjectProgress = {
+    math:    { val: 58, change: '+12', grade: 'B3 → projected B2' },
+    english: { val: 74, change: '+8',  grade: 'A1' },
+    science: { val: 52, change: '+15', grade: 'C4 → projected B3' },
+    social:  { val: 81, change: '+5',  grade: 'A1' },
+    ict:     { val: 88, change: '+3',  grade: 'A1' },
+    twi:     { val: 92, change: '+1',  grade: 'A1' }
+  };
+
+  const upcomingSessions = [
+    { date: 'today', day: 'TUE', num: '21', dayLabel: 'Today', time: '5:00 PM', tutor: 'Adwoa F.', subject: 'Mathematics · Algebra', mode: 'online', urgent: true },
+    { date: 'soon', day: 'WED', num: '22', time: '6:00 PM', tutor: 'Akua T.', subject: 'Science · Electricity', mode: 'online' },
+    { date: 'soon', day: 'SAT', num: '25', time: '10:00 AM', tutor: 'Sefa A.', subject: 'English · Essay practice', mode: 'inperson' },
+    { date: 'past', day: 'MON', num: '20', time: '5:00 PM', tutor: 'Adwoa F.', subject: 'Mathematics · Geometry', mode: 'online', done: true }
+  ];
+
+  // Recommended tutors for weakest subject (math)
+  const recommendations = rankedTutors({
+    ...STATE.filters,
+    subject: CURRENT_STUDENT.weakSubjects[0]
+  }, 'match').slice(0, 4);
+
+  return `
+    <div class="hero-card">
+      <div class="hero-row">
+        <div class="hero-text">
+          <div class="hero-eyebrow">${CURRENT_STUDENT.jhsForm} · ${CURRENT_STUDENT.school}</div>
+          <h1 class="hero-title">Maakye, <em>${CURRENT_STUDENT.name}</em>.</h1>
+          <p class="hero-sub">You have one tutoring session today at 5 PM, and BECE is ${beceDays} days away. Math is your priority — let's keep building.</p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn-accent" id="findTutorHero">Find a tutor →</button>
+          <button class="btn-ghost-light" id="viewProgressHero">View progress</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bece-countdown">
+      <div class="bece-left">
+        <div class="bece-num">${beceDays}<span class="small">days</span></div>
+        <div>
+          <div class="bece-text-title">until BECE 2026</div>
+          <div class="bece-text-sub">${new Date(CURRENT_STUDENT.beceDateISO).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+        </div>
+      </div>
+      <div class="bece-progress">
+        <div class="bece-progress-label">
+          <span>Prep journey</span>
+          <span>${Math.round(prepProgress)}%</span>
+        </div>
+        <div class="bece-bar">
+          <div class="bece-bar-fill" style="width: ${prepProgress}%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Sessions completed</div>
+        <div class="stat-value">24</div>
+        <div class="stat-change">↑ 6 this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Hours tutored</div>
+        <div class="stat-value">36<span class="small-unit">hr</span></div>
+        <div class="stat-change">↑ steady</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Predicted aggregate</div>
+        <div class="stat-value">14</div>
+        <div class="stat-change">↓ 6 points (lower = better)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Subjects improving</div>
+        <div class="stat-value">5<span class="small-unit">/8</span></div>
+        <div class="stat-change">↑ Math + Science</div>
+      </div>
+    </div>
+
+    <div class="student-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Subject progress</div>
+          <div class="card-tag">Mock exam · last week</div>
+        </div>
+        <div class="subject-list">
+          ${Object.entries(subjectProgress).map(([id, p]) => {
+            const sub = subjectById(id);
+            return `
+              <div class="subject-row">
+                <div class="subject-icon ${sub.iconClass}">${sub.short[0]}</div>
+                <div class="sub-row-body">
+                  <div class="subject-name">
+                    <span>${sub.name}</span>
+                    <span class="grade">${p.grade}</span>
+                  </div>
+                  <div class="subject-bar"><div class="subject-bar-fill" style="width: ${p.val}%; background: ${sub.color};"></div></div>
+                </div>
+                <div class="subject-pct">${p.val}<span style="font-size: 14px; color: var(--ink-soft); font-family: var(--mono);">%</span></div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Upcoming sessions</div>
+          <div class="card-tag">${upcomingSessions.filter(s => !s.done).length} this week</div>
+        </div>
+        <div class="session-list">
+          ${upcomingSessions.map(s => `
+            <div class="session-item">
+              <div class="session-date ${s.urgent ? 'today' : s.done ? 'past' : ''}">
+                <div class="session-day">${s.day}</div>
+                <div class="session-num">${s.num}</div>
+              </div>
+              <div>
+                <div class="session-info-title">${s.subject}</div>
+                <div class="session-info-meta">${s.tutor} · ${s.time}</div>
+              </div>
+              <div class="session-tag ${s.mode}">${s.mode === 'online' ? 'Online' : 'In person'}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Recommended for you · Math</div>
+        <div class="card-tag">Matched on your weakest subject</div>
+      </div>
+      <div class="recommended-tutors">
+        ${recommendations.map(t => `
+          <div class="tutor-mini-card" data-jump-tutor="${t.id}">
+            <div class="tmc-head">
+              <div class="tutor-avatar ${t.avatar}">${t.initials}</div>
+              <div>
+                <div class="tmc-name">${t.name}</div>
+                <div class="tmc-school">${t.school} · ${t.form}</div>
+              </div>
+            </div>
+            <div class="tmc-stats">
+              <span class="rating">${t.rating}★</span>
+              <span>${t.sessions} sessions</span>
+              <span>${fmtCedi(t.rate)}/hr</span>
+            </div>
+            <div class="tmc-subjects">
+              ${t.subjects.slice(0, 3).map(s => `<span class="subject-pill">${subjectById(s).short}</span>`).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ---------- RENDER: BROWSE / MATCH ----------
+
+function renderBrowse() {
+  const matched = rankedTutors(STATE.filters, STATE.sortBy);
+  const subject = subjectById(STATE.filters.subject);
+
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Find a tutor · Live matching</div>
+        <h1 class="view-title">Pick your <em>match</em>.</h1>
+        <p class="view-sub">Every tutor is scored against your specific needs. Adjust the filters on the left and watch the rankings update in real time.</p>
+      </div>
+    </div>
+
+    <div class="match-layout">
+      <div class="filter-card">
+        <h3>What do you need?</h3>
+        <p class="filter-sub">Tell us about your learning needs and we'll show you the best matches — with a clear explanation of why.</p>
+
+        ${renderFilterGroup('Subject', 'subject', [
+          { v: 'math', l: 'Math' },
+          { v: 'english', l: 'English' },
+          { v: 'science', l: 'Science' },
+          { v: 'social', l: 'Social' },
+          { v: 'ict', l: 'ICT' },
+          { v: 'twi', l: 'Twi' },
+          { v: 'rme', l: 'RME' },
+          { v: 'cad', l: 'Pre-Tech' }
+        ])}
+
+        ${renderFilterGroup('Mode', 'mode', [
+          { v: 'any', l: 'Any' },
+          { v: 'inperson', l: 'In person' },
+          { v: 'online', l: 'Online' }
+        ])}
+
+        <div class="filter-group">
+          <span class="filter-label">Maximum rate per hour</span>
+          <div class="filter-slider-row">
+            <input type="range" min="8" max="30" step="1" value="${STATE.filters.maxRate}" class="filter-slider" id="rateSlider">
+            <span class="filter-slider-value">${fmtCedi(STATE.filters.maxRate)}</span>
+          </div>
+        </div>
+
+        ${renderFilterGroup('Gender preference', 'gender', [
+          { v: 'any', l: 'Any' },
+          { v: 'F', l: 'Female' },
+          { v: 'M', l: 'Male' }
+        ])}
+
+        ${renderFilterGroup('Tutor language', 'language', [
+          { v: 'any', l: 'Any' },
+          { v: 'en', l: 'English' },
+          { v: 'twi', l: 'Twi' },
+          { v: 'ga', l: 'Ga' }
+        ])}
+
+        ${renderFilterGroup('Teaching style', 'style', [
+          { v: 'any', l: 'Any' },
+          { v: 'patient', l: 'Patient' },
+          { v: 'structured', l: 'Structured' }
+        ])}
+
+        ${renderFilterGroup('Availability', 'availability', [
+          { v: 'any', l: 'Any' },
+          { v: 'weekday-eve', l: 'Weekday eve' },
+          { v: 'weekend-am', l: 'Weekend AM' },
+          { v: 'weekend-pm', l: 'Weekend PM' }
+        ])}
+
+        <div class="filter-reset" id="resetFilters">↺ Reset all filters</div>
+      </div>
+
+      <div>
+        <div class="results-head">
+          <div>
+            <div class="results-count"><em>${matched.length}</em> tutors match · ${subject.name}</div>
+            <div class="results-sub">Updated live as you change filters</div>
+          </div>
+          <div class="results-sort">
+            ${['match', 'rating', 'price', 'sessions'].map(opt => `
+              <button class="${STATE.sortBy === opt ? 'active' : ''}" data-sort="${opt}">
+                ${opt === 'match' ? 'Best match' : opt === 'rating' ? 'Top rated' : opt === 'price' ? 'Lowest price' : 'Most experience'}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="tutor-result-list">
+          ${matched.length === 0 ? '<div class="card" style="text-align: center; padding: 60px 24px; color: var(--ink-soft);">No tutors match all your filters. Try loosening one of them — language or area are usually a good place to start.</div>' :
+          matched.map((t, idx) => renderTutorResult(t, idx === 0 && STATE.sortBy === 'match')).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderFilterGroup(label, key, options) {
+  return `
+    <div class="filter-group">
+      <span class="filter-label">${label}</span>
+      <div class="filter-options">
+        ${options.map(o => `
+          <button class="filter-pill ${STATE.filters[key] === o.v ? 'active' : ''}" data-filter="${key}" data-value="${o.v}">${o.l}</button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderTutorResult(t, isTopMatch) {
+  const expanded = STATE.expandedTutor === t.id;
+  const ringR = 32, ringC = 2 * Math.PI * ringR;
+  const ringOffset = ringC - (t.score / 100) * ringC;
+  // Color the ring based on score
+  let ringColor = 'var(--bad)';
+  if (t.score >= 80) ringColor = 'var(--good)';
+  else if (t.score >= 60) ringColor = 'var(--gold)';
+  else if (t.score >= 40) ringColor = 'var(--terra)';
+
+  return `
+    <div class="tutor-result ${isTopMatch ? 'top-match' : ''} ${expanded ? 'expanded' : ''}" data-tutor="${t.id}">
+      <div class="tr-avatar ${t.avatar}">${t.initials}</div>
+      <div class="tr-body">
+        <div class="tr-name-row">
+          <div class="tr-name">${t.name}</div>
+          <span class="tr-school">${t.school} · ${t.form}</span>
+        </div>
+        <p class="tr-bio">${t.bio}</p>
+        <div class="tr-meta">
+          <span class="tr-meta-item rating"><span class="key">Rating</span> <span class="val">${t.rating}★</span></span>
+          <span class="tr-divider"></span>
+          <span class="tr-meta-item"><span class="key">Sessions</span> <span class="val">${t.sessions}</span></span>
+          <span class="tr-divider"></span>
+          <span class="tr-meta-item"><span class="key">Area</span> <span class="val">${t.area}</span></span>
+          <span class="tr-divider"></span>
+          <span class="tr-meta-item"><span class="key">Mode</span> <span class="val">${t.modes.map(m => m === 'online' ? 'Online' : 'In person').join(' · ')}</span></span>
+        </div>
+        <div class="tr-subjects">
+          ${t.subjects.map(s => `<span class="subject-pill ${s === STATE.filters.subject ? 'matched' : ''}">${subjectById(s).short}</span>`).join('')}
+        </div>
+      </div>
+      <div class="tr-right">
+        <div class="match-score-ring">
+          <svg viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="${ringR}" fill="none" stroke="var(--cream)" stroke-width="6"/>
+            <circle cx="40" cy="40" r="${ringR}" fill="none" stroke="${ringColor}" stroke-width="6" stroke-linecap="round"
+              stroke-dasharray="${ringC}" stroke-dashoffset="${ringOffset}"
+              style="transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);"/>
+          </svg>
+          <div class="score-text">
+            <div class="match-score-val">${t.score}</div>
+            <div class="match-score-label">match</div>
+          </div>
+        </div>
+        <div class="tr-price">${fmtCedi(t.rate)}<span class="small">/hr</span></div>
+        <button class="tr-book" data-book="${t.id}">Book session</button>
+      </div>
+
+      <div class="match-breakdown">
+        <div class="mb-title">Why this score · transparent breakdown</div>
+        ${Object.entries(t.breakdown).map(([k, b]) => {
+          const cls = b.fraction >= 0.8 ? '' : b.fraction >= 0.4 ? 'partial' : 'low';
+          return `
+            <div class="mb-row">
+              <div class="mb-row-label">${b.label}</div>
+              <div class="mb-row-bar"><div class="mb-row-fill ${cls}" style="width: ${b.fraction * 100}%;"></div></div>
+              <div class="mb-row-pct">${Math.round(b.fraction * b.weight)} / ${b.weight}</div>
+            </div>
+          `;
+        }).join('')}
+        <div style="margin-top: 14px; font-size: 12px; color: var(--ink-soft); padding-top: 12px; border-top: 1px solid var(--line);">
+          Tap to collapse · The matching algorithm weights subject expertise (40), price (10), area (10), mode (10), language (10), gender (5), style (5), availability (5), and track record (5).
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- RENDER: TUTOR ----------
+
+function renderTutor() {
+  const t = tutorById(CURRENT_TUTOR_ID);
+
+  // Weekly schedule (simulated)
+  const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  const times = ['3 PM', '4 PM', '5 PM', '6 PM', '7 PM'];
+  const bookings = {
+    // day-time: studentName or 'available' / undefined (unavailable)
+    'MON-5 PM': { student: 'Afia A.', subject: 'Math' },
+    'TUE-5 PM': { student: 'Afia A.', subject: 'Math' },
+    'TUE-6 PM': { student: 'Kojo M.', subject: 'Math' },
+    'WED-4 PM': { student: 'Ama S.', subject: 'Math' },
+    'WED-6 PM': { student: 'Akua T.', subject: 'Math' },
+    'THU-5 PM': { student: 'Kofi B.', subject: 'Math' },
+    'SAT-10 AM': { student: 'Esi P.', subject: 'Math' }
+  };
+  // Mark available cells (weekday eve + weekend)
+  const availableCells = new Set();
+  ['MON', 'TUE', 'WED', 'THU', 'FRI'].forEach(d => {
+    ['3 PM', '4 PM', '5 PM', '6 PM', '7 PM'].forEach(time => availableCells.add(`${d}-${time}`));
+  });
+  ['SAT', 'SUN'].forEach(d => {
+    ['3 PM', '4 PM', '5 PM', '6 PM', '7 PM'].forEach(time => availableCells.add(`${d}-${time}`));
+  });
+
+  const myStudents = [
+    { name: 'Afia Adomako', school: 'Datus Memorial JHS', subject: 'Math', sessions: 12, status: 'active' },
+    { name: 'Kojo Mensah', school: 'Achimota Cluster JHS', subject: 'Math', sessions: 8, status: 'active' },
+    { name: 'Ama Sarpong', school: 'St. Bernadette JHS', subject: 'Math', sessions: 6, status: 'active' },
+    { name: 'Akua Tetteh', school: 'Datus Memorial JHS', subject: 'Math', sessions: 14, status: 'active' },
+    { name: 'Kofi Boateng', school: 'Tema Manhean JHS 1', subject: 'Math', sessions: 4, status: 'new' },
+    { name: 'Esi Pomaa', school: 'Holy Spirit JHS', subject: 'Math', sessions: 9, status: 'active' }
+  ];
+
+  const reviews = [
+    { author: 'Afia A. (JHS 3)', stars: 5, text: '"Adwoa makes algebra make sense. She doesn\'t just give answers — she shows you how to find them yourself."', when: 2 * 24 * 60 * 60 * 1000 },
+    { author: 'Kojo M. (JHS 2)', stars: 5, text: '"She is so patient. I used to be afraid of word problems. Not anymore."', when: 6 * 24 * 60 * 60 * 1000 },
+    { author: "Ama's mother", stars: 5, text: '"My daughter\'s confidence has grown. The MoMo payment is also easy from my phone."', when: 12 * 24 * 60 * 60 * 1000 },
+    { author: 'Akua T. (JHS 3)', stars: 4, text: '"Strong on geometry. Sometimes goes too fast on mensuration but she will slow down if you ask."', when: 18 * 24 * 60 * 60 * 1000 }
+  ];
+
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">Tutor dashboard · ${t.school}</div>
+        <h1 class="view-title">Maakye, <em>${t.name.split(' ')[0]}</em>.</h1>
+        <p class="view-sub">You have 4 sessions today across 3 students. You're now ranked in the top 5% of math tutors on AdinkraTutor.</p>
+      </div>
+      <div class="view-actions">
+        <button class="btn-primary" id="addAvailability">+ Add availability</button>
+      </div>
+    </div>
+
+    <div class="tutor-grid">
+      <div class="earnings-card">
+        <div class="earnings-eyebrow">Earnings · this month</div>
+        <div class="earnings-amount"><span class="currency">₵</span>1,287</div>
+        <div class="earnings-stats">
+          <div>
+            <div class="earn-stat-label">Sessions paid</div>
+            <div class="earn-stat-value">31</div>
+          </div>
+          <div>
+            <div class="earn-stat-label">Hours taught</div>
+            <div class="earn-stat-value">42</div>
+          </div>
+          <div>
+            <div class="earn-stat-label">Avg per hr</div>
+            <div class="earn-stat-value">${fmtCedi(t.rate)}</div>
+          </div>
+          <div>
+            <div class="earn-stat-label">Pending</div>
+            <div class="earn-stat-value">${fmtCedi(180)}</div>
+          </div>
+        </div>
+        <div class="earnings-actions">
+          <button class="btn-momo" id="cashoutBtn">Cash out to MoMo →</button>
+          <button class="btn-ghost-light" id="historyBtn">Transaction history</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">This week's schedule</div>
+          <div class="card-tag">${Object.keys(bookings).length} booked · 23 open</div>
+        </div>
+        <div class="schedule-grid">
+          <div></div>
+          ${days.map(d => `<div class="schedule-day-header">${d}</div>`).join('')}
+          ${times.map(time => `
+            <div class="schedule-time-label">${time}</div>
+            ${days.map(d => {
+              const key = `${d}-${time}`;
+              const booked = bookings[key];
+              const available = availableCells.has(key);
+              if (booked) {
+                return `<div class="schedule-cell booked" data-student="${booked.student}" data-key="${key}"></div>`;
+              } else if (available) {
+                return `<div class="schedule-cell available" data-key="${key}"></div>`;
+              } else {
+                return `<div class="schedule-cell unavailable" data-key="${key}"></div>`;
+              }
+            }).join('')}
+          `).join('')}
+        </div>
+        <div class="schedule-legend">
+          <div class="sl-item"><span class="sl-swatch" style="background: var(--forest);"></span> Booked</div>
+          <div class="sl-item"><span class="sl-swatch" style="background: rgba(45, 110, 78, 0.15);"></span> Available</div>
+          <div class="sl-item"><span class="sl-swatch" style="background: transparent; border: 1px dashed rgba(26, 22, 18, 0.2);"></span> Not offered</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tutor-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">My students</div>
+          <div class="card-tag">${myStudents.length} active</div>
+        </div>
+        <div class="my-students-list">
+          ${myStudents.map(s => `
+            <div class="my-student-item">
+              <div class="tutor-avatar av-${(s.name.charCodeAt(0) % 6) + 1}" style="width: 36px; height: 36px; font-size: 13px;">${s.name.split(' ').map(n => n[0]).join('')}</div>
+              <div>
+                <div class="mys-name">${s.name}</div>
+                <div class="mys-meta">${s.school} · ${s.subject}</div>
+              </div>
+              <div class="mys-sessions">${s.sessions}<span class="small">sess</span></div>
+              <button class="mys-action" data-message="${s.name}">Message</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Recent reviews</div>
+          <div class="card-tag">${t.rating}★ · ${t.sessions} sessions</div>
+        </div>
+        <div class="review-list">
+          ${reviews.map(r => `
+            <div class="review-item">
+              <div class="review-head">
+                <span class="review-author">${r.author}</span>
+                <span class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</span>
+              </div>
+              <div class="review-text">${r.text}</div>
+              <div class="review-meta">${timeAgo(Date.now() - r.when)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- RENDER: ADMIN ----------
+
+function renderAdmin() {
+  // Subject demand vs supply
+  const demand = {
+    math: { demand: 142, supply: 38 },
+    english: { demand: 98, supply: 42 },
+    science: { demand: 121, supply: 31 },
+    social: { demand: 64, supply: 28 },
+    ict: { demand: 87, supply: 18 },
+    twi: { demand: 22, supply: 12 },
+    rme: { demand: 28, supply: 14 },
+    cad: { demand: 19, supply: 7 }
+  };
+  const maxDemand = Math.max(...Object.values(demand).map(d => Math.max(d.demand, d.supply)));
+
+  const schoolOutcomes = [
+    { school: 'Datus Memorial JHS',     enrolled: 47, attendance: 91, beforeAgg: 22.4, afterAgg: 16.8, delta: -5.6 },
+    { school: 'Achimota Cluster JHS',    enrolled: 38, attendance: 87, beforeAgg: 19.8, afterAgg: 14.2, delta: -5.6 },
+    { school: 'St. Bernadette JHS',      enrolled: 29, attendance: 94, beforeAgg: 24.1, afterAgg: 17.9, delta: -6.2 },
+    { school: 'Tema Manhean JHS 1',      enrolled: 22, attendance: 82, beforeAgg: 27.5, afterAgg: 21.8, delta: -5.7 },
+    { school: 'Holy Spirit JHS',         enrolled: 34, attendance: 89, beforeAgg: 20.3, afterAgg: 14.9, delta: -5.4 }
+  ];
+
+  return `
+    <div class="view-header">
+      <div>
+        <div class="view-eyebrow">School Admin Console</div>
+        <h1 class="view-title">Program <em>outcomes</em>.</h1>
+        <p class="view-sub">Coverage, attendance, and exam outcome tracking for 5 partner JHS schools. Built for headmistresses and Ghana Education Service coordinators.</p>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Verified tutors</div>
+        <div class="stat-value">${TUTORS.length}<span class="small-unit">/${TUTORS.length}</span></div>
+        <div class="stat-change">↑ ID checked · school confirmed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Enrolled students</div>
+        <div class="stat-value">170</div>
+        <div class="stat-change">↑ 23 this month</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Avg aggregate improvement</div>
+        <div class="stat-value">−5.7<span class="small-unit">pts</span></div>
+        <div class="stat-change">↑ better than baseline</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Session completion rate</div>
+        <div class="stat-value">89<span class="small-unit">%</span></div>
+        <div class="stat-change">↑ above target (80%)</div>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">BECE aggregate score · 12-week journey</div>
+          <div class="card-tag">Lower is better · 6 = perfect</div>
+        </div>
+        ${renderAggregateChart()}
+        <div class="chart-legend-row">
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--forest);"></span> AdinkraTutor cohort</div>
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--gold);"></span> Greater Accra baseline (2024)</div>
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--terra); height: 0px; border-top: 1px dashed var(--terra); width: 16px;"></span> Target aggregate (15)</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Subject demand vs. tutor supply</div>
+          <div class="card-tag">last 30 days</div>
+        </div>
+        <div class="demand-list">
+          ${Object.entries(demand).map(([id, d]) => {
+            const sub = subjectById(id);
+            const demandPct = (d.demand / maxDemand) * 100;
+            const supplyPct = (d.supply / maxDemand) * 100;
+            return `
+              <div class="demand-row">
+                <div class="demand-name">${sub.short}</div>
+                <div class="demand-bar-wrap">
+                  <div class="demand-bar-bg"></div>
+                  <div class="demand-bar-demand" style="width: ${demandPct}%;"></div>
+                  <div class="demand-bar-supply" style="width: ${supplyPct}%;"></div>
+                </div>
+                <div class="demand-val">${d.supply}/${d.demand}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div class="chart-legend-row" style="margin-top: 14px;">
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--gold);"></span> Tutor supply (hours/week)</div>
+          <div class="chart-legend-item"><span class="chart-legend-swatch" style="background: var(--terra);"></span> Student demand</div>
+        </div>
+        <div class="safety-card">
+          <div class="safety-title">Recruitment alert</div>
+          <div class="safety-body"><strong>ICT, Science, and Pre-Tech</strong> all have severe supply shortages. Reaching out to Presec Legon and Achimota's STEM clubs is recommended this quarter.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">School-level outcomes</div>
+        <div class="card-tag">${schoolOutcomes.length} partner schools</div>
+      </div>
+      <table class="outcomes-table">
+        <thead>
+          <tr>
+            <th>JHS School</th>
+            <th>Enrolled</th>
+            <th>Attendance</th>
+            <th>Avg agg. before</th>
+            <th>Mock agg. now</th>
+            <th>Improvement</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${schoolOutcomes.map(s => `
+            <tr>
+              <td class="school-cell">${s.school}</td>
+              <td>${s.enrolled}</td>
+              <td>${s.attendance}%</td>
+              <td>${s.beforeAgg.toFixed(1)}</td>
+              <td><strong>${s.afterAgg.toFixed(1)}</strong></td>
+              <td class="delta-cell ${s.delta < 0 ? 'up' : 'down'}">${s.delta > 0 ? '+' : ''}${s.delta.toFixed(1)} pts</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="admin-grid-2" style="margin-top: 24px;">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Safety & verification</div>
+          <div class="card-tag">All tutors verified</div>
+        </div>
+        <div class="safety-card" style="border-left-color: var(--good); margin-top: 0;">
+          <div class="safety-title">How AdinkraTutor keeps students safe</div>
+          <div class="safety-body">
+            <strong>1. Tutor verification.</strong> Every tutor's school ID is verified by a partner SHS coordinator before they appear in search results.<br><br>
+            <strong>2. Public sessions only.</strong> In-person sessions happen at the JHS school library, a community center, or in homes only with parent consent.<br><br>
+            <strong>3. Co-tutoring for younger students.</strong> JHS 1 and JHS 2 girls under 14 are paired in groups of 2 — never alone with a tutor.<br><br>
+            <strong>4. Two-tap escalation.</strong> Students or parents can tap "report" to alert the school coordinator immediately. Two reports = tutor suspended pending review.<br><br>
+            <strong>5. Payments are platform-held.</strong> MoMo payments are escrowed until the session is confirmed by both parties.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Financial snapshot</div>
+          <div class="card-tag">This term</div>
+        </div>
+        <div class="subject-list">
+          <div class="subject-row">
+            <div class="subject-icon sub-math">₵</div>
+            <div class="sub-row-body">
+              <div class="subject-name"><span>Total paid to tutors</span><span class="grade">via MoMo</span></div>
+              <div class="subject-bar"><div class="subject-bar-fill" style="width: 75%; background: var(--forest);"></div></div>
+            </div>
+            <div class="subject-pct" style="font-size: 18px;">₵38.2k</div>
+          </div>
+          <div class="subject-row">
+            <div class="subject-icon sub-eng">₵</div>
+            <div class="sub-row-body">
+              <div class="subject-name"><span>Subsidised sessions</span><span class="grade">covered by donors</span></div>
+              <div class="subject-bar"><div class="subject-bar-fill" style="width: 45%; background: var(--terra);"></div></div>
+            </div>
+            <div class="subject-pct" style="font-size: 18px;">₵12.1k</div>
+          </div>
+          <div class="subject-row">
+            <div class="subject-icon sub-sci">₵</div>
+            <div class="sub-row-body">
+              <div class="subject-name"><span>Platform fee (5%)</span><span class="grade">covers ops</span></div>
+              <div class="subject-bar"><div class="subject-bar-fill" style="width: 18%; background: var(--indigo);"></div></div>
+            </div>
+            <div class="subject-pct" style="font-size: 18px;">₵2.5k</div>
+          </div>
+          <div class="subject-row">
+            <div class="subject-icon sub-soc">%</div>
+            <div class="sub-row-body">
+              <div class="subject-name"><span>% kept by tutors</span><span class="grade">vs. industry tutoring</span></div>
+              <div class="subject-bar"><div class="subject-bar-fill" style="width: 95%; background: var(--gold);"></div></div>
+            </div>
+            <div class="subject-pct" style="font-size: 18px;">95%</div>
+          </div>
+        </div>
+        <div class="safety-card" style="margin-top: 20px;">
+          <div class="safety-title">Why so much goes to tutors</div>
+          <div class="safety-body">Commercial tutoring companies in Accra take 30–50%. AdinkraTutor keeps only 5% to cover SMS, payment, and verification costs. The other 95% stays with the students teaching their peers.</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAggregateChart() {
+  const W = 700, H = 280;
+  const padding = { top: 20, right: 24, bottom: 30, left: 50 };
+  const innerW = W - padding.left - padding.right;
+  const innerH = H - padding.top - padding.bottom;
+
+  // 12 weeks of aggregate scores — LOWER is better (BECE is sum of best 6 grades, 1-9 scale per subject)
+  const baseline = Array.from({ length: 12 }, () => 21 + Math.random() * 2);
+  const cohort = [];
+  let v = 22.4;
+  for (let i = 0; i < 12; i++) {
+    v -= 0.3 + Math.random() * 0.5; // improving
+    v = Math.max(13, v);
+    cohort.push(v);
+  }
+  cohort[cohort.length - 1] = 16.7;
+
+  const minVal = 6;  // best possible
+  const maxVal = 30; // very weak
+  const range = maxVal - minVal;
+  const stepX = innerW / 11;
+  const yScale = (val) => padding.top + innerH - ((val - minVal) / range) * innerH;
+
+  const yTicks = [6, 12, 18, 24, 30].map(v => ({ val: v, y: yScale(v) }));
+
+  const cohortPath = cohort.map((v, i) => `${padding.left + i * stepX},${yScale(v)}`).join(' ');
+  const baselinePath = baseline.map((v, i) => `${padding.left + i * stepX},${yScale(v)}`).join(' ');
+  const cohortArea = `M ${padding.left},${yScale(30)} L ${cohortPath.split(' ').join(' L ')} L ${padding.left + 11 * stepX},${yScale(30)} Z`;
+
+  const xLabels = [0, 3, 6, 9, 11].map(i => ({
+    i,
+    x: padding.left + i * stepX,
+    label: i === 11 ? 'now' : `${11 - i}w ago`
+  }));
+
+  return `
+    <svg class="big-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="cohortGradAgg" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="var(--forest)" stop-opacity="0"/>
+          <stop offset="100%" stop-color="var(--forest)" stop-opacity="0.15"/>
+        </linearGradient>
+      </defs>
+
+      ${yTicks.map(t => `
+        <line x1="${padding.left}" x2="${W - padding.right}" y1="${t.y}" y2="${t.y}" stroke="rgba(26,22,18,0.06)" stroke-width="1"/>
+        <text x="${padding.left - 8}" y="${t.y + 4}" text-anchor="end" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.5)">${t.val}</text>
+      `).join('')}
+
+      <!-- Target line -->
+      <line x1="${padding.left}" x2="${W - padding.right}" y1="${yScale(15)}" y2="${yScale(15)}" stroke="var(--terra)" stroke-width="1" stroke-dasharray="4,4" opacity="0.7"/>
+
+      <!-- Baseline -->
+      <polyline fill="none" stroke="var(--gold)" stroke-width="2" points="${baselinePath}" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Cohort area & line -->
+      <path d="${cohortArea}" fill="url(#cohortGradAgg)"/>
+      <polyline fill="none" stroke="var(--forest)" stroke-width="2.5" points="${cohortPath}" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Dots for cohort -->
+      ${cohort.map((v, i) => `<circle cx="${padding.left + i * stepX}" cy="${yScale(v)}" r="3" fill="var(--forest)"/>`).join('')}
+
+      <!-- End label -->
+      <text x="${W - padding.right + 4}" y="${yScale(16.7) - 6}" font-family="Fraunces" font-style="italic" font-size="14" font-weight="500" fill="var(--forest)">16.7</text>
+
+      ${xLabels.map(l => `
+        <text x="${l.x}" y="${H - 8}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(26,22,18,0.5)">${l.label}</text>
+      `).join('')}
+    </svg>
+  `;
+}
+
+// ---------- MAIN RENDER ----------
+
+function render() {
+  const main = document.getElementById('mainContent');
+  let html = '';
+  if (STATE.role === 'student') html = renderStudent();
+  else if (STATE.role === 'browse') html = renderBrowse();
+  else if (STATE.role === 'tutor') html = renderTutor();
+  else if (STATE.role === 'admin') html = renderAdmin();
+  main.innerHTML = html;
+  attachViewListeners();
+}
+
+function attachViewListeners() {
+  // Student view
+  const findTutorHero = document.getElementById('findTutorHero');
+  if (findTutorHero) {
+    findTutorHero.addEventListener('click', () => {
+      STATE.role = 'browse';
+      // Pre-fill subject with the student's weakest
+      STATE.filters.subject = CURRENT_STUDENT.weakSubjects[0];
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === 'browse'));
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+  const viewProgressHero = document.getElementById('viewProgressHero');
+  if (viewProgressHero) {
+    viewProgressHero.addEventListener('click', () => {
+      document.querySelector('.subject-list')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  // Recommended tutor mini cards → jump to browse with that tutor expanded
+  document.querySelectorAll('[data-jump-tutor]').forEach(c => {
+    c.addEventListener('click', () => {
+      const tid = c.dataset.jumpTutor;
+      STATE.role = 'browse';
+      STATE.expandedTutor = tid;
+      const tutor = tutorById(tid);
+      // Set subject to one this tutor teaches if needed
+      if (!tutor.subjects.includes(STATE.filters.subject)) {
+        STATE.filters.subject = tutor.subjects[0];
+      }
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === 'browse'));
+      render();
+      setTimeout(() => {
+        document.querySelector(`[data-tutor="${tid}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    });
+  });
+
+  // Browse view — filter pills
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const key = pill.dataset.filter;
+      const val = pill.dataset.value;
+      STATE.filters[key] = val;
+      STATE.expandedTutor = null;
+      render();
+    });
+  });
+
+  // Rate slider
+  const rateSlider = document.getElementById('rateSlider');
+  if (rateSlider) {
+    rateSlider.addEventListener('input', e => {
+      STATE.filters.maxRate = parseInt(e.target.value);
+      // Update only the label to avoid full re-render lag during slide
+      e.target.parentElement.querySelector('.filter-slider-value').textContent = fmtCedi(STATE.filters.maxRate);
+    });
+    rateSlider.addEventListener('change', () => {
+      render();
+    });
+  }
+
+  // Reset filters
+  const resetBtn = document.getElementById('resetFilters');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      STATE.filters = {
+        subject: 'math', mode: 'any', maxRate: 25, gender: 'any',
+        language: 'any', area: 'any', style: 'any', availability: 'any'
+      };
+      STATE.expandedTutor = null;
+      render();
+      showToast('Filters reset');
+    });
+  }
+
+  // Sort buttons
+  document.querySelectorAll('[data-sort]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      STATE.sortBy = btn.dataset.sort;
+      render();
+    });
+  });
+
+  // Expand/collapse tutor result on click (but not when clicking Book button)
+  document.querySelectorAll('.tutor-result').forEach(tr => {
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('.tr-book')) return; // ignore book button clicks
+      const tid = tr.dataset.tutor;
+      STATE.expandedTutor = STATE.expandedTutor === tid ? null : tid;
+      render();
+    });
+  });
+
+  // Book button
+  document.querySelectorAll('[data-book]').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const tid = b.dataset.book;
+      const t = tutorById(tid);
+      showToast(`Booking request sent to ${t.name.split(' ')[0]} · ${t.school}`);
+    });
+  });
+
+  // Tutor view
+  const cashoutBtn = document.getElementById('cashoutBtn');
+  if (cashoutBtn) {
+    cashoutBtn.addEventListener('click', () => showToast('Cash-out of ₵180 sent to MoMo · 024 *** 9876'));
+  }
+  const historyBtn = document.getElementById('historyBtn');
+  if (historyBtn) {
+    historyBtn.addEventListener('click', () => showToast('Transaction history · 31 entries'));
+  }
+  const addAvail = document.getElementById('addAvailability');
+  if (addAvail) {
+    addAvail.addEventListener('click', () => showToast('Open availability editor'));
+  }
+  document.querySelectorAll('[data-message]').forEach(b => {
+    b.addEventListener('click', () => {
+      const name = b.dataset.message;
+      showToast(`Message thread opened with ${name.split(' ')[0]}`);
+    });
+  });
+  document.querySelectorAll('.schedule-cell.available').forEach(c => {
+    c.addEventListener('click', () => {
+      c.classList.remove('available');
+      c.classList.add('unavailable');
+      showToast(`${c.dataset.key} marked unavailable`);
+    });
+  });
+}
+
+function showToast(text) {
+  const toast = document.getElementById('toast');
+  toast.textContent = text;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+function updateTimes() {
+  const now = new Date();
+  const hh = now.getHours().toString().padStart(2, '0');
+  const mm = now.getMinutes().toString().padStart(2, '0');
+  const ss = now.getSeconds().toString().padStart(2, '0');
+  const liveTime = document.getElementById('liveTime');
+  if (liveTime) liveTime.textContent = `${hh}:${mm}:${ss}`;
+}
+
+// ---------- INIT ----------
+
+render();
+updateTimes();
+setInterval(updateTimes, 1000);
+
+document.querySelectorAll('.role-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.role = btn.dataset.role;
+    STATE.expandedTutor = null;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+</script>
+
+</body>
+</html>
