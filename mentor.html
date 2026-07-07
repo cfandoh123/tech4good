@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Become a Mentor — Tech4Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1A1612;
+    --forest: #0F3D2E;
+    --forest-deep: #0a2a20;
+    --terra: #D97543;
+    --terra-deep: #B85A2E;
+    --gold: #C8956D;
+    --indigo: #3B4A6B;
+    --leaf: #4a7c52;
+    --cream: #F4EDE0;
+    --cream-warm: #EEE3CF;
+    --paper: #FAF6EE;
+    --line: rgba(26, 22, 18, 0.12);
+    --line-strong: rgba(26, 22, 18, 0.20);
+    --display: 'Fraunces', Georgia, serif;
+    --body: 'DM Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  a { color: inherit; text-decoration: none; }
+  input, select, textarea, button { font-family: inherit; font-size: inherit; }
+
+  .wrap-narrow { max-width: 760px; margin: 0 auto; padding: 0 32px; }
+
+  /* ============ NAVBAR ============ */
+  nav.top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    backdrop-filter: blur(16px);
+    background: rgba(250, 246, 238, 0.85);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.top .inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-mark {
+    width: 28px; height: 28px;
+    background: var(--forest);
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .brand-mark::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    background: var(--terra);
+    border-radius: 50%;
+  }
+  .nav-back {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--terra-deep); }
+
+  /* ============ HEADER ============ */
+  .head {
+    padding: 150px 0 50px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--terra-deep);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--terra-deep);
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    margin-bottom: 24px;
+    font-variation-settings: "opsz" 120;
+  }
+  h1 em { font-style: italic; color: var(--forest); font-weight: 300; }
+  .lede {
+    font-size: 18px;
+    max-width: 560px;
+    opacity: 0.78;
+  }
+
+  /* ============ FORM ============ */
+  form { padding-bottom: 120px; }
+  .field { margin-bottom: 28px; }
+  .field.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .field.row > div { margin: 0; }
+  label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.65;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  label .req { color: var(--terra-deep); }
+  input, select, textarea {
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    padding: 14px 16px;
+    color: var(--ink);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input::placeholder, textarea::placeholder { color: rgba(26,22,18,0.35); }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--forest);
+    box-shadow: 0 0 0 3px rgba(15, 61, 46, 0.12);
+  }
+  textarea { resize: vertical; min-height: 130px; line-height: 1.55; }
+  .hint { font-size: 13px; opacity: 0.55; margin-top: 8px; }
+
+  .checks { display: flex; flex-wrap: wrap; gap: 10px; }
+  .checks label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 9px 16px;
+    border: 1px solid var(--line-strong);
+    border-radius: 100px;
+    background: #fff;
+    cursor: pointer;
+    font-family: var(--body);
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: 1;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .checks input { width: auto; accent-color: var(--forest); }
+  .checks label:hover { border-color: var(--forest); }
+  .checks label:has(input:checked) {
+    background: var(--forest);
+    color: var(--cream);
+    border-color: var(--forest);
+  }
+
+  .submit {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 16px 34px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 12px;
+  }
+  .submit:hover { background: var(--forest); }
+
+  /* ============ SUCCESS ============ */
+  .success {
+    display: none;
+    padding: 170px 0 140px;
+    text-align: center;
+  }
+  .success.show { display: block; }
+  .success .check {
+    width: 64px; height: 64px;
+    margin: 0 auto 28px;
+    border-radius: 50%;
+    background: var(--forest);
+    color: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+  }
+  .success h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(32px, 5vw, 52px);
+    letter-spacing: -0.03em;
+    margin-bottom: 18px;
+  }
+  .success p { font-size: 18px; opacity: 0.78; max-width: 480px; margin: 0 auto 32px; }
+  .success a.home {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 14px 30px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  .success a.home:hover { background: var(--forest); }
+
+  /* ============ FOOTER ============ */
+  footer {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 40px 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    opacity: 0.9;
+  }
+  footer .inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 640px) {
+    .field.row { grid-template-columns: 1fr; }
+    footer .inner { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAVBAR ============ -->
+<nav class="top">
+  <div class="inner">
+    <a class="brand" href="index.html">
+      <div class="brand-mark"></div>
+      Tech4Good
+    </a>
+    <a class="nav-back" href="index.html">← Back to home</a>
+  </div>
+</nav>
+
+<!-- ============ FORM VIEW ============ -->
+<div id="formView">
+  <header class="head">
+    <div class="wrap-narrow">
+      <div class="eyebrow">Become a Mentor</div>
+      <h1>Guide the next generation of <em>Ghanaian technologists</em></h1>
+      <p class="lede">Tell us a little about yourself and how you'd like to help. Our team will follow up within a few days to match you with a student team for the 2026 cohort.</p>
+    </div>
+  </header>
+
+  <form id="mentorForm" class="wrap-narrow">
+    <div class="field row">
+      <div>
+        <label for="firstName">First name <span class="req">*</span></label>
+        <input type="text" id="firstName" name="firstName" placeholder="Ama" required>
+      </div>
+      <div>
+        <label for="lastName">Last name <span class="req">*</span></label>
+        <input type="text" id="lastName" name="lastName" placeholder="Mensah" required>
+      </div>
+    </div>
+
+    <div class="field row">
+      <div>
+        <label for="email">Email <span class="req">*</span></label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required>
+      </div>
+      <div>
+        <label for="phone">Phone <span class="req">*</span></label>
+        <input type="tel" id="phone" name="phone" placeholder="+233 20 123 4567" required>
+      </div>
+    </div>
+
+    <div class="field row">
+      <div>
+        <label for="location">Location / Time zone</label>
+        <input type="text" id="location" name="location" placeholder="Accra, Ghana (GMT)">
+      </div>
+      <div>
+        <label for="role">Current role / title</label>
+        <input type="text" id="role" name="role" placeholder="Software Engineer at ...">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="linkedin">LinkedIn or portfolio</label>
+      <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/...">
+    </div>
+
+    <div class="field">
+      <label>Areas you can mentor in <span class="req">*</span></label>
+      <div class="checks">
+        <label><input type="checkbox" name="expertise" value="Software Engineering"> Software Engineering</label>
+        <label><input type="checkbox" name="expertise" value="Product & Design"> Product &amp; Design</label>
+        <label><input type="checkbox" name="expertise" value="Data & AI"> Data &amp; AI</label>
+        <label><input type="checkbox" name="expertise" value="Entrepreneurship"> Entrepreneurship</label>
+        <label><input type="checkbox" name="expertise" value="Career & Interviews"> Career &amp; Interviews</label>
+      </div>
+    </div>
+
+    <div class="field row">
+      <div>
+        <label for="experience">Years of experience</label>
+        <select id="experience" name="experience">
+          <option value="">Select…</option>
+          <option>0 - 2 years</option>
+          <option>3 - 5 years</option>
+          <option>6 - 10 years</option>
+          <option>10+ years</option>
+        </select>
+      </div>
+      <div>
+        <label for="commitment">Time you can commit</label>
+        <select id="commitment" name="commitment">
+          <option value="">Select…</option>
+          <option>1 - 2 hours / week</option>
+          <option>3 - 5 hours / week</option>
+          <option>A one-off workshop or talk</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="format">Preferred format</label>
+      <select id="format" name="format">
+        <option value="">Select…</option>
+        <option>Remote / Virtual</option>
+        <option>In Person (Accra)</option>
+        <option>Either works</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Would you be available between August 25th and September 3rd, 2026? <span class="req">*</span></label>
+      <div class="checks">
+        <label><input type="radio" name="availableAug" value="Yes" required> Yes</label>
+        <label><input type="radio" name="availableAug" value="No"> No</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="motivation">Why do you want to mentor with Tech4Good? <span class="req">*</span></label>
+      <textarea id="motivation" name="motivation" placeholder="Tell us what draws you to this work and how you'd like to support our students…" required></textarea>
+    </div>
+
+    <button type="submit" class="submit">Submit application →</button>
+    <p class="hint">By submitting, you agree to be contacted by the Tech4Good team about mentorship opportunities.</p>
+  </form>
+</div>
+
+<!-- ============ SUCCESS VIEW ============ -->
+<div class="success" id="successView">
+  <div class="wrap-narrow">
+    <div class="check">✓</div>
+    <h2>Thank you for stepping up</h2>
+    <p>Your application is in. We'll review it and reach out within a few days to match you with a student team for the 2026 cohort.</p>
+    <a class="home" href="index.html">← Back to home</a>
+  </div>
+</div>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="inner">
+    <div>© 2026 Tech4Good Initiative · Founded by Calvin Andoh</div>
+  </div>
+</footer>
+
+<script>
+  // Google Form submission endpoint (public form)
+  const GFORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSfL-1pDCbm7slShmiDJL0Wfnq-Q14eRPbq6EJOIbcypHpdy7g/formResponse';
+
+  // Map each of our form fields to its Google Form entry ID.
+  // Checkboxes/radios use the same key for every selected value.
+  const ENTRY = {
+    firstName:    'entry.819936512',
+    lastName:     'entry.99336158',
+    email:        'entry.376978578',
+    phone:        'entry.2103359844',
+    location:     'entry.1546800935',
+    role:         'entry.1374734493',
+    linkedin:     'entry.568953245',
+    expertise:    'entry.1645561799',   // checkboxes (multi-value)
+    experience:   'entry.1272202502',
+    commitment:   'entry.938849478',
+    format:       'entry.1747621057',
+    availableAug: 'entry.1150305833',
+    motivation:   'entry.142542768'
+  };
+
+  const form = document.getElementById('mentorForm');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const expertise = form.querySelectorAll('input[name="expertise"]:checked');
+    if (expertise.length === 0) {
+      alert('Please select at least one area you can mentor in.');
+      return;
+    }
+
+    // Build the Google Forms payload from our fields.
+    const payload = new FormData();
+    for (const [name, entryId] of Object.entries(ENTRY)) {
+      const nodes = form.querySelectorAll('[name="' + name + '"]');
+      nodes.forEach(function (el) {
+        if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) return;
+        if (el.value === '') return;
+        payload.append(entryId, el.value);
+      });
+    }
+
+    // Fire-and-forget POST. Google Forms doesn't send CORS headers, so we
+    // use no-cors: the request still submits; we just can't read the response.
+    fetch(GFORM_ACTION, { method: 'POST', mode: 'no-cors', body: payload })
+      .finally(function () {
+        document.getElementById('formView').style.display = 'none';
+        document.getElementById('successView').classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+  });
+</script>
+
+</body>
+</html>

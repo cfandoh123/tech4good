@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Partner with Us — Tech4Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1A1612;
+    --forest: #0F3D2E;
+    --forest-deep: #0a2a20;
+    --terra: #D97543;
+    --terra-deep: #B85A2E;
+    --gold: #C8956D;
+    --indigo: #3B4A6B;
+    --leaf: #4a7c52;
+    --cream: #F4EDE0;
+    --cream-warm: #EEE3CF;
+    --paper: #FAF6EE;
+    --line: rgba(26, 22, 18, 0.12);
+    --line-strong: rgba(26, 22, 18, 0.20);
+    --display: 'Fraunces', Georgia, serif;
+    --body: 'DM Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+  .wrap-narrow { max-width: 760px; margin: 0 auto; padding: 0 32px; }
+
+  /* ============ NAVBAR ============ */
+  nav.top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    backdrop-filter: blur(16px);
+    background: rgba(250, 246, 238, 0.85);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.top .inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-mark {
+    width: 28px; height: 28px;
+    background: var(--forest);
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .brand-mark::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    background: var(--terra);
+    border-radius: 50%;
+  }
+  .nav-back {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--terra-deep); }
+
+  /* ============ HEADER ============ */
+  .head { padding: 150px 0 40px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--terra-deep);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--terra-deep);
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(40px, 6vw, 76px);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    margin-bottom: 28px;
+    font-variation-settings: "opsz" 120;
+    max-width: 780px;
+  }
+  h1 em { font-style: italic; color: var(--forest); font-weight: 300; }
+  .lede {
+    font-size: 19px;
+    max-width: 600px;
+    opacity: 0.8;
+  }
+
+  /* ============ SECTIONS ============ */
+  section { padding: 60px 0; }
+  .chapter {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--terra-deep);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .chapter::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--terra-deep);
+    border-radius: 50%;
+  }
+  h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(30px, 4vw, 46px);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    margin-bottom: 20px;
+    max-width: 720px;
+  }
+  h2 em { font-style: italic; color: var(--forest); }
+  .section-lede { font-size: 18px; opacity: 0.8; max-width: 640px; margin-bottom: 44px; }
+
+  /* ============ WAYS TO PARTNER ============ */
+  .ways {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .way {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 32px 28px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .way:hover { transform: translateY(-4px); box-shadow: 0 18px 40px -22px rgba(26,22,18,0.4); }
+  .way-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--terra-deep);
+    margin-bottom: 18px;
+  }
+  .way h3 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 23px;
+    letter-spacing: -0.01em;
+    margin-bottom: 12px;
+  }
+  .way p { font-size: 15px; opacity: 0.75; line-height: 1.6; }
+
+  /* ============ IMPACT ============ */
+  .impact { background: var(--forest); color: var(--cream); border-radius: 8px; padding: 60px 48px; }
+  .impact .chapter { color: var(--gold); }
+  .impact .chapter::before { background: var(--gold); }
+  .impact h2 { color: var(--cream); }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    margin-top: 40px;
+  }
+  .stat-num {
+    font-family: var(--display);
+    font-weight: 300;
+    font-size: clamp(40px, 5vw, 58px);
+    line-height: 1;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.75;
+  }
+
+  /* ============ PARTNERS ============ */
+  .partners-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .partner {
+    background: var(--paper);
+    padding: 28px 26px;
+  }
+  .partner-name {
+    font-family: var(--display);
+    font-size: 19px;
+    font-weight: 500;
+  }
+  .partner-name span {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--terra-deep);
+    margin-top: 6px;
+    font-weight: 400;
+  }
+
+  /* ============ CTA ============ */
+  .cta { text-align: center; padding: 80px 0 110px; }
+  .cta h2 { margin: 0 auto 18px; }
+  .cta p { font-size: 18px; opacity: 0.8; max-width: 520px; margin: 0 auto 34px; }
+  .cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block;
+    padding: 16px 32px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-dark { background: var(--ink); color: var(--paper); }
+  .btn-dark:hover { background: var(--forest); }
+  .btn-outline { border: 1px solid var(--line-strong); color: var(--ink); }
+  .btn-outline:hover { border-color: var(--forest); color: var(--forest); }
+
+  /* ============ FOOTER ============ */
+  footer {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 40px 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+  footer .inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 860px) {
+    .ways { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 28px; }
+    .partners-row { grid-template-columns: 1fr; }
+    .impact { padding: 44px 28px; }
+  }
+  @media (max-width: 560px) {
+    footer .inner { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAVBAR ============ -->
+<nav class="top">
+  <div class="inner">
+    <a class="brand" href="index.html">
+      <div class="brand-mark"></div>
+      Tech4Good 
+    </a>
+    <a class="nav-back" href="index.html">← Back to home</a>
+  </div>
+</nav>
+
+<!-- ============ HEADER ============ -->
+<header class="head">
+  <div class="wrap">
+    <div class="eyebrow">Partner with Us</div>
+    <h1>Build the future of <em>Ghanaian technology</em> alongside us</h1>
+    <p class="lede">Tech4Good pairs ambitious young technologists in Accra with real problems worth solving. Our partners provide the mentorship, tools, internships, and funding that turn a summer of learning into lasting impact.</p>
+  </div>
+</header>
+
+<!-- ============ WHY PARTNER ============ -->
+<section>
+  <div class="wrap">
+    <div class="chapter">Why partner</div>
+    <h2>A partnership that <em>compounds</em></h2>
+    <p class="section-lede">When you invest in Tech4Good, you're not funding a one-off program — you're growing a pipeline of ethical, capable technologists who go on to build for their own communities, and who remember who backed them first.</p>
+  </div>
+</section>
+
+<!-- ============ WAYS TO PARTNER ============ -->
+<section style="padding-top:0;">
+  <div class="wrap">
+    <div class="ways">
+      <div class="way">
+        <div class="way-num">01</div>
+        <h3>Sponsor a cohort</h3>
+        <p>Fund seats, laptops, workspace, and stipends for a group of students. Your support directly covers the cost of running a full summer program.</p>
+      </div>
+      <div class="way">
+        <div class="way-num">02</div>
+        <h3>Offer internships</h3>
+        <p>Give our top graduates their first real-world engineering or product role. We help you find, vet, and onboard talent that's ready to contribute.</p>
+      </div>
+      <div class="way">
+        <div class="way-num">03</div>
+        <h3>Share expertise</h3>
+        <p>Run a workshop, judge a demo day, or lend engineers as mentors. A few hours from your team can reshape a student's entire trajectory.</p>
+      </div>
+      <div class="way">
+        <div class="way-num">04</div>
+        <h3>Provide tools &amp; credits</h3>
+        <p>Cloud credits, software licenses, API access, and hardware let our students build ambitiously without cost getting in the way.</p>
+      </div>
+      <div class="way">
+        <div class="way-num">05</div>
+        <h3>Host a demo day</h3>
+        <p>Open your space for our end-of-program showcase, where students present the technology they've built to the wider community.</p>
+      </div>
+      <div class="way">
+        <div class="way-num">06</div>
+        <h3>Co-design a challenge</h3>
+        <p>Bring a real problem from your organization and let a student team tackle it — you get fresh ideas, they get authentic experience.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ IMPACT ============ -->
+<section>
+  <div class="wrap">
+    <div class="impact">
+      <div class="chapter">The impact</div>
+      <h2>Your support, in numbers</h2>
+      <div class="stats">
+        <div>
+          <div class="stat-num">24</div>
+          <div class="stat-label">Students trained</div>
+        </div>
+        <div>
+          <div class="stat-num">6</div>
+          <div class="stat-label">Projects shipped</div>
+        </div>
+        <div>
+          <div class="stat-num">8</div>
+          <div class="stat-label">Weeks of program</div>
+        </div>
+        <div>
+          <div class="stat-num">100%</div>
+          <div class="stat-label">Tuition-free</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CURRENT PARTNERS ============ -->
+<section>
+  <div class="wrap">
+    <div class="chapter">In good company</div>
+    <h2>Organizations already <em>backing our students</em></h2>
+    <p class="section-lede">We're proud to build alongside partners who share our belief that talent is everywhere, but opportunity isn't.</p>
+    <div class="partners-row">
+      <div class="partner"><div class="partner-name">Bismuth Technologies<span>Internship Partner</span></div></div>
+      <div class="partner"><div class="partner-name">Young Achievers Foundation<span>Education Partner</span></div></div>
+      <div class="partner"><div class="partner-name">Princeton University<span>Academic Sponsor</span></div></div>
+      <div class="partner"><div class="partner-name">Ghana Tech Lab<span>Demo Day Host</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta">
+  <div class="wrap-narrow">
+    <div class="chapter" style="justify-content:center;">Let's talk</div>
+    <h2>Ready to <em>partner with us?</em></h2>
+    <p>Tell us a little about your organization and how you'd like to get involved. We'll set up a conversation within a few days.</p>
+    <div class="cta-buttons">
+      <a class="btn btn-dark" href="mailto:hello@tech4good.gh?subject=Partnership%20with%20Tech4Good&body=Hi%20Tech4Good%20team%2C%0A%0AOur%20organization%20is%20interested%20in%20partnering.%20Here's%20a%20bit%20about%20us%3A%0A%0A-%20Organization%3A%0A-%20How%20we'd%20like%20to%20help%3A%0A-%20Best%20contact%3A%0A%0AThanks!">Email us to partner →</a>
+      <a class="btn btn-outline" href="index.html#partners">See our partners</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="inner">
+    <div>© 2026 Tech4Good Initiative · Founded by Calvin Andoh</div>
+  </div>
+</footer>
+
+</body>
+</html>
