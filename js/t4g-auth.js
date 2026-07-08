@@ -1,16 +1,16 @@
 /* ============================================================
-   Tech4Good — student auth + progress (class code + name + PIN)
+   Tech4Good — student auth + progress (first name + last name + PIN)
    ------------------------------------------------------------
    Requires the Supabase JS library to be loaded FIRST on the page:
      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
      <script src="js/t4g-auth.js"></script>
 
    HOW LOGIN WORKS (kid-friendly, no email needed):
-   The student types a class code, a display name, and a 4-digit PIN.
+   The student types a first name, a last name, and a 4-digit PIN.
    Under the hood we turn that into a synthetic account Supabase can
-   handle: a fake email built from name+class, and a password built
+   handle: a fake email built from their full name, and a password built
    from the PIN. The kid never sees the email — they only ever type
-   class code + name + PIN.
+   first name + last name + PIN.
    ============================================================ */
 
 /* ------------------------------------------------------------------
@@ -39,19 +39,15 @@ const SUPABASE_ANON_KEY = 'sb_publishable_oaJg6qm7mJqGSRo9u-Pq9A_RzHtxaR0';
 
   // Synthetic-account plumbing (kids never see this) ----------------
   const EMAIL_DOMAIN = 'students.tech4good.live';
-  // Students are assigned this class at sign-up (they don't type a code there).
-  // They only enter a code when logging IN. Add more classes in the DB if needed.
-  const DEFAULT_CLASS_CODE = 'TECH4GOOD26';
 
   function slug(str) {
     return String(str).toLowerCase().trim()
       .replace(/[^a-z0-9]+/g, '.')   // spaces / punctuation -> dot
       .replace(/^\.+|\.+$/g, '');    // trim leading/trailing dots
   }
-  // Identity = first + last name + class, so two "Ama"s in the same class
-  // don't clash as long as their surnames differ.
-  function emailFor(name, code) {
-    return slug(name) + '.' + slug(code) + '@' + EMAIL_DOMAIN;
+  // Identity = the student's full name (first + last). No class code — kept simple.
+  function emailFor(name) {
+    return slug(name) + '@' + EMAIL_DOMAIN;
   }
   // Join first + last into the single display/identity string the email is built from.
   function fullName(first, last) {
@@ -77,29 +73,20 @@ const SUPABASE_ANON_KEY = 'sb_publishable_oaJg6qm7mJqGSRo9u-Pq9A_RzHtxaR0';
     isConfigured: CONFIGURED,
 
     // Create a new student account, then their profile row.
-    async signUp({ firstName, lastName, code, pin }) {
+    async signUp({ firstName, lastName, pin }) {
       ensureReady();
-      // No code is typed at sign-up — everyone joins the default class.
-      code = String(code || DEFAULT_CLASS_CODE).trim();
       const first = String(firstName || '').trim();
       const last  = String(lastName  || '').trim();
       const name  = fullName(first, last);
 
-      // 1) Class code must exist.
-      const { data: cls, error: clsErr } = await client
-        .from('classes').select('code').eq('code', code.toUpperCase()).maybeSingle();
-      if (clsErr) throw clsErr;
-      if (!cls) throw new Error('That class code was not recognised. Check with your teacher.');
-      code = cls.code;
-
-      // 2) Create the auth user.
+      // Create the auth user.
       const { data, error } = await client.auth.signUp({
-        email: emailFor(name, code),
+        email: emailFor(name),
         password: passwordFor(pin),
       });
       if (error) {
         if (/already registered|already exists/i.test(error.message)) {
-          throw new Error('That first and last name is already taken in this class. Try your middle initial.');
+          throw new Error('That first and last name is already taken. Try adding your middle initial.');
         }
         throw error;
       }
@@ -108,13 +95,12 @@ const SUPABASE_ANON_KEY = 'sb_publishable_oaJg6qm7mJqGSRo9u-Pq9A_RzHtxaR0';
         throw new Error('Almost there — but the site owner still needs to turn OFF "Confirm email" in Supabase (see SETUP-LOGIN.md).');
       }
 
-      // 3) Create their profile row.
+      // Create their profile row.
       const { error: pErr } = await client.from('profiles').insert({
         id: data.user.id,
         first_name: first,
         last_name: last,
         display_name: name,
-        class_code: code,
         badges: [],
       });
       if (pErr) throw pErr;
@@ -122,15 +108,15 @@ const SUPABASE_ANON_KEY = 'sb_publishable_oaJg6qm7mJqGSRo9u-Pq9A_RzHtxaR0';
     },
 
     // Sign an existing student in.
-    async login({ firstName, lastName, code, pin }) {
+    async login({ firstName, lastName, pin }) {
       ensureReady();
       const name = fullName(firstName, lastName);
       const { data, error } = await client.auth.signInWithPassword({
-        email: emailFor(name, String(code).trim().toUpperCase()),
+        email: emailFor(name),
         password: passwordFor(pin),
       });
       if (error) {
-        throw new Error('We could not find that. Double-check your class code, first and last name, and PIN.');
+        throw new Error('We could not find that. Double-check your first and last name, and PIN.');
       }
       return data.user;
     },

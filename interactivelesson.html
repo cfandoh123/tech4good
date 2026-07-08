@@ -326,7 +326,7 @@ footer p{margin:4px 0;font-size:.88rem}
 <div id="authGate"><div class="ag-inner"><div class="ag-spinner"></div>Checking your sign-in…</div></div>
 <script>
   (function(){
-    // The Warm-Up is members-only: you must sign up or log in (class code + name + PIN).
+    // The Warm-Up is members-only: you must sign up or log in (first + last name + PIN).
     function reveal(){ document.body.classList.add('authed'); }
     if(!window.T4G || !T4G.isConfigured){ reveal(); return; } // login not wired up yet — don't lock anyone out
     T4G.requireAuth()                // redirects to login.html?next=interactivelesson.html when signed out

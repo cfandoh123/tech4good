@@ -48,12 +48,7 @@
     <div class="auth-eyebrow">Welcome back</div>
     <h1>Log in</h1>
     <p class="lede">Enter your first and last name, and the 4-digit PIN you signed up with.</p>
-    <p class="lede">The class code is <b>TECH4GOOD26</b></p>
     <form id="loginForm" autocomplete="off">
-      <div class="field">
-        <label for="code">Class code</label>
-        <input id="code" name="code" type="text" autocapitalize="characters">
-      </div>
       <div class="field">
         <label for="firstName">First name</label>
         <input id="firstName" name="firstName" type="text">
@@ -90,7 +85,6 @@
     btn.disabled = true; btn.textContent = 'Logging in…';
     try {
       await T4G.login({
-        code:      form.code.value,
         firstName: form.firstName.value,
         lastName:  form.lastName.value,
         pin:       form.pin.value,

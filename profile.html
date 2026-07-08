@@ -58,7 +58,7 @@
       <div class="prof-avatar" id="avatar">?</div>
       <div>
         <div class="prof-name" id="nameEl">Student</div>
-        <div class="prof-meta" id="metaEl">Class ·</div>
+        <div class="prof-meta" id="metaEl">Tech4Good · Warm-Up</div>
       </div>
     </div>
 
@@ -107,7 +107,7 @@
 
     document.getElementById('avatar').textContent = (firstName[0] || '?').toUpperCase();
     document.getElementById('nameEl').textContent = profile ? profile.display_name : 'Student';
-    document.getElementById('metaEl').textContent = 'Class · ' + ((profile && profile.class_code) || '—');
+    document.getElementById('metaEl').textContent = 'Tech4Good · Warm-Up';
 
     const grid = document.getElementById('badgeGrid');
     BADGES.forEach(b => {
