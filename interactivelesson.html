@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech4Good Nungua · Warm-Up Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+<style>
+:root{
+  --green:#1B4332; --green-deep:#123028;
+  --terra:#D77A4E; --gold:#E4B04A;
+  --cream:#F7F3E9; --cream-2:#EFE8D6;
+  --ink:#2A2620; --muted:#6B6456;
+  --line:#DDD3BE;
+  --ok:#3E7C5A; --err:#C0553B;
+  --shadow:0 1px 0 rgba(42,38,32,.04), 0 8px 30px -12px rgba(27,67,50,.22);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--cream); color:var(--ink);
+  font-family:"DM Sans",system-ui,sans-serif; font-size:17px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:940px;margin:0 auto;padding:0 22px}
+a{color:var(--green);text-decoration:none;border-bottom:1.5px solid var(--gold)}
+h1,h2,h3{font-family:"Fraunces",serif;line-height:1.08;font-weight:900;letter-spacing:-.01em}
+code,kbd{font-family:"JetBrains Mono",monospace}
+.mono-label{font-family:"JetBrains Mono",monospace;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--terra);font-weight:500}
+
+/* ---- top bar ---- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(247,243,233,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:58px}
+.brand{font-family:"Fraunces",serif;font-weight:900;font-size:1.05rem;border:none;color:var(--green)}
+.brand span{color:var(--terra)}
+.tnav{display:flex;gap:18px;font-size:.82rem;font-weight:500}
+.tnav a{border:none;color:var(--muted)}
+.tnav a:hover{color:var(--green)}
+@media(max-width:640px){.tnav{display:none}}
+
+/* ---- hero ---- */
+.hero{padding:64px 0 40px;position:relative;overflow:hidden}
+.hero .kicker{display:inline-block;margin-bottom:20px}
+.hero h1{font-size:clamp(2.6rem,7vw,4.6rem);margin:0 0 18px}
+.hero h1 em{font-style:italic;font-weight:400;color:var(--terra)}
+.hero p.lead{font-size:1.2rem;max-width:640px;color:var(--ink)}
+.hero .meta{margin-top:26px;display:flex;gap:26px;flex-wrap:wrap;font-size:.9rem;color:var(--muted)}
+.hero .meta b{color:var(--green);font-weight:700}
+.sun{position:absolute;right:-80px;top:-40px;width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle at 40% 40%,var(--gold),var(--terra) 70%);opacity:.14;z-index:-1}
+
+/* ---- lesson map ---- */
+.map{padding:20px 0 10px}
+.map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.mcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;box-shadow:var(--shadow);
+  display:block;color:var(--ink);border-bottom:1px solid var(--line);transition:transform .15s ease,box-shadow .15s ease}
+.mcard:hover{transform:translateY(-3px);box-shadow:0 14px 34px -14px rgba(27,67,50,.3)}
+.mcard .num{font-family:"JetBrains Mono",monospace;font-size:.78rem;color:var(--terra);font-weight:700}
+.mcard h3{font-size:1.18rem;margin:6px 0 5px}
+.mcard p{margin:0;font-size:.9rem;color:var(--muted);line-height:1.45}
+
+/* ---- section ---- */
+section.lesson{padding:52px 0;border-top:1px solid var(--line)}
+.lesson-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+.lesson-head .n{font-family:"Fraunces",serif;font-weight:900;font-size:2.4rem;color:var(--gold);line-height:1}
+.lesson h2{font-size:clamp(1.7rem,4vw,2.4rem);margin:0}
+.lesson .sub{color:var(--muted);margin:4px 0 26px;font-size:1.02rem}
+.lesson p{max-width:680px}
+.lesson h3.step{font-family:"Fraunces",serif;font-size:1.25rem;margin:30px 0 8px;font-weight:600}
+.callout{background:var(--cream-2);border-left:3px solid var(--terra);border-radius:0 10px 10px 0;padding:14px 18px;margin:20px 0;font-size:.96rem}
+.callout b{color:var(--green)}
+ul.clean{padding-left:0;list-style:none;max-width:680px}
+ul.clean li{padding:7px 0 7px 26px;position:relative;border-bottom:1px dashed var(--line)}
+ul.clean li:before{content:"›";position:absolute;left:6px;color:var(--terra);font-weight:700}
+
+/* ---- playground ---- */
+.pg{background:var(--green-deep);border-radius:16px;overflow:hidden;margin:22px 0;box-shadow:0 18px 40px -18px rgba(18,48,40,.6)}
+.pg-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.08)}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot.r{background:#E5695B}.dot.y{background:var(--gold)}.dot.g{background:#5FB47F}
+.pg-title{font-family:"JetBrains Mono",monospace;font-size:.74rem;color:#B9C7BE;margin-left:6px}
+.pg textarea{width:100%;border:none;outline:none;resize:vertical;min-height:120px;
+  background:transparent;color:#F3EFE2;font-family:"JetBrains Mono",monospace;font-size:14px;line-height:1.6;padding:16px 18px;tab-size:4}
+.pg-actions{display:flex;align-items:center;gap:10px;padding:0 14px 14px}
+.btn-run{background:var(--gold);color:var(--green-deep);border:none;font-family:"DM Sans",sans-serif;font-weight:700;
+  font-size:.92rem;padding:9px 20px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:filter .15s}
+.btn-run:hover{filter:brightness(1.07)}
+.btn-run:disabled{opacity:.5;cursor:wait}
+.btn-reset{background:transparent;border:1px solid rgba(255,255,255,.2);color:#B9C7BE;font-family:"DM Sans",sans-serif;
+  font-size:.82rem;padding:8px 14px;border-radius:9px;cursor:pointer}
+.pg-out{background:#0E211B;color:#CFE3D6;font-family:"JetBrains Mono",monospace;font-size:13.5px;line-height:1.55;
+  padding:0 18px;max-height:0;overflow:auto;transition:max-height .2s ease;white-space:pre-wrap;word-break:break-word}
+.pg-out.show{max-height:340px;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08)}
+.pg-out .err{color:#F0A08C}
+.pg-out .ok{color:#7FD3A0}
+.pg-hint{font-size:.78rem;color:#8AA294;margin-left:auto;font-family:"JetBrains Mono",monospace}
+
+/* challenge box */
+.chal{background:#fff;border:1px dashed var(--terra);border-radius:12px;padding:16px 18px;margin:18px 0;max-width:680px}
+.chal .tag{font-family:"JetBrains Mono",monospace;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--terra);font-weight:700}
+.chal p{margin:6px 0 0;font-size:.95rem}
+
+/* loading banner */
+#pyStatus{position:fixed;bottom:16px;right:16px;z-index:80;background:var(--green);color:var(--cream);
+  font-family:"JetBrains Mono",monospace;font-size:.76rem;padding:9px 15px;border-radius:30px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:9px;transition:opacity .4s;max-width:82vw}
+.spinner{width:12px;height:12px;border:2px solid rgba(247,243,233,.35);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* footer */
+footer{background:var(--green-deep);color:#C9D6CD;padding:44px 0;margin-top:40px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+footer b{color:var(--cream);font-family:"Fraunces",serif;font-weight:900}
+footer a{color:var(--gold);border:none}
+footer p{margin:4px 0;font-size:.88rem}
+
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand" href="index.html">Tech4Good <span>Nungua</span></a>
+  <nav class="tnav">
+    <a href="#l1">Computers</a>
+    <a href="#l2">First Code</a>
+    <a href="#l3">Data</a>
+    <a href="#l4">Decisions</a>
+    <a href="#l5">Loops</a>
+    <a href="#l6">Build</a>
+  </nav>
+</div></div>
+
+<a id="top"></a>
+<header class="hero"><div class="wrap">
+  <div class="sun"></div>
+  <span class="kicker mono-label">Cohort 01 · Warm-Up Before Bootcamp</span>
+  <h1>Learn to make the computer <em>do what you say.</em></h1>
+  <p class="lead">Six short lessons to get you ready for the Innovators Bootcamp. No downloads, no fees — you write real Python code right here in the page and run it. Every example is about life in Nungua: the market, the trotro, mobile money, your own language.</p>
+  <div class="meta">
+    <span><b>6</b> lessons · about <b>2 hours</b> total</span>
+    <span>Works on <b>a phone</b> or a computer</span>
+    <span>For students finishing <b>basic school</b></span>
+  </div>
+</div></header>
+
+<div class="map"><div class="wrap">
+  <span class="mono-label">The map</span>
+  <div class="map-grid" style="margin-top:12px">
+    <a class="mcard" href="#l1"><span class="num">01</span><h3>What is a computer, really?</h3><p>How a phone or laptop follows instructions — and why code is just very clear instructions.</p></a>
+    <a class="mcard" href="#l2"><span class="num">02</span><h3>Your first lines of code</h3><p>Make the computer speak. Say <code>Akwaaba</code> to the world and print your own name.</p></a>
+    <a class="mcard" href="#l3"><span class="num">03</span><h3>Boxes that hold things</h3><p>Variables and numbers — track kenkey prices and add up a market bill.</p></a>
+    <a class="mcard" href="#l4"><span class="num">04</span><h3>Making decisions</h3><p>If this, then that. Check if you have enough on mobile money to pay a trotro fare.</p></a>
+    <a class="mcard" href="#l5"><span class="num">05</span><h3>Doing it again and again</h3><p>Loops. Greet a whole classroom in Twi, Ga and English without repeating yourself.</p></a>
+    <a class="mcard" href="#l6"><span class="num">06</span><h3>Build a tiny project</h3><p>Put it together: a small market price checker, like a baby version of SeaPrice.</p></a>
+  </div>
+</div></div>
+
+<!-- ================= LESSON 1 ================= -->
+<a id="l1"></a>
+<section class="lesson"><div class="wrap">
+  <div class="lesson-head"><span class="n">01</span><h2>What is a computer, really?</h2></div>
+  <p class="sub">Before you write a single line, understand the one big idea.</p>
+
+  <p>A computer — whether it's the phone in your pocket or a laptop — is a machine that is very fast but very literal. It cannot guess what you mean. It only does <b>exactly</b> what it is told, in the <b>exact order</b> you tell it. That's it. That's the whole secret.</p>
+
+  <p>Think about making <b>kenkey</b>. If you gave a friend the steps out of order — "wrap it, then add water, then grind the corn" — you'd get a mess. A recipe only works when the steps are clear and in the right order. <b>Code is a recipe for the computer.</b> Programming is just the skill of writing very clear recipes.</p>
+
+  <div class="callout"><b>Why this matters for you.</b> People sometimes think coding is about being a genius with maths. It isn't. It's about breaking a big problem into small, clear steps — the same thing a good market trader, a nurse, or a football coach already does every day.</div>
+
+  <h3 class="step">The three parts of almost every program</h3>
+  <ul class="clean">
+    <li><b>Input</b> — information going in (a price, your name, how much money you have).</li>
+    <li><b>Process</b> — the computer doing something with it (adding, checking, deciding).</li>
+    <li><b>Output</b> — the answer coming back out (a total, a message on screen).</li>
+  </ul>
+  <p>Every app you know — MoMo, WhatsApp, a football score app — is just those three things, repeated many times, very fast. In the next lesson you make output happen yourself.</p>
+</div></section>
+
+<!-- ================= LESSON 2 ================= -->
+<a id="l2"></a>
+<section class="lesson"><div class="wrap">
+  <div class="lesson-head"><span class="n">02</span><h2>Your first lines of code</h2></div>
+  <p class="sub">You will make the computer talk. Right now, in this page.</p>
+
+  <p>In Python, the command to make the computer show something on screen is <code>print</code>. You put what you want to show inside brackets and quotes. Press <b>Run code</b> below and watch.</p>
+
+  <div class="pg" data-code='print("Akwaaba! Welcome to Tech4Good.")'></div>
+
+  <p>The words inside the quotes are called a <b>string</b> — just text. You can print anything you like. Try changing the words to your own name, then press Run again.</p>
+
+  <div class="pg" data-code='print("My name is Ama.")
+print("I am from Nungua.")
+print("I am learning to code.")'></div>
+
+  <div class="callout"><b>Notice:</b> each <code>print</code> goes on its own line, and they run top to bottom — in order, just like the recipe idea from Lesson 1.</div>
+
+  <div class="chal">
+    <span class="tag">Your turn</span>
+    <p>In the box above, change the three lines so they say your real name, your neighbourhood, and one thing you want to build one day. Run it. That message is the first thing you ever made a computer say.</p>
+  </div>
+</div></section>
+
+<!-- ================= LESSON 3 ================= -->
+<a id="l3"></a>
+<section class="lesson"><div class="wrap">
+  <div class="lesson-head"><span class="n">03</span><h2>Boxes that hold things</h2></div>
+  <p class="sub">Variables: giving a name to a piece of information so you can use it again.</p>
+
+  <p>Imagine a labelled box at the market. You write <b>"kenkey"</b> on it and put the price inside. Later, instead of remembering the number, you just say "check the kenkey box". In code, that box is called a <b>variable</b>.</p>
+
+  <div class="pg" data-code='kenkey = 3
+fish = 10
+pepper = 2
+
+print("Kenkey costs", kenkey, "cedis")
+print("Total for one plate:", kenkey + fish + pepper, "cedis")'></div>
+
+  <p>Three things just happened. You made three boxes (<code>kenkey</code>, <code>fish</code>, <code>pepper</code>), put a number in each, and then the computer <b>added them</b> for you with <code>+</code>. Change any price and run again — the total updates by itself. That is the "process" part from Lesson 1.</p>
+
+  <div class="callout"><b>The rule for boxes:</b> the name goes on the left, an <code>=</code> sign in the middle, and the value on the right. The <code>=</code> means "put this in the box," not "equals" like in maths.</div>
+
+  <h3 class="step">Numbers vs. words</h3>
+  <p>Notice prices have <b>no quotes</b> (they are numbers you can add), but text like <code>"Total:"</code> has quotes. That difference matters — the computer adds numbers, but it only shows words.</p>
+
+  <div class="chal">
+    <span class="tag">Your turn</span>
+    <p>You are buying items for a family meal. Make boxes for <code>rice</code>, <code>chicken</code> and <code>oil</code> with real prices, then print the total. Bonus: add a <code>transport</code> box for your trotro fare home and include it in the total.</p>
+  </div>
+</div></section>
+
+<!-- ================= LESSON 4 ================= -->
+<a id="l4"></a>
+<section class="lesson"><div class="wrap">
+  <div class="lesson-head"><span class="n">04</span><h2>Making decisions</h2></div>
+  <p class="sub">Teaching the computer to choose: <code>if</code> this, then that.</p>
+
+  <p>So far the computer just does everything. But real apps <b>decide</b>. When you try to send MoMo, it checks: do you have enough money? If yes, it sends. If no, it warns you. In Python that check is the word <code>if</code>.</p>
+
+  <div class="pg" data-code='balance = 5      # cedis on mobile money
+fare = 3        # trotro fare to Accra
+
+if balance >= fare:
+    print("You can pay. Enjoy the journey!")
+else:
+    print("Not enough. You need more MoMo.")'></div>
+
+  <p>Read it out loud like English: "<b>if</b> balance is greater-than-or-equal-to fare, print the good message; <b>else</b> print the warning." Change <code>balance</code> to <code>2</code> and run it — now the other message shows.</p>
+
+  <div class="callout"><b>The two most important details:</b> the line ends with a colon <code>:</code>, and the line below it is <b>pushed in</b> (indented) with spaces. That spacing is how Python knows which lines belong to the decision. Keep it — the code breaks without it.</div>
+
+  <h3 class="step">The comparison words</h3>
+  <ul class="clean">
+    <li><code>&gt;=</code> greater than or equal to · <code>&lt;=</code> less than or equal to</li>
+    <li><code>&gt;</code> greater than · <code>&lt;</code> less than</li>
+    <li><code>==</code> is exactly equal to (two equals signs — this is a question, not a box)</li>
+  </ul>
+
+  <div class="chal">
+    <span class="tag">Your turn</span>
+    <p>A pregnant woman should visit the clinic if her temperature is <code>38</code> or higher (this is the idea behind KlinikAlert). Make a box <code>temperature = 39</code> and write an <code>if / else</code> that prints "Go to the clinic" or "You are okay". Try different temperatures.</p>
+  </div>
+</div></section>
+
+<!-- ================= LESSON 5 ================= -->
+<a id="l5"></a>
+<section class="lesson"><div class="wrap">
+  <div class="lesson-head"><span class="n">05</span><h2>Doing it again and again</h2></div>
+  <p class="sub">Loops: the trick that makes computers so powerful.</p>
+
+  <p>Suppose you must greet 30 classmates. You wouldn't write 30 lines. Computers are built to repeat. A <b>loop</b> says "do this for every item in the list." Watch it greet in all three of our languages:</p>
+
+  <div class="pg" data-code='greetings = ["Akwaaba", "Ma wo aba", "Welcome"]
+
+for word in greetings:
+    print(word + ", friend!")'></div>
+
+  <p>The list is inside square brackets <code>[ ]</code>. The loop goes through it one item at a time, and each time, <code>word</code> becomes the next greeting. Three items, so the message prints three times — but you only wrote it <b>once</b>. Add a fourth greeting to the list and run again; the loop handles it automatically.</p>
+
+  <div class="callout"><b>Why coders love this:</b> whether the list has 3 names or 3,000, the loop is the same length. This is exactly how an app sends a message to a whole community at once.</div>
+
+  <h3 class="step">Looping with numbers</h3>
+  <div class="pg" data-code='# Count buckets of water for the tank
+for bucket in range(1, 6):
+    print("Filled bucket number", bucket)
+
+print("Tank is full!")'></div>
+  <p><code>range(1, 6)</code> gives the numbers 1, 2, 3, 4, 5 (it stops before 6). Loops plus lists are enough to build surprisingly real things — which is what you'll do next.</p>
+
+  <div class="chal">
+    <span class="tag">Your turn</span>
+    <p>Make a list of five fish sold at the Nungua shore — <code>["tilapia", "salmon", "herring", ...]</code> — and use a loop to print <code>"Fresh tilapia for sale!"</code> for each one.</p>
+  </div>
+</div></section>
+
+<!-- ================= LESSON 6 ================= -->
+<a id="l6"></a>
+<section class="lesson"><div class="wrap">
+  <div class="lesson-head"><span class="n">06</span><h2>Build a tiny project</h2></div>
+  <p class="sub">Everything together: a baby version of SeaPrice, the fish-market price checker.</p>
+
+  <p>You now know the four building blocks: <b>print</b>, <b>variables</b>, <b>if/else</b>, and <b>loops</b>. Real programs are just these combined. Here is a small price checker that looks through today's fish prices and tells the buyer which ones fit their budget. Run it, read it, then change the numbers.</p>
+
+  <div class="pg" data-code='# --- SeaPrice mini: which fish can I afford today? ---
+budget = 12   # cedis in my pocket
+
+prices = [
+    ["Tilapia", 10],
+    ["Salmon", 18],
+    ["Herring", 6],
+    ["Red fish", 15],
+]
+
+print("My budget:", budget, "cedis")
+print("--- Today at the shore ---")
+
+for item in prices:
+    name = item[0]
+    price = item[1]
+    if price <= budget:
+        print(name, "-", price, "cedis  (you can buy this)")
+    else:
+        print(name, "-", price, "cedis  (too expensive today)")'></div>
+
+  <p>Look what you understand now: a <b>variable</b> for the budget, a <b>list</b> of fish and prices, a <b>loop</b> to check each one, and an <b>if/else</b> to decide. That is a genuine program. Every big app is this same idea, just larger.</p>
+
+  <div class="chal">
+    <span class="tag">Final challenge</span>
+    <p>Change the budget to <code>20</code> and run it — more fish should now say "you can buy this." Then add two more fish to the list with their prices. You just edited a real program's data, the way a working developer does.</p>
+  </div>
+
+  <div class="callout" style="border-left-color:var(--gold)"><b>You're ready.</b> If you followed to here, you already understand more than most people ever will about how technology works. Come to the bootcamp with this file open — we build from exactly this point. See you in Nungua. <b>Akwaaba.</b></div>
+</div></section>
+
+<footer><div class="wrap">
+  <div>
+    <b>Tech4Good Nungua</b>
+    <p>Ethical technology, built by young people, for our own community.</p>
+    <p><a href="index.html">← Back to the Tech4Good site</a></p>
+  </div>
+  <div style="text-align:right">
+    <p>Warm-up course · Cohort 01</p>
+    <p>Save this page and practise offline. No internet needed after it loads once.</p>
+  </div>
+</div></footer>
+
+<div id="pyStatus"><span class="spinner"></span><span id="pyStatusText">Starting the code engine…</span></div>
+
+<script>
+// ---- Build each playground from its data-code attribute ----
+document.querySelectorAll('.pg').forEach((pg, i) => {
+  const code = pg.getAttribute('data-code') || '';
+  pg.innerHTML = `
+    <div class="pg-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="pg-title">python · try it</span>
+      <span class="pg-hint">editable — change it and run</span>
+    </div>
+    <textarea spellcheck="false" data-original="${escapeAttr(code)}">${escapeHtml(code)}</textarea>
+    <div class="pg-actions">
+      <button class="btn-run">▶ Run code</button>
+      <button class="btn-reset">Reset</button>
+    </div>
+    <div class="pg-out" aria-live="polite"></div>`;
+});
+
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escapeAttr(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// Tab key inserts spaces instead of leaving the box
+document.querySelectorAll('.pg textarea').forEach(ta => {
+  ta.addEventListener('keydown', e => {
+    if(e.key === 'Tab'){ e.preventDefault();
+      const s=ta.selectionStart, en=ta.selectionEnd;
+      ta.value = ta.value.slice(0,s) + '    ' + ta.value.slice(en);
+      ta.selectionStart = ta.selectionEnd = s+4;
+    }
+  });
+});
+
+// ---- Pyodide setup ----
+let pyodide = null, pyReady = false;
+const statusEl = document.getElementById('pyStatus');
+const statusText = document.getElementById('pyStatusText');
+
+async function initPy(){
+  try{
+    pyodide = await loadPyodide();
+    pyReady = true;
+    statusText.textContent = 'Ready — press Run on any lesson';
+    statusEl.querySelector('.spinner').style.display='none';
+    setTimeout(()=>{statusEl.style.opacity='0';}, 2600);
+  }catch(err){
+    statusText.textContent = 'Code engine needs internet to load once';
+    statusEl.querySelector('.spinner').style.display='none';
+  }
+}
+initPy();
+
+// ---- Run buttons ----
+document.querySelectorAll('.pg').forEach(pg => {
+  const runBtn = pg.querySelector('.btn-run');
+  const resetBtn = pg.querySelector('.btn-reset');
+  const ta = pg.querySelector('textarea');
+  const out = pg.querySelector('.pg-out');
+
+  resetBtn.addEventListener('click', () => {
+    ta.value = ta.getAttribute('data-original');
+    out.classList.remove('show'); out.innerHTML='';
+  });
+
+  runBtn.addEventListener('click', async () => {
+    out.classList.add('show');
+    if(!pyReady){
+      out.innerHTML = '<span class="err">The code engine is still starting — wait a moment and press Run again.</span>';
+      return;
+    }
+    runBtn.disabled = true; const label = runBtn.textContent; runBtn.textContent = 'Running…';
+    out.textContent = '';
+    try{
+      pyodide.runPython(`
+import sys, io
+_buf = io.StringIO()
+sys.stdout = _buf
+sys.stderr = _buf
+`);
+      await pyodide.runPythonAsync(ta.value);
+      const captured = pyodide.runPython('_buf.getvalue()');
+      pyodide.runPython('sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__');
+      if(captured.trim() === ''){
+        out.innerHTML = '<span class="ok">✓ Ran with no errors (nothing to print). Add a print() to see output.</span>';
+      }else{
+        out.innerHTML = '<span class="ok">✓ Output:</span>\n' + escapeHtml(captured);
+      }
+    }catch(err){
+      pyodide.runPython('sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__');
+      out.innerHTML = '<span class="err">There is a small mistake:</span>\n<span class="err">' + escapeHtml(cleanError(err.message)) + '</span>\n\nRead the last line — it usually points to the problem. Check your spelling, quotes and spacing.';
+    }finally{
+      runBtn.disabled = false; runBtn.textContent = label;
+    }
+  });
+});
+
+function cleanError(msg){
+  const lines = msg.split('\n').filter(l => l.trim() && !l.includes('File "<exec>"') && !l.includes('runPythonAsync'));
+  return lines.slice(-4).join('\n');
+}
+</script>
+</body>
+</html>
