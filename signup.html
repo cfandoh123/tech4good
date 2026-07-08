@@ -72,7 +72,7 @@
       <div class="auth-msg" id="msg"></div>
     </form>
 
-    <div class="auth-alt">Already have an account? <a href="login.html">Log in</a></div>
+    <div class="auth-alt">Already have an account? <a id="toLogin" href="login.html">Log in</a></div>
   </div>
 </div>
 
@@ -82,6 +82,9 @@
   const form = document.getElementById('signupForm');
   const msg  = document.getElementById('msg');
   const btn  = document.getElementById('submitBtn');
+  const nextPage = new URLSearchParams(location.search).get('next') || 'profile.html';
+  // keep the destination if they bounce over to log in instead
+  document.getElementById('toLogin').href = 'login.html?next=' + encodeURIComponent(nextPage);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -101,8 +104,8 @@
         name: form.name.value,
         pin:  form.pin.value,
       });
-      msg.className = 'auth-msg ok'; msg.textContent = 'You’re in! Taking you to your progress page…';
-      location.href = 'profile.html';
+      msg.className = 'auth-msg ok'; msg.textContent = 'You’re in! Taking you to the Warm-Up…';
+      location.href = nextPage;
     } catch (err) {
       msg.className = 'auth-msg err'; msg.textContent = err.message;
       btn.disabled = false; btn.textContent = 'Create account →';

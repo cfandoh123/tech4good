@@ -112,6 +112,13 @@ ul.clean li:before{content:"›";position:absolute;left:6px;color:var(--terra);f
 .spinner{width:12px;height:12px;border:2px solid rgba(247,243,233,.35);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ---- members-only gate: hide the whole lesson until signed in ---- */
+#authGate{position:fixed;inset:0;z-index:300;background:var(--cream);display:flex;align-items:center;justify-content:center}
+#authGate .ag-inner{text-align:center;color:var(--muted);font-family:"JetBrains Mono",monospace;font-size:.82rem;letter-spacing:.04em}
+#authGate .ag-spinner{width:28px;height:28px;border:3px solid rgba(27,67,50,.16);border-top-color:var(--terra);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+body:not(.authed) > :not(#authGate){display:none !important}
+body.authed #authGate{display:none}
+
 /* footer */
 footer{background:var(--green-deep);color:#C9D6CD;padding:44px 0;margin-top:40px}
 footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
@@ -315,6 +322,18 @@ footer p{margin:4px 0;font-size:.88rem}
 </style>
 </head>
 <body>
+
+<div id="authGate"><div class="ag-inner"><div class="ag-spinner"></div>Checking your sign-in…</div></div>
+<script>
+  (function(){
+    // The Warm-Up is members-only: you must sign up or log in (class code + name + PIN).
+    function reveal(){ document.body.classList.add('authed'); }
+    if(!window.T4G || !T4G.isConfigured){ reveal(); return; } // login not wired up yet — don't lock anyone out
+    T4G.requireAuth()                // redirects to login.html?next=interactivelesson.html when signed out
+      .then(function(u){ if(u) reveal(); })
+      .catch(reveal);                // transient error: fail open rather than trap the student
+  })();
+</script>
 
 <div class="topbar"><div class="wrap">
   <a class="brand" href="#top">Tech4Good</a>

@@ -66,7 +66,7 @@
       <div class="auth-msg" id="msg"></div>
     </form>
 
-    <div class="auth-alt">New here? <a href="signup.html">Create your account</a></div>
+    <div class="auth-alt">New here? <a id="toSignup" href="signup.html">Create your account</a></div>
   </div>
 </div>
 
@@ -77,6 +77,8 @@
   const msg  = document.getElementById('msg');
   const btn  = document.getElementById('submitBtn');
   const nextPage = new URLSearchParams(location.search).get('next') || 'profile.html';
+  // carry the destination through to sign-up so a gated student lands where they started
+  document.getElementById('toSignup').href = 'signup.html?next=' + encodeURIComponent(nextPage);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
