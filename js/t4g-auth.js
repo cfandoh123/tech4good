@@ -17,8 +17,8 @@
    1) PASTE YOUR SUPABASE PROJECT VALUES HERE
    Find them in: Supabase Dashboard → Project Settings → API
    ------------------------------------------------------------------ */
-const SUPABASE_URL      = 'https://YOUR-PROJECT-REF.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+const SUPABASE_URL      = 'https://qpwwmxiwnrqiumlrnbjw.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'sb_publishable_oaJg6qm7mJqGSRo9u-Pq9A_RzHtxaR0';
 /* ------------------------------------------------------------------ */
 
 (function () {
