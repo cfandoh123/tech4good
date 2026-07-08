@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create your account — Tech4Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .auth-wrap{max-width:440px;margin:0 auto;padding:64px 22px 90px}
+  .auth-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:34px 30px;
+    box-shadow:0 18px 50px rgba(26,22,18,.08)}
+  .auth-eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--terra-deep);margin-bottom:10px}
+  .auth-card h1{font-family:var(--display);font-size:2rem;line-height:1.05;margin-bottom:6px}
+  .auth-card .lede{color:#6b6357;font-size:.96rem;margin-bottom:26px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:.82rem;font-weight:600;margin-bottom:6px;color:var(--ink)}
+  .field input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:#fff;
+    font-family:var(--body);font-size:1rem;color:var(--ink)}
+  .field input:focus{outline:none;border-color:var(--terra);box-shadow:0 0 0 3px rgba(217,117,67,.15)}
+  .field .hint{font-size:.76rem;color:#8a8175;margin-top:5px}
+  .btn-full{width:100%;justify-content:center;margin-top:8px}
+  .auth-alt{text-align:center;margin-top:20px;font-size:.9rem;color:#6b6357}
+  .auth-alt a{color:var(--terra-deep);font-weight:600}
+  .auth-msg{display:none;margin-top:16px;padding:12px 14px;border-radius:11px;font-size:.88rem;line-height:1.4}
+  .auth-msg.err{display:block;background:rgba(217,117,67,.12);color:var(--terra-deep);border:1px solid rgba(217,117,67,.3)}
+  .auth-msg.ok{display:block;background:rgba(74,124,82,.14);color:#2f6b3a;border:1px solid rgba(74,124,82,.35)}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="inner">
+    <a class="brand" href="index.html"><div class="brand-mark"></div>Tech4Good</a>
+    <div class="nav-links">
+      <a href="program.html">Program</a>
+      <a href="projects.html">Projects</a>
+      <a href="students.html">Students</a>
+      <a href="interactivelesson.html">Warm-Up</a>
+    </div>
+  </div>
+</nav>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-eyebrow">Join the Warm-Up</div>
+    <h1>Create your account</h1>
+    <p class="lede">No email needed. Your teacher gives you the class code — pick a name and a PIN you'll remember.</p>
+
+    <form id="signupForm" autocomplete="off">
+      <div class="field">
+        <label for="code">Class code</label>
+        <input id="code" name="code" type="text" required placeholder="e.g. NUNGUA26" autocapitalize="characters">
+        <div class="hint">Ask your teacher if you don't have one.</div>
+      </div>
+      <div class="field">
+        <label for="name">Your name</label>
+        <input id="name" name="name" type="text" required placeholder="e.g. Ama Owusu">
+        <div class="hint">This is what shows on your progress page.</div>
+      </div>
+      <div class="field">
+        <label for="pin">Choose a 4-digit PIN</label>
+        <input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required placeholder="••••">
+      </div>
+      <div class="field">
+        <label for="pin2">Type your PIN again</label>
+        <input id="pin2" name="pin2" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required placeholder="••••">
+      </div>
+      <button type="submit" class="btn btn-dark btn-full" id="submitBtn">Create account →</button>
+      <div class="auth-msg" id="msg"></div>
+    </form>
+
+    <div class="auth-alt">Already have an account? <a href="login.html">Log in</a></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/t4g-auth.js"></script>
+<script>
+  const form = document.getElementById('signupForm');
+  const msg  = document.getElementById('msg');
+  const btn  = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    msg.className = 'auth-msg';
+
+    if (!/^[0-9]{4}$/.test(form.pin.value)) {
+      msg.className = 'auth-msg err'; msg.textContent = 'Your PIN must be exactly 4 digits.'; return;
+    }
+    if (form.pin.value !== form.pin2.value) {
+      msg.className = 'auth-msg err'; msg.textContent = 'The two PINs do not match. Try again.'; return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Creating…';
+    try {
+      await T4G.signUp({
+        code: form.code.value,
+        name: form.name.value,
+        pin:  form.pin.value,
+      });
+      msg.className = 'auth-msg ok'; msg.textContent = 'You’re in! Taking you to your progress page…';
+      location.href = 'profile.html';
+    } catch (err) {
+      msg.className = 'auth-msg err'; msg.textContent = err.message;
+      btn.disabled = false; btn.textContent = 'Create account →';
+    }
+  });
+</script>
+</body>
+</html>

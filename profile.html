@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Progress — Tech4Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .prof-wrap{max-width:760px;margin:0 auto;padding:52px 22px 90px}
+  .prof-head{display:flex;align-items:center;gap:20px;margin-bottom:36px;flex-wrap:wrap}
+  .prof-avatar{width:74px;height:74px;border-radius:20px;background:linear-gradient(150deg,var(--forest),var(--terra));
+    display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:900;font-size:1.7rem;color:var(--cream)}
+  .prof-name{font-family:var(--display);font-size:2rem;line-height:1.05}
+  .prof-meta{font-family:var(--mono);font-size:.76rem;letter-spacing:.06em;color:#8a8175;margin-top:4px;text-transform:uppercase}
+  .prog-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:28px 26px;margin-bottom:26px}
+  .prog-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+  .prog-top .label{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--terra-deep)}
+  .prog-top .count{font-family:var(--display);font-weight:900;font-size:1.1rem}
+  .prog-bar{height:12px;border-radius:99px;background:var(--cream-warm);overflow:hidden}
+  .prog-fill{height:100%;background:linear-gradient(90deg,var(--leaf),var(--terra));border-radius:99px;width:0;transition:width .8s cubic-bezier(.4,1.2,.5,1)}
+  .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+  .badge-tile{border:1px solid var(--line);border-radius:16px;padding:18px 16px;text-align:center;background:#fff;opacity:.42;filter:grayscale(1)}
+  .badge-tile.earned{opacity:1;filter:none;background:rgba(200,149,109,.1);border-color:var(--gold)}
+  .badge-tile .ico{font-size:2rem;line-height:1}
+  .badge-tile .bt-name{font-weight:700;font-size:.92rem;margin-top:8px}
+  .badge-tile .bt-state{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:#8a8175;margin-top:5px}
+  .badge-tile.earned .bt-state{color:var(--leaf)}
+  .prof-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .prof-loading{text-align:center;padding:80px 0;color:#8a8175;font-family:var(--mono);font-size:.85rem}
+  .done-banner{background:linear-gradient(135deg,var(--forest),var(--forest-deep));color:var(--cream);
+    border-radius:16px;padding:20px 24px;margin-bottom:26px;display:none}
+  .done-banner.show{display:block}
+  .done-banner strong{font-family:var(--display);font-size:1.15rem}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="inner">
+    <a class="brand" href="index.html"><div class="brand-mark"></div>Tech4Good</a>
+    <div class="nav-links">
+      <a href="program.html">Program</a>
+      <a href="projects.html">Projects</a>
+      <a href="students.html">Students</a>
+      <a href="interactivelesson.html">Warm-Up</a>
+    </div>
+  </div>
+</nav>
+
+<div class="prof-wrap">
+  <div id="loading" class="prof-loading">Loading your progress…</div>
+
+  <div id="content" style="display:none">
+    <div class="prof-head">
+      <div class="prof-avatar" id="avatar">?</div>
+      <div>
+        <div class="prof-name" id="nameEl">Student</div>
+        <div class="prof-meta" id="metaEl">Class ·</div>
+      </div>
+    </div>
+
+    <div class="done-banner" id="doneBanner">
+      <strong>🎓 All 6 badges earned!</strong><br>
+      You've finished the Warm-Up — you're ready for the Innovators Bootcamp.
+    </div>
+
+    <div class="prog-card">
+      <div class="prog-top">
+        <span class="label">Warm-Up progress</span>
+        <span class="count"><span id="countEl">0</span> / 6 badges</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="fillEl"></div></div>
+    </div>
+
+    <div class="badge-grid" id="badgeGrid"></div>
+
+    <div class="prof-cta">
+      <a class="btn btn-dark" href="interactivelesson.html">Continue the Warm-Up →</a>
+      <a class="btn btn-outline" href="#" id="logoutBtn">Log out</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/t4g-auth.js"></script>
+<script>
+  // Keep these in sync with the badges in interactivelesson.html
+  const BADGES = [
+    { key:'l1',       ico:'💡', name:'Understood computers' },
+    { key:'l2',       ico:'⌨️', name:'Wrote first code' },
+    { key:'l6',       ico:'📱', name:'Built a project' },
+    { key:'practice', ico:'🎯', name:'Practised skills' },
+    { key:'careers',  ico:'🚀', name:'Explored careers' },
+    { key:'gallery',  ico:'⭐', name:'Met Cohort 01' },
+  ];
+
+  (async function () {
+    const user = await T4G.requireAuth('login.html');
+    if (!user) return; // redirected
+
+    const profile = await T4G.getProfile();
+    const earned = new Set((profile && profile.badges) || []);
+    const firstName = (profile ? profile.display_name : 'Student').split(' ')[0];
+
+    document.getElementById('avatar').textContent = (firstName[0] || '?').toUpperCase();
+    document.getElementById('nameEl').textContent = profile ? profile.display_name : 'Student';
+    document.getElementById('metaEl').textContent = 'Class · ' + ((profile && profile.class_code) || '—');
+
+    const grid = document.getElementById('badgeGrid');
+    BADGES.forEach(b => {
+      const has = earned.has(b.key);
+      const tile = document.createElement('div');
+      tile.className = 'badge-tile' + (has ? ' earned' : '');
+      tile.innerHTML =
+        '<div class="ico">' + b.ico + '</div>' +
+        '<div class="bt-name">' + b.name + '</div>' +
+        '<div class="bt-state">' + (has ? '✓ Earned' : 'Locked') + '</div>';
+      grid.appendChild(tile);
+    });
+
+    const n = earned.size;
+    document.getElementById('countEl').textContent = n;
+    document.getElementById('fillEl').style.width = Math.round((n / BADGES.length) * 100) + '%';
+    if (n === BADGES.length) document.getElementById('doneBanner').classList.add('show');
+
+    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+      e.preventDefault(); await T4G.logout(); location.href = 'index.html';
+    });
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  })();
+</script>
+</body>
+</html>
