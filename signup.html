@@ -47,18 +47,16 @@
   <div class="auth-card">
     <div class="auth-eyebrow">Join the Warm-Up</div>
     <h1>Create your account</h1>
-    <p class="lede">No email needed. Your teacher gives you the class code — pick a name and a PIN you'll remember.</p>
+    <p class="lede">Use your real first and last name, and choose a 4-digit PIN you'll remember.</p>
 
     <form id="signupForm" autocomplete="off">
       <div class="field">
-        <label for="code">Class code</label>
-        <input id="code" name="code" type="text" required placeholder="e.g. NUNGUA26" autocapitalize="characters">
-        <div class="hint">Ask your teacher if you don't have one.</div>
+        <label for="firstName">First name</label>
+        <input id="firstName" name="firstName" type="text">
       </div>
       <div class="field">
-        <label for="name">Your name</label>
-        <input id="name" name="name" type="text" required placeholder="e.g. Ama Owusu">
-        <div class="hint">This is what shows on your progress page.</div>
+        <label for="lastName">Last name</label>
+        <input id="lastName" name="lastName" type="text">
       </div>
       <div class="field">
         <label for="pin">Choose a 4-digit PIN</label>
@@ -100,9 +98,9 @@
     btn.disabled = true; btn.textContent = 'Creating…';
     try {
       await T4G.signUp({
-        code: form.code.value,
-        name: form.name.value,
-        pin:  form.pin.value,
+        firstName: form.firstName.value,
+        lastName:  form.lastName.value,
+        pin:       form.pin.value,
       });
       msg.className = 'auth-msg ok'; msg.textContent = 'You’re in! Taking you to the Warm-Up…';
       location.href = nextPage;

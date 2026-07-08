@@ -47,16 +47,20 @@
   <div class="auth-card">
     <div class="auth-eyebrow">Welcome back</div>
     <h1>Log in</h1>
-    <p class="lede">Enter the class code, name and PIN you signed up with.</p>
-
+    <p class="lede">Enter your first and last name, and the 4-digit PIN you signed up with.</p>
+    <p class="lede">The class code is <b>TECH4GOOD26</b></p>
     <form id="loginForm" autocomplete="off">
       <div class="field">
         <label for="code">Class code</label>
-        <input id="code" name="code" type="text" required placeholder="e.g. NUNGUA26" autocapitalize="characters">
+        <input id="code" name="code" type="text" autocapitalize="characters">
       </div>
       <div class="field">
-        <label for="name">Your name</label>
-        <input id="name" name="name" type="text" required placeholder="The name you signed up with">
+        <label for="firstName">First name</label>
+        <input id="firstName" name="firstName" type="text">
+      </div>
+      <div class="field">
+        <label for="lastName">Last name</label>
+        <input id="lastName" name="lastName" type="text">
       </div>
       <div class="field">
         <label for="pin">4-digit PIN</label>
@@ -86,9 +90,10 @@
     btn.disabled = true; btn.textContent = 'Logging in…';
     try {
       await T4G.login({
-        code: form.code.value,
-        name: form.name.value,
-        pin:  form.pin.value,
+        code:      form.code.value,
+        firstName: form.firstName.value,
+        lastName:  form.lastName.value,
+        pin:       form.pin.value,
       });
       msg.className = 'auth-msg ok'; msg.textContent = 'Welcome back! Taking you in…';
       location.href = nextPage;

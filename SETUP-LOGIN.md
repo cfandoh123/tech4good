@@ -4,9 +4,14 @@ This adds real student accounts and saved progress to the Tech4Good site using
 **Supabase** (a free hosted database + auth service). The site stays on GitHub
 Pages — Supabase is reached entirely from the browser, so there's no server to run.
 
-Kids log in with a **class code + display name + 4-digit PIN** — no email required.
+Kids log in with a **class code + first name + last name + 4-digit PIN** — no email required.
 
 You only have to do this **once**. Budget ~15 minutes.
+
+> **Already set up an earlier version?** The name field was split into **first name**
+> and **last name**, and the class code changed to **`TECH4GOOD26`**. Just re-run the
+> updated `supabase-schema.sql` (Step 2) — it adds the new `first_name` / `last_name`
+> columns and swaps the class code without touching existing rows.
 
 ---
 
@@ -34,7 +39,8 @@ You only have to do this **once**. Budget ~15 minutes.
 1. In your project, open **SQL Editor** (left sidebar) → **New query**.
 2. Open `supabase-schema.sql` from this repo, copy the **whole file**, paste it in.
 3. Click **Run**. You should see "Success". This creates the `classes` and
-   `profiles` tables, the security rules, and one starter class code: **`NUNGUA26`**.
+   `profiles` tables (with `first_name` / `last_name`), the security rules, and one
+   starter class code: **`TECH4GOOD26`**.
 
 ## Step 3 — Turn OFF email confirmation ⚠️ (important)
 
@@ -74,7 +80,8 @@ git push
 ## Step 6 — Test it
 
 1. Visit `https://tech4good.live/signup.html`.
-2. Class code **`NUNGUA26`**, a name, and a 4-digit PIN → **Create account**.
+2. Enter your first and last name and a 4-digit PIN → **Create account**. (No class code
+   at sign-up — everyone joins **`TECH4GOOD26`** automatically; you type that code when you **log in**.)
 3. You land on your **profile** page. Open the **Warm-Up**, scroll through a couple
    of lessons — badges light up. Reload, or log in on another device → progress is
    still there.
@@ -92,7 +99,7 @@ In Supabase → **Table Editor** → `classes` → **Insert row**. For example
 In Supabase → **SQL Editor**, run:
 
 ```sql
-select display_name, class_code,
+select first_name, last_name, class_code,
        jsonb_array_length(badges) as badges_earned,
        badges, updated_at
 from public.profiles
@@ -101,17 +108,19 @@ order by badges_earned desc, updated_at desc;
 
 ### Reset a student who forgot their PIN
 In **Authentication → Users**, find the student (their email is
-`name.classcode@students.tech4good.live`) and delete them, then let them sign up
-again. (Their old badges go with the deleted row.)
+`firstname.lastname.classcode@students.tech4good.live`, e.g.
+`ama.owusu.tech4good26@students.tech4good.live`) and delete them, then let them sign
+up again. (Their old badges go with the deleted row.)
 
 ---
 
 ## How it works (for your own reference)
 
-- **Login without email:** the student's class code + name become a synthetic email
-  (`ama.owusu.nungua26@students.tech4good.live`) and the PIN becomes the password.
-  The kid never sees this — they just type class code, name, PIN. Because email
-  confirmation is off, the synthetic email never needs to receive anything.
+- **Login without email:** the student's first name + last name + class code become a
+  synthetic email (`ama.owusu.tech4good26@students.tech4good.live`) and the PIN becomes
+  the password. The kid never sees this — they just type class code, first & last name,
+  PIN. Because email confirmation is off, the synthetic email never needs to receive
+  anything.
 - **Progress:** each earned badge key (`l1`, `l2`, `l6`, `practice`, `careers`,
   `gallery`) is appended to a `badges` array on the student's `profiles` row.
 - **Security:** Row Level Security means each logged-in student can only read and
@@ -134,5 +143,5 @@ again. (Their old badges go with the deleted row.)
 |---------|-----|
 | "Login is not set up yet" on submit | You haven't pasted your keys in `js/t4g-auth.js` (Step 4). |
 | Sign-up says "…turn OFF Confirm email…" | Do Step 3, then try again. |
-| "That class code was not recognised" | The code isn't in the `classes` table — add it (Step 6 → Add a new class code), or use `NUNGUA26`. |
+| "That class code was not recognised" | The code isn't in the `classes` table — add it (Step 6 → Add a new class code), or use `TECH4GOOD26`. |
 | Nav still shows "Log in" after signing in | Hard-refresh the page; check the browser console for `[T4G]` errors. |
