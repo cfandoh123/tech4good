@@ -178,43 +178,61 @@ const SUPABASE_ANON_KEY = 'sb_publishable_oaJg6qm7mJqGSRo9u-Pq9A_RzHtxaR0';
       return user;
     },
 
-    // Swap the "Log in" nav link for "Hi, <name> · Log out" once signed in.
-    // Works with both nav styles on the site (.nav-links and .tnav).
+    // Render the signed-in identity in the top nav: a non-clickable "Hi, <name>",
+    // a ★ link to the progress page, and a Log out button. Signed-out pages show
+    // a plain "Log in" link instead. Works with both .nav-links and .tnav.
     async renderNav() {
       const nav = document.querySelector('.nav-links') || document.querySelector('.tnav');
       if (!nav) return;
 
-      let link = nav.querySelector('[data-t4g-auth]');
-      if (!link) {
-        link = document.createElement('a');
-        link.setAttribute('data-t4g-auth', '');
-        nav.appendChild(link);
-      }
-
       const profile = await this.getProfile();
-      if (profile) {
-        link.textContent = 'Hi, ' + (profile.display_name.split(' ')[0]);
-        link.href = 'profile.html';
-        link.style.fontWeight = '700';
 
-        let out = nav.querySelector('[data-t4g-logout]');
-        if (!out) {
-          out = document.createElement('a');
-          out.setAttribute('data-t4g-logout', '');
-          out.textContent = 'Log out';
-          out.href = '#';
-          out.style.cursor = 'pointer';
-          out.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await T4G.logout();
-            location.href = 'index.html';
-          });
-          nav.appendChild(out);
-        }
-      } else {
-        link.textContent = 'Log in';
-        link.href = 'login.html';
+      // Clear anything we rendered before, so re-runs stay clean.
+      nav.querySelectorAll('[data-t4g-auth],[data-t4g-profile],[data-t4g-logout]')
+         .forEach((el) => el.remove());
+
+      if (!profile) {
+        const login = document.createElement('a');
+        login.setAttribute('data-t4g-auth', '');
+        login.textContent = 'Log in';
+        login.href = 'login.html';
+        nav.appendChild(login);
+        return;
       }
+
+      // "Hi, <first name>" — plain, non-clickable text.
+      const greet = document.createElement('span');
+      greet.setAttribute('data-t4g-auth', '');
+      greet.textContent = 'Hi, ' + profile.display_name.split(' ')[0];
+      greet.style.fontWeight = '700';
+      greet.style.cursor = 'default';
+      nav.appendChild(greet);
+
+      // ★ icon → the student's progress page.
+      const star = document.createElement('a');
+      star.setAttribute('data-t4g-profile', '');
+      star.href = 'profile.html';
+      star.textContent = '★';
+      star.title = 'Your progress';
+      star.setAttribute('aria-label', 'Your progress');
+      star.style.fontSize = '1.15rem';
+      star.style.lineHeight = '1';
+      star.style.color = 'var(--gold)';
+      star.style.textDecoration = 'none';
+      nav.appendChild(star);
+
+      // Log out.
+      const out = document.createElement('a');
+      out.setAttribute('data-t4g-logout', '');
+      out.textContent = 'Log out';
+      out.href = '#';
+      out.style.cursor = 'pointer';
+      out.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await T4G.logout();
+        location.href = 'index.html';
+      });
+      nav.appendChild(out);
     },
   };
 

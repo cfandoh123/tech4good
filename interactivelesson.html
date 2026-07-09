@@ -228,25 +228,11 @@ footer p{margin:4px 0;font-size:.88rem}
 .gloss-back .mean{font-size:.82rem;color:var(--muted);margin-top:6px;line-height:1.4}
 .glossary .note{margin-top:22px;font-size:.86rem;color:var(--muted);max-width:600px;font-style:italic}
 
-/* ================= BADGE TRACKER ================= */
-#badgeDock{position:fixed;left:16px;bottom:16px;z-index:70;background:var(--green-deep);border-radius:16px;
-  padding:12px 14px;box-shadow:0 14px 40px -14px rgba(18,48,40,.7);width:210px;transition:transform .3s;border:1px solid rgba(228,176,74,.25)}
-#badgeDock.tuck{transform:translateY(calc(100% + 20px))}
-#badgeDock .bd-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
-#badgeDock .bd-title{font-family:"JetBrains Mono",monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
-#badgeDock .bd-count{font-family:"Fraunces",serif;font-weight:900;font-size:.9rem;color:var(--cream)}
-.badge-row{display:flex;gap:6px;flex-wrap:wrap}
-.badge-dot{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;
-  font-size:1rem;filter:grayscale(1) opacity(.4);transition:all .4s;border:1px solid rgba(255,255,255,.06)}
-.badge-dot.earned{filter:none;background:rgba(228,176,74,.18);border-color:var(--gold);transform:scale(1)}
-.badge-dot.pop{animation:badgePop .55s cubic-bezier(.3,1.5,.5,1)}
-@keyframes badgePop{0%{transform:scale(.4)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
-#badgeDock .bd-msg{margin-top:8px;font-size:.72rem;color:#B9C7BE;line-height:1.35;min-height:1.35em}
+/* ================= BADGE TOAST ================= */
 #badgeToast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(140%);z-index:90;
   background:var(--gold);color:var(--green-deep);font-weight:700;font-family:"DM Sans",sans-serif;font-size:.92rem;
   padding:12px 22px;border-radius:30px;box-shadow:0 12px 30px -8px rgba(228,176,74,.5);transition:transform .45s cubic-bezier(.3,1.4,.5,1);display:flex;align-items:center;gap:9px}
 #badgeToast.show{transform:translateX(-50%) translateY(0)}
-@media(max-width:640px){#badgeDock{width:170px;left:10px;bottom:10px}}
 
 
 .practice{background:var(--cream)}
@@ -954,21 +940,6 @@ and I am learning to build websites.&lt;/p&gt;
 
 <div id="pyStatus"><span class="spinner"></span><span id="pyStatusText">Starting the code engine…</span></div>
 
-<div id="badgeDock">
-  <div class="bd-head">
-    <span class="bd-title">Your progress</span>
-    <span class="bd-count"><span id="bdNum">0</span>/6</span>
-  </div>
-  <div class="badge-row" id="badgeRow">
-    <div class="badge-dot" data-badge="l1" title="Understood computers">💡</div>
-    <div class="badge-dot" data-badge="l2" title="Wrote first code">⌨️</div>
-    <div class="badge-dot" data-badge="l6" title="Built a project">📱</div>
-    <div class="badge-dot" data-badge="practice" title="Practised skills">🎯</div>
-    <div class="badge-dot" data-badge="careers" title="Explored careers">🚀</div>
-    <div class="badge-dot" data-badge="gallery" title="Met Cohort 01">⭐</div>
-  </div>
-  <div class="bd-msg" id="bdMsg">Scroll and learn to earn badges!</div>
-</div>
 <div id="badgeToast"><span id="toastIcon">🎉</span><span id="toastText"></span></div>
 
 <script>
@@ -1357,9 +1328,6 @@ renderGuess();
   };
   const earnedIcons = { l1:'💡', l2:'⌨️', l6:'📱', practice:'🎯', careers:'🚀', gallery:'⭐' };
   const earned = new Set();
-  const dock = document.getElementById('badgeDock');
-  const bdNum = document.getElementById('bdNum');
-  const bdMsg = document.getElementById('bdMsg');
   const toast = document.getElementById('badgeToast');
   const toastText = document.getElementById('toastText');
   const toastIcon = document.getElementById('toastIcon');
@@ -1369,35 +1337,23 @@ renderGuess();
   function award(key, silent){
     if(earned.has(key)) return;
     earned.add(key);
-    const dot = document.querySelector(`.badge-dot[data-badge="${key}"]`);
-    if(dot){
-      dot.classList.add('earned');
-      if(!silent){ dot.classList.add('pop'); setTimeout(()=>dot.classList.remove('pop'),600); }
-    }
-    bdNum.textContent = earned.size;
     if(silent) return;
     // Persist to the student's profile (no-op if signed out)
     if(window.T4G) T4G.addBadge(key);
-    bdMsg.textContent = earnedIcons[key] + ' ' + earnedMsgs[key];
     // toast
     toastIcon.textContent = earnedIcons[key];
     toastText.textContent = 'Badge earned · ' + earnedMsgs[key];
     toast.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(()=>toast.classList.remove('show'), 2600);
-    if(earned.size === 6){
-      setTimeout(()=>{ bdMsg.textContent = 'All 6! You are ready for the bootcamp 🎓'; }, 2700);
-    }
   }
 
-  // Replay any badges this student already earned in a previous session.
+  // Replay any badges this student already earned in a previous session, so they
+  // aren't re-toasted when the same section scrolls back into view.
   if(window.T4G){
     T4G.getProfile().then(function(p){
       if(!p || !Array.isArray(p.badges)) return;
       p.badges.forEach(function(key){ award(key, true); });
-      if(earned.size){
-        bdMsg.textContent = 'Welcome back — ' + earned.size + '/6 badges saved.';
-      }
     });
   }
 
@@ -1420,14 +1376,6 @@ renderGuess();
       observeEl.setAttribute('data-badge-key', key);
       io.observe(observeEl);
     }
-  }
-
-  // tuck the dock away when footer is visible so it doesn't overlap
-  const footer = document.querySelector('footer');
-  if(footer){
-    new IntersectionObserver((es)=>{
-      es.forEach(e=> dock.classList.toggle('tuck', e.isIntersecting));
-    }, {threshold:0.1}).observe(footer);
   }
 })();
 </script>
