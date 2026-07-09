@@ -305,6 +305,24 @@ footer p{margin:4px 0;font-size:.88rem}
 .guess-fb{margin-top:14px;color:#B9C7BE;font-size:.9rem;min-height:1.2em}
 .guess-fb b{color:var(--gold)}
 
+/* ---- Code Coach: friendly error teacher ---- */
+.coach{white-space:normal;background:#16352B;border:1px solid rgba(228,176,74,.4);border-radius:12px;margin:4px 0;overflow:hidden}
+.coach-head{background:rgba(228,176,74,.14);color:var(--gold);font-family:"DM Sans",sans-serif;font-weight:700;font-size:.85rem;padding:8px 14px}
+.coach-body{padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.coach-what{color:#E8E2D0;font-family:"DM Sans",sans-serif;font-size:.9rem;line-height:1.5}
+.coach-what b,.coach-what code{color:var(--gold)}
+.coach-lineref{font-family:"JetBrains Mono",monospace;font-size:.8rem;color:#9FC0AE;background:#0E211B;border-radius:8px;padding:7px 10px;overflow-x:auto}
+.coach-lineref b{color:var(--gold);font-weight:700}
+.coach-fix{color:#CFF0DB;font-family:"DM Sans",sans-serif;font-size:.9rem;line-height:1.5;background:rgba(95,180,127,.12);border-left:3px solid var(--ok);border-radius:0 8px 8px 0;padding:8px 12px}
+.coach-fix code{color:#AFE8C4}
+.coach-raw summary{cursor:pointer;color:#7A9488;font-size:.72rem;font-family:"JetBrains Mono",monospace}
+.coach-raw pre{margin:6px 0 0;color:#8FA99B;font-size:.72rem;white-space:pre-wrap}
+
+/* ---- HTML tag doctor ---- */
+.tag-doctor{font-family:"JetBrains Mono",monospace;font-size:.74rem;padding:8px 14px;border-top:1px solid var(--line);background:var(--cream-2);color:var(--muted)}
+.tag-doctor.good{color:var(--ok)}
+.tag-doctor.issue{color:var(--err)}
+
 </style>
 </head>
 <body>
@@ -354,12 +372,14 @@ footer p{margin:4px 0;font-size:.88rem}
 <div class="map"><div class="wrap">
   <span class="mono-label">The map</span>
   <div class="map-grid" style="margin-top:12px">
-    <a class="mcard" href="#l1"><span class="num">01</span><h3>What is a computer, really?</h3><p>How a phone or laptop follows instructions — and why code is just very clear instructions.</p></a>
+    <a class="mcard" href="#l1"><span class="num">01</span><h3>What is a computer, really?</h3><p>How a phone or laptop follows instructions — and why deep down, everything is numbers.</p></a>
     <a class="mcard" href="#l2"><span class="num">02</span><h3>Your first lines of code</h3><p>Make the computer speak. Say <code>Akwaaba</code> to the world and print your own name.</p></a>
-    <a class="mcard" href="#l3"><span class="num">03</span><h3>Boxes that hold things</h3><p>Variables and numbers — track kenkey prices and add up a market bill.</p></a>
-    <a class="mcard" href="#l4"><span class="num">04</span><h3>Making decisions</h3><p>If this, then that. Check if you have enough on mobile money to pay a trotro fare.</p></a>
-    <a class="mcard" href="#l5"><span class="num">05</span><h3>Doing it again and again</h3><p>Loops. Greet a whole classroom in Twi, Ga and English without repeating yourself.</p></a>
-    <a class="mcard" href="#l6"><span class="num">06</span><h3>Build a tiny project</h3><p>Put it together: a small market price checker, like a baby version of SeaPrice.</p></a>
+    <a class="mcard" href="#linput"><span class="num">03</span><h3>Talk with the computer</h3><p><code>input()</code> — programs that ask you questions and use your answers.</p></a>
+    <a class="mcard" href="#l3"><span class="num">04</span><h3>Boxes that hold things</h3><p>Variables and numbers — track kenkey prices and add up a market bill.</p></a>
+    <a class="mcard" href="#l4"><span class="num">05</span><h3>Making decisions</h3><p>If this, then that. Check if you have enough on mobile money to pay a trotro fare.</p></a>
+    <a class="mcard" href="#l5"><span class="num">06</span><h3>Doing it again and again</h3><p>Loops. Greet a whole classroom in Twi, Ga and English without repeating yourself.</p></a>
+    <a class="mcard" href="#lfunc"><span class="num">07</span><h3>Teach it a new trick</h3><p>Functions — bundle steps under your own command name, then reuse it forever.</p></a>
+    <a class="mcard" href="#l6"><span class="num">08</span><h3>Build a tiny project</h3><p>Put it together: a small market price checker, like a baby version of SeaPrice.</p></a>
   </div>
 </div></div>
 
@@ -382,6 +402,19 @@ footer p{margin:4px 0;font-size:.88rem}
     <li><b>Output</b> — the answer coming back out (a total, a message on screen).</li>
   </ul>
   <p>Every app you know — MoMo, WhatsApp, a football score app — is just those three things, repeated many times, very fast. In the next lesson you make output happen yourself.</p>
+
+  <h3 class="step">One more secret: everything is numbers</h3>
+  <p>Deep down, a computer stores <b>everything</b> — letters, photos, songs, even this page — as numbers, and it stores those numbers as millions of tiny on/off switches (the famous 1s and 0s). Don't believe it? Every letter has a secret number. Press Run:</p>
+
+  <div class="pg" data-code='# Every letter secretly has a number
+print(ord("A"))
+print(ord("B"))
+
+# ...and numbers can turn back into letters.
+# These five spell a city you might know:
+print(chr(65), chr(67), chr(67), chr(82), chr(65))'></div>
+
+  <p><code>ord()</code> reveals a letter's number; <code>chr()</code> turns a number back into its letter. This one idea — that <b>any</b> information can be turned into numbers — is the deepest foundation of computer science. Everything else you'll ever learn builds on it.</p>
 </div></section>
 
 <!-- ================= LESSON 2 ================= -->
@@ -406,12 +439,45 @@ print("I am learning to code.")'></div>
     <span class="tag">Your turn</span>
     <p>In the box above, change the three lines so they say your real name, your neighbourhood, and one thing you want to build one day. Run it. That message is the first thing you ever made a computer say.</p>
   </div>
+
+  <div class="chal">
+    <span class="tag">Break it on purpose</span>
+    <p>Real coders see error messages <b>every single day</b> — they aren't failures, they're the computer asking for help. Try it now: delete one of the closing quotes above and press Run. You'll meet the <b>Code Coach</b>, who explains what went wrong and exactly how to fix it. Then fix it yourself. Congratulations — that fix is called <i>debugging</i>, and it's half of every developer's job.</p>
+  </div>
+</div></section>
+
+<!-- ================= LESSON: TALK WITH THE COMPUTER ================= -->
+<a id="linput"></a>
+<section class="lesson"><div class="wrap">
+  <div class="lesson-head"><span class="n">03</span><h2>Talk with the computer</h2></div>
+  <p class="sub">So far it only talks to you. Now it will ask questions — and use your answers.</p>
+
+  <p>Remember the three parts from Lesson 1? You've made <b>output</b> with <code>print</code>. The missing piece is <b>input</b> — and in Python the command is called, sensibly, <code>input()</code>. When the program reaches it, it stops and waits for a human. Run this:</p>
+
+  <div class="pg" data-code='name = input("What is your name? ")
+print("Akwaaba,", name + "!")
+print("One day, an app built by", name, "could be on this page.")'></div>
+
+  <p>A little box pops up — that's the browser asking the question on Python's behalf. Whatever you type goes straight into the <code>name</code> box, and the program carries on with <b>your</b> answer inside it. The same code now behaves differently for every person who runs it — that's what makes software feel alive.</p>
+
+  <div class="callout"><b>One trap to know:</b> <code>input()</code> always hands you <b>text</b>, even if you type <code>14</code>. And text can't do maths — remember, <code>"4" + "3"</code> is <code>"43"</code>! To treat an answer as a number, pass it through <code>int()</code>:</div>
+
+  <div class="pg" data-code='age = input("How old are you? ")
+age = int(age)   # turn the text into a real number
+
+print("In 10 years you will be", age + 10)
+print("That is already", age * 52, "weeks of experience!")'></div>
+
+  <div class="chal">
+    <span class="tag">Your turn</span>
+    <p>Build a tiny market assistant: ask <code>"What are you buying?"</code> and <code>"How much does it cost?"</code>, then print a sentence like <code>Buying rice for 12 cedis</code>. Think carefully: which answer needs <code>int()</code> — and which doesn't?</p>
+  </div>
 </div></section>
 
 <!-- ================= LESSON 3 ================= -->
 <a id="l3"></a>
 <section class="lesson"><div class="wrap">
-  <div class="lesson-head"><span class="n">03</span><h2>Boxes that hold things</h2></div>
+  <div class="lesson-head"><span class="n">04</span><h2>Boxes that hold things</h2></div>
   <p class="sub">Variables: giving a name to a piece of information so you can use it again.</p>
 
   <p>Imagine a labelled box at the market. You write <b>"kenkey"</b> on it and put the price inside. Later, instead of remembering the number, you just say "check the kenkey box". In code, that box is called a <b>variable</b>.</p>
@@ -439,7 +505,7 @@ print("Total for one plate:", kenkey + fish + pepper, "cedis")'></div>
 <!-- ================= LESSON 4 ================= -->
 <a id="l4"></a>
 <section class="lesson"><div class="wrap">
-  <div class="lesson-head"><span class="n">04</span><h2>Making decisions</h2></div>
+  <div class="lesson-head"><span class="n">05</span><h2>Making decisions</h2></div>
   <p class="sub">Teaching the computer to choose: <code>if</code> this, then that.</p>
 
   <p>So far the computer just does everything. But real apps <b>decide</b>. When you try to send MoMo, it checks: do you have enough money? If yes, it sends. If no, it warns you. In Python that check is the word <code>if</code>.</p>
@@ -472,7 +538,7 @@ else:
 <!-- ================= LESSON 5 ================= -->
 <a id="l5"></a>
 <section class="lesson"><div class="wrap">
-  <div class="lesson-head"><span class="n">05</span><h2>Doing it again and again</h2></div>
+  <div class="lesson-head"><span class="n">06</span><h2>Doing it again and again</h2></div>
   <p class="sub">Loops: the trick that makes computers so powerful.</p>
 
   <p>Suppose you must greet 30 classmates. You wouldn't write 30 lines. Computers are built to repeat. A <b>loop</b> says "do this for every item in the list." Watch it greet in all three of our languages:</p>
@@ -492,7 +558,7 @@ for bucket in range(1, 6):
     print("Filled bucket number", bucket)
 
 print("Tank is full!")'></div>
-  <p><code>range(1, 6)</code> gives the numbers 1, 2, 3, 4, 5 (it stops before 6). Loops plus lists are enough to build surprisingly real things — which is what you'll do next.</p>
+  <p><code>range(1, 6)</code> gives the numbers 1, 2, 3, 4, 5 (it stops before 6). Loops plus lists are enough to build surprisingly real things. One more tool — teaching the computer your <b>own</b> commands — and you're ready to build a real project.</p>
 
   <div class="chal">
     <span class="tag">Your turn</span>
@@ -500,13 +566,49 @@ print("Tank is full!")'></div>
   </div>
 </div></section>
 
+<!-- ================= LESSON: FUNCTIONS ================= -->
+<a id="lfunc"></a>
+<section class="lesson"><div class="wrap">
+  <div class="lesson-head"><span class="n">07</span><h2>Teach it a new trick</h2></div>
+  <p class="sub">Functions: bundle steps under your own command name, then use it like any built-in.</p>
+
+  <p><code>print()</code>, <code>input()</code>, <code>int()</code> — so far you've used commands Python already knows. A <b>function</b> is how you teach it a new one. It's like showing a younger sibling how to set the table <i>once</i> — after that, you just say "set the table" and the whole routine happens. In Python, the teaching word is <code>def</code>:</p>
+
+  <div class="pg" data-code='def greet(name):
+    print("Akwaaba,", name + "!")
+    print("Welcome to the bootcamp.")
+
+greet("Ama")
+greet("Kofi")
+greet("Efua")'></div>
+
+  <p>Two lines of steps, written <b>once</b> — then run three times with a single word. The <code>name</code> in the brackets is a box the function fills freshly each time you call it: first <code>"Ama"</code>, then <code>"Kofi"</code>, then <code>"Efua"</code>. Notice the function's body is <b>indented</b>, exactly like <code>if</code> and <code>for</code> — spacing shows Python which lines belong to it.</p>
+
+  <h3 class="step">Functions that hand an answer back</h3>
+  <p><code>print</code> only <i>shows</i> things on screen. The word <code>return</code> hands a result <b>back to the program</b>, so the code that asked can keep working with it:</p>
+
+  <div class="pg" data-code='def to_cedis(dollars):
+    return dollars * 15   # rough exchange rate
+
+price = to_cedis(4)
+print("4 dollars is about", price, "cedis")
+print("10 dollars is about", to_cedis(10), "cedis")'></div>
+
+  <div class="callout"><b>Why this matters so much:</b> every big app — MoMo, WhatsApp, all of them — is thousands of small functions calling each other, each one simple and reusable. Once you can write a function, no program will ever look too big to build. It's just functions all the way up.</div>
+
+  <div class="chal">
+    <span class="tag">Your turn</span>
+    <p>MoMo charges roughly a 1% fee to send money. Write <code>def momo_fee(amount):</code> that returns <code>amount * 0.01</code>, then print the fee for sending <code>50</code>, <code>200</code> and <code>1000</code> cedis. One function, three answers.</p>
+  </div>
+</div></section>
+
 <!-- ================= LESSON 6 ================= -->
 <a id="l6"></a>
 <section class="lesson"><div class="wrap">
-  <div class="lesson-head"><span class="n">06</span><h2>Build a tiny project</h2></div>
+  <div class="lesson-head"><span class="n">08</span><h2>Build a tiny project</h2></div>
   <p class="sub">Everything together: a baby version of SeaPrice, the fish-market price checker.</p>
 
-  <p>You now know the four building blocks: <b>print</b>, <b>variables</b>, <b>if/else</b>, and <b>loops</b>. Real programs are just these combined. Here is a small price checker that looks through today's fish prices and tells the buyer which ones fit their budget. Run it, read it, then change the numbers.</p>
+  <p>You now know the six building blocks: <b>print</b>, <b>input</b>, <b>variables</b>, <b>if/else</b>, <b>loops</b>, and <b>functions</b>. Real programs are just these combined. Here is a small price checker that looks through today's fish prices and tells the buyer which ones fit their budget. Run it, read it, then change the numbers.</p>
 
   <div class="pg" data-code='# --- SeaPrice mini: which fish can I afford today? ---
 budget = 12   # cedis in my pocket
@@ -533,7 +635,7 @@ for item in prices:
 
   <div class="chal">
     <span class="tag">Final challenge</span>
-    <p>Change the budget to <code>20</code> and run it — more fish should now say "you can buy this." Then add two more fish to the list with their prices. You just edited a real program's data, the way a working developer does.</p>
+    <p>Change the budget to <code>20</code> and run it — more fish should now say "you can buy this." Then add two more fish to the list with their prices. You just edited a real program's data, the way a working developer does. <b>Super bonus:</b> ask for the budget with <code>input()</code> instead of typing it in the code — now it's a real app anyone can use.</p>
   </div>
 
   <div class="callout" style="border-left-color:var(--gold)"><b>You're ready.</b> If you followed to here, you already understand more than most people ever will about how technology works. Come to the bootcamp with this file open — we build from exactly this point <b>Akwaaba.</b></div>
@@ -639,6 +741,28 @@ and I am learning to build websites.&lt;/p&gt;
     data-hintline="Hint: think about how every decision line must end.">
     <p class="goal"><b>Goal:</b> check if there's enough money to pay the fare. One line breaks it. Which one?</p>
     <p class="bug-hint">Hint: think about how every <code>if</code> line must end.</p>
+    <div class="bug-code"></div>
+    <div class="bug-msg"></div>
+    <div class="bug-reveal"></div>
+  </div>
+
+  <div class="bug-box"
+    data-lines='["fruits = [\"mango\", \"pawpaw\", \"banana\"]","for fruit in fruits:","    Print(fruit)"]'
+    data-bug="2"
+    data-explain="Python is <b>case-sensitive</b>: the command is <code>print</code> with a small p. <code>Print</code> looks the same to you — but to the fully literal computer it is a completely unknown word, so it stops with a <code>NameError</code>.">
+    <p class="goal"><b>Goal:</b> print every fruit in the list. It crashes with a <code>NameError</code>. Which line?</p>
+    <p class="bug-hint">Hint: the computer is literal about everything — even capital letters.</p>
+    <div class="bug-code"></div>
+    <div class="bug-msg"></div>
+    <div class="bug-reveal"></div>
+  </div>
+
+  <div class="bug-box"
+    data-lines='["price = 14","if price > 10:","print(\"Too costly today\")"]'
+    data-bug="2"
+    data-explain="The line after an <code>if</code> must be <b>pushed in</b> (indented) with spaces — that spacing is how Python knows the line belongs to the decision. It should read: <code>&nbsp;&nbsp;&nbsp;&nbsp;print(&quot;Too costly today&quot;)</code>">
+    <p class="goal"><b>Goal:</b> warn when the price is high. Python complains about an <i>expected indented block</i>. Which line is wrong?</p>
+    <p class="bug-hint">Hint: it's not about what is typed — it's about the spaces before it.</p>
     <div class="bug-code"></div>
     <div class="bug-msg"></div>
     <div class="bug-reveal"></div>
@@ -922,7 +1046,8 @@ and I am learning to build websites.&lt;/p&gt;
 
 <footer><div class="wrap">
   <div>
-    <b>Tech4Good </b>
+    <b>Tech4Good</b>
+  </div>
 </div></footer>
 
 <div id="pyStatus"><span class="spinner"></span><span id="pyStatusText">Starting the code engine…</span></div>
@@ -969,6 +1094,17 @@ const statusText = document.getElementById('pyStatusText');
 async function initPy(){
   try{
     pyodide = await loadPyodide();
+    // Make input() work in the page: the browser pops a question box, and the
+    // question + answer are echoed into the program's output like a real terminal.
+    pyodide.runPython(`
+import builtins, js
+def _t4g_input(prompt=''):
+    _r = js.window.prompt(str(prompt))
+    _r = '' if _r is None else str(_r)
+    print(str(prompt) + _r)
+    return _r
+builtins.input = _t4g_input
+`);
     pyReady = true;
     statusText.textContent = 'Ready — press Run on any lesson';
     statusEl.querySelector('.spinner').style.display='none';
@@ -1017,7 +1153,25 @@ sys.stderr = _buf
       }
     }catch(err){
       pyodide.runPython('sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__');
-      out.innerHTML = '<span class="err">There is a small mistake:</span>\n<span class="err">' + escapeHtml(cleanError(err.message)) + '</span>\n\nRead the last line — it usually points to the problem. Check your spelling, quotes and spacing.';
+      let partial = '';
+      try{ partial = pyodide.runPython('_buf.getvalue()'); }catch(e){}
+      const raw = cleanError(err.message);
+      const info = explainPyError(err.message, ta.value);
+      let html = '';
+      if(partial && partial.trim()){
+        html += '<span class="ok">The program ran until it hit the problem:</span>\n' + escapeHtml(partial) + '\n';
+      }
+      if(info){
+        html += '<div class="coach"><div class="coach-head">🧑🏾‍🏫 Code Coach — every coder sees this. Let\'s fix it together.</div><div class="coach-body">'
+          + '<div class="coach-what">' + info.what + '</div>'
+          + (info.srcLine ? '<div class="coach-lineref"><b>Line ' + info.line + ':</b>  ' + escapeHtml(info.srcLine) + '</div>' : '')
+          + '<div class="coach-fix">💡 ' + info.fix + '</div>'
+          + '<details class="coach-raw"><summary>see the computer\'s exact words</summary><pre>' + escapeHtml(raw) + '</pre></details>'
+          + '</div></div>';
+      }else{
+        html += '<span class="err">There is a small mistake:</span>\n<span class="err">' + escapeHtml(raw) + '</span>\n\nRead the last line — it usually points to the problem. Check your spelling, quotes and spacing.';
+      }
+      out.innerHTML = html;
     }finally{
       runBtn.disabled = false; runBtn.textContent = label;
     }
@@ -1027,6 +1181,97 @@ sys.stderr = _buf
 function cleanError(msg){
   const lines = msg.split('\n').filter(l => l.trim() && !l.includes('File "<exec>"') && !l.includes('runPythonAsync'));
   return lines.slice(-4).join('\n');
+}
+
+// ================= CODE COACH =================
+// Turns scary Python tracebacks into a friendly mini-lesson: what happened,
+// which line, and how to fix it — in the same language the lessons use.
+function leven(a, b){
+  if(a === b) return 0;
+  const dp = Array.from({length: a.length + 1}, (_, i) => [i].concat(Array(b.length).fill(0)));
+  for(let j = 0; j <= b.length; j++) dp[0][j] = j;
+  for(let i = 1; i <= a.length; i++)
+    for(let j = 1; j <= b.length; j++)
+      dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return dp[a.length][b.length];
+}
+
+function explainPyError(rawMsg, code){
+  const codeLines = code.split('\n');
+  // Find the deepest line number pointing into the student's code
+  let line = null, m;
+  const re = /File "<exec>", line (\d+)/g;
+  while((m = re.exec(rawMsg))) line = parseInt(m[1]);
+  if(line == null){
+    const p = rawMsg.match(/\(<exec>, line (\d+)\)/);
+    if(p) line = parseInt(p[1]);
+  }
+  const srcLine = (line && codeLines[line - 1] !== undefined) ? codeLines[line - 1].trimEnd() : null;
+  let what = null, fix = null;
+
+  const nameM = rawMsg.match(/NameError: name '([^']+)' is not defined/);
+  if(nameM){
+    const name = nameM[1];
+    // Suggest the closest known word: builtins + every name the student defined
+    const pool = ['print','input','range','len','int','str','float','sum','min','max','ord','chr','list','round'];
+    codeLines.forEach(l => {
+      const asn = l.match(/^\s*([A-Za-z_]\w*)\s*=(?!=)/); if(asn) pool.push(asn[1]);
+      const fn  = l.match(/^\s*def\s+([A-Za-z_]\w*)/);    if(fn)  pool.push(fn[1]);
+      const lp  = l.match(/^\s*for\s+([A-Za-z_]\w*)\s/);  if(lp)  pool.push(lp[1]);
+    });
+    let best = null, bd = 3;
+    pool.forEach(w => {
+      if(w === name) return;
+      const d = leven(name.toLowerCase(), w.toLowerCase());
+      if(d < bd){ bd = d; best = w; }
+    });
+    const didYou = (rawMsg.match(/Did you mean: '([^']+)'/) || [])[1] || (bd <= 2 ? best : null);
+    what = 'The computer met the word <b>' + escapeHtml(name) + '</b> and does not know it. Remember Lesson 1 — computers are completely literal: one wrong letter (or a capital where a small letter should be) and they give up.';
+    fix = didYou
+      ? 'Did you mean <code>' + escapeHtml(didYou) + '</code>? Fix the spelling and run again. Also check: did you fill the box <i>before</i> using it?'
+      : 'Check the spelling letter by letter, and make sure you created (filled) <code>' + escapeHtml(name) + '</code> on an earlier line before using it.';
+  } else if(/Missing parentheses in call to 'print'/.test(rawMsg)){
+    what = 'You wrote <b>print</b> without its round brackets.';
+    fix = 'Put what you want to show inside brackets: <code>print("Akwaaba")</code>.';
+  } else if(/unterminated string literal|EOL while scanning string/i.test(rawMsg)){
+    what = 'A piece of text (a <b>string</b>) was opened with a quote but never closed. The computer kept reading, waiting for the closing quote, and reached the end of the line still waiting.';
+    fix = 'Count the quotes on the highlighted line: every opening <code>"</code> needs a matching closing <code>"</code>.';
+  } else if(/expected ':'/.test(rawMsg)){
+    what = 'A line that starts a decision, a loop or a function is missing its colon.';
+    fix = 'Lines with <code>if</code>, <code>else</code>, <code>for</code> or <code>def</code> must end with <code>:</code> — the colon tells Python "the steps that belong to me start on the next line".';
+  } else if(/IndentationError: expected an indented block/.test(rawMsg)){
+    what = 'After a line ending in <code>:</code>, Python expected the next line to be <b>pushed in</b> (indented) — but it was not.';
+    fix = 'Add 4 spaces at the start of every line that belongs inside the <code>if</code>, <code>else</code>, <code>for</code> or <code>def</code>.';
+  } else if(/IndentationError|TabError/.test(rawMsg)){
+    what = 'The spacing at the start of a line does not match its neighbours. In Python that spacing is <b>part of the language</b> — it shows which lines belong together.';
+    fix = 'Make lines in the same block start with the same number of spaces (we use 4). Add or remove spaces until they line up.';
+  } else if(/can only concatenate str|unsupported operand type/.test(rawMsg)){
+    what = 'You tried to mix <b>text</b> and a <b>number</b> with <code>+</code>. Python can add numbers, or join text — but it refuses to guess between the two.';
+    fix = 'In <code>print()</code>, separate them with a comma instead: <code>print("Total:", total)</code>. Or turn the number into text with <code>str()</code>. And remember: <code>input()</code> always gives text — use <code>int()</code> to make it a number first.';
+  } else if(/invalid literal for int/.test(rawMsg)){
+    what = '<code>int()</code> was asked to turn some text into a whole number, but the text was not a number.';
+    fix = 'Only digits can become numbers: <code>int("14")</code> works, but <code>int("yes")</code> cannot. Check what was typed into <code>input()</code>.';
+  } else if(/ZeroDivisionError/.test(rawMsg)){
+    what = 'The code divided by <b>zero</b> — and not even a computer can do that.';
+    fix = 'Check the number you are dividing by. If it can ever be 0, use an <code>if</code> to handle that case first.';
+  } else if(/IndexError/.test(rawMsg)){
+    what = 'The code asked a list for an item that is not there.';
+    fix = 'Computers count from <b>0</b>: in a 3-item list the positions are 0, 1 and 2 — there is no position 3.';
+  } else if(/was never closed/.test(rawMsg)){
+    what = 'A bracket was opened but never closed.';
+    fix = 'Every <code>(</code> needs a <code>)</code> and every <code>[</code> needs a <code>]</code>. Count them on the highlighted line.';
+  } else if(/SyntaxError/.test(rawMsg)){
+    what = 'Python could not read this line — its "grammar" is off. This is the most common error in the world; every programmer sees it daily.';
+    if(srcLine && /^\s*(if|elif|else|for|while|def)\b/.test(srcLine) && !/:\s*(#.*)?$/.test(srcLine)){
+      fix = 'This looks like a decision or loop line — it probably needs a <code>:</code> at the end.';
+    } else if(srcLine && /\bif\b[^=!<>]*[^=!<>]=(?!=)/.test(srcLine)){
+      fix = 'Inside an <code>if</code>, asking "is it equal?" needs <b>two</b> equals signs: <code>==</code>. A single <code>=</code> means "fill the box".';
+    } else {
+      fix = 'Read the line slowly, out loud: check the brackets, quotes and commas. Compare it with the example above the box.';
+    }
+  }
+  if(!what) return null;
+  return { line: line, srcLine: srcLine, what: what, fix: fix };
 }
 
 // ---- Flip cards (careers) ----
@@ -1130,14 +1375,17 @@ renderQuiz();
 // ================= INTERACTIVE PRACTICE =================
 
 // ---- Live HTML preview ----
+// Note: the iframe is sandboxed, so we render through `srcdoc` (writing into
+// contentDocument is blocked for sandboxed frames — that was why it showed blank).
 document.querySelectorAll('textarea[data-web]').forEach(ta => {
   const frame = ta.closest('.web-pg').querySelector('iframe[data-web-preview]');
+  const doctor = document.createElement('div');
+  doctor.className = 'tag-doctor';
+  frame.parentElement.appendChild(doctor);
   const decode = s => { const t=document.createElement('textarea'); t.innerHTML=s; return t.value; };
   const update = () => {
-    const doc = frame.contentDocument || frame.contentWindow.document;
-    doc.open();
-    doc.write('<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:system-ui,sans-serif;padding:16px;color:#2A2620;line-height:1.5}button{font-size:1rem;padding:8px 16px;border-radius:8px;border:1px solid #ccc;background:#f3f3f3;cursor:pointer}h1{color:#1B4332}</style></head><body>' + ta.value + '</body></html>');
-    doc.close();
+    frame.srcdoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:system-ui,sans-serif;padding:16px;color:#2A2620;line-height:1.5}button{font-size:1rem;padding:8px 16px;border-radius:8px;border:1px solid #ccc;background:#f3f3f3;cursor:pointer}h1{color:#1B4332}</style></head><body>' + ta.value + '</body></html>';
+    tagDoctor(ta.value, doctor);
   };
   ta.value = decode(ta.value);
   ta.addEventListener('input', update);
@@ -1147,6 +1395,27 @@ document.querySelectorAll('textarea[data-web]').forEach(ta => {
   });
   update();
 });
+
+// The Tag Doctor: gently teaches HTML's #1 beginner mistake — unclosed tags.
+function tagDoctor(html, el){
+  const tags = ['h1','h2','h3','p','ul','ol','li','button','b','i','em','strong','a','div','span'];
+  for(const t of tags){
+    const opens  = (html.match(new RegExp('<'  + t + '(\\s|>)', 'gi')) || []).length;
+    const closes = (html.match(new RegExp('</' + t + '\\s*>',   'gi')) || []).length;
+    if(opens > closes){
+      el.className = 'tag-doctor issue';
+      el.innerHTML = '🩺 Tag check: &lt;' + t + '&gt; is opened but never closed — add a &lt;/' + t + '&gt; where it should end.';
+      return;
+    }
+    if(closes > opens){
+      el.className = 'tag-doctor issue';
+      el.innerHTML = '🩺 Tag check: there is a &lt;/' + t + '&gt; with no matching opening &lt;' + t + '&gt;.';
+      return;
+    }
+  }
+  el.className = 'tag-doctor good';
+  el.textContent = '✓ Tag check: every tag is closed properly. Well built!';
+}
 
 // ---- Drag to order ----
 document.querySelectorAll('.drag-box').forEach(box => {
@@ -1251,6 +1520,12 @@ const guessRounds = [
   { code: 'money = 2\nfare = 5\nif money >= fare:\n    print("Pay")\nelse:\n    print("Wait")', q: 'What prints?',
     opts: ['Pay','Wait','both'], right:1,
     fb: 'Yes — 2 is not greater-or-equal to 5, so the <b>else</b> runs: <b>Wait</b>.' },
+  { code: 'fish = ["tilapia", "herring", "salmon"]\nprint(fish[0])', q: 'What prints?',
+    opts: ['tilapia','herring','error'], right:0,
+    fb: 'Computers count from <b>0</b> — so <b>fish[0]</b> is the first item: <b>tilapia</b>.' },
+  { code: 'def double(x):\n    return x * 2\n\nprint(double(6))', q: 'What prints?',
+    opts: ['12','6','double(6)'], right:0,
+    fb: 'The function hands back 6 × 2 = <b>12</b>, and print shows it. Functions + return = reusable answers.' },
 ];
 const guessEl = document.getElementById('guessGame');
 let guessIdx = 0, guessScore = 0;
