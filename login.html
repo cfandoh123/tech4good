@@ -9,8 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
+  /* Independence Arch backdrop with a warm scrim so the card stays readable */
+  body{background:linear-gradient(rgba(26,22,18,.38),rgba(26,22,18,.52)),url('login-bg-web.jpg') center/cover no-repeat fixed}
   .auth-wrap{max-width:440px;margin:0 auto;padding:100px 22px 60px;min-height:100vh;display:flex;flex-direction:column;justify-content:center}
-  .auth-card{width:100%}
+  .auth-card{width:100%;box-shadow:0 30px 70px -20px rgba(0,0,0,.55)}
   .auth-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:34px 30px;
     box-shadow:0 18px 50px rgba(26,22,18,.08)}
   .auth-eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--terra-deep);margin-bottom:10px}
