@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tech4Good· Warm-Up Course</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -36,7 +37,7 @@ code,kbd{font-family:"JetBrains Mono",monospace}
 /* ---- top bar ---- */
 .topbar{position:sticky;top:0;z-index:50;background:rgba(247,243,233,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:58px}
-.brand{font-family:"Fraunces",serif;font-weight:900;font-size:1.05rem;border:none;color:var(--green)}
+.brand{font-family:"Fraunces",serif;font-weight:900;font-size:1.05rem;border:none;color:var(--green);display:flex;align-items:center;gap:9px}
 .brand span{color:var(--terra)}
 .tnav{display:flex;gap:18px;font-size:.82rem;font-weight:500}
 .tnav a{border:none;color:var(--muted)}
@@ -340,7 +341,7 @@ footer p{margin:4px 0;font-size:.88rem}
 </script>
 
 <div class="topbar"><div class="wrap">
-  <a class="brand" href="#top">Tech4Good</a>
+  <a class="brand" href="#top"><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><path fill="#1B4332" d="M50,18 L59.99,36.25 L80.43,40.11 L66.17,55.25 L68.81,75.89 L50,67 L31.19,75.89 L33.83,55.25 L19.57,40.11 L40.01,36.25 Z"/><g fill="#D77A4E"><circle cx="50" cy="9" r="3.4"/><circle cx="88.99" cy="37.33" r="3.4"/><circle cx="74.1" cy="83.17" r="3.4"/><circle cx="25.9" cy="83.17" r="3.4"/><circle cx="11.01" cy="37.33" r="3.4"/></g></svg><span style="color:var(--green)">Tech<span>4</span>Good</span></a>
   <!-- Section links removed — renderNav() fills this with "Hi, <name>" + "Log out". -->
   <nav class="tnav"></nav>
 </div></div>
