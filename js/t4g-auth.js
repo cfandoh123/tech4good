@@ -50,8 +50,11 @@ const SUPABASE_ANON_KEY = 'sb_publishable_oaJg6qm7mJqGSRo9u-Pq9A_RzHtxaR0';
     return slug(name) + '@' + EMAIL_DOMAIN;
   }
   // Join first + last into the single display/identity string the email is built from.
+  // Names are upper-cased so a student who types "ama" one day and "Ama" the next
+  // still resolves to the same account. (slug() also lowercases, so login already
+  // ignores case — this keeps what we store and show consistent too.)
   function fullName(first, last) {
-    return (String(first || '').trim() + ' ' + String(last || '').trim()).trim();
+    return (String(first || '').trim() + ' ' + String(last || '').trim()).trim().toUpperCase();
   }
   // Password must be >= 6 chars for Supabase, so we pad the 4-digit PIN.
   function passwordFor(pin) {
@@ -75,8 +78,8 @@ const SUPABASE_ANON_KEY = 'sb_publishable_oaJg6qm7mJqGSRo9u-Pq9A_RzHtxaR0';
     // Create a new student account, then their profile row.
     async signUp({ firstName, lastName, pin }) {
       ensureReady();
-      const first = String(firstName || '').trim();
-      const last  = String(lastName  || '').trim();
+      const first = String(firstName || '').trim().toUpperCase();
+      const last  = String(lastName  || '').trim().toUpperCase();
       const name  = fullName(first, last);
 
       // Create the auth user.
