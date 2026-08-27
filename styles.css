@@ -708,6 +708,16 @@
     position: relative;
     z-index: 1;
   }
+  /* Photo portraits. The container is already 4/5 with overflow:hidden,
+     so cover crops any photo to shape instead of squashing it. */
+  .student-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    position: relative;
+    z-index: 1;
+  }
   .student-name {
     font-family: var(--display);
     font-size: 22px;
@@ -729,6 +739,54 @@
     font-size: 16px;
     line-height: 1.45;
     color: var(--forest);
+  }
+  /* Extra detail for a student who has filled in their portfolio */
+  .quote-source {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--terra-deep);
+    margin-top: 8px;
+  }
+  .student-detail {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 12px;
+  }
+  .detail-row .k {
+    display: block;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    opacity: 0.55;
+    margin-bottom: 3px;
+  }
+  .detail-row .v {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--forest);
+  }
+  /* gold chips, echoing the fun-fact cards in the portfolio template */
+  .student-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .student-tags li {
+    font-size: 12px;
+    line-height: 1.3;
+    border: 1px solid var(--gold);
+    border-radius: 20px;
+    padding: 5px 11px;
   }
 
   /* ============ STATS ============ */
