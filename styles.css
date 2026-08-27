@@ -1181,3 +1181,108 @@
   @media (max-width: 960px) {
     .warmup-grid { grid-template-columns: 1fr; gap: 40px; }
   }
+
+  /* ============ GROUP PROJECTS BANNER (homepage) ============ */
+  /* nav.top is position:fixed, so this banner has to clear it itself.
+     The extra room also leaves space for the button's pulsing halo. */
+  .gp-banner {
+    padding: 108px 0 8px;
+    text-align: center;
+  }
+  /* the banner now does the clearing, so the hero below it must not double up */
+  .gp-banner + .hero {
+    padding-top: 46px;
+  }
+  .gp-glow {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    border-radius: 999px;
+    padding: 6px;                 /* thickness of the shine ring */
+    overflow: hidden;             /* clips the spinning square into the pill */
+    animation: gp-pulse 2.6s ease-in-out infinite;
+  }
+  /* the rotating shine ring */
+  .gp-glow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 170%;
+    aspect-ratio: 1;
+    background: conic-gradient(
+      var(--gold), #FFF1D0, var(--terra),
+      var(--gold), #FFF1D0, var(--terra), var(--gold)
+    );
+    animation: gp-spin 4.5s linear infinite;
+  }
+  .gp-btn {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    background: var(--forest-deep);
+    color: var(--cream);
+    border-radius: 999px;
+    padding: 26px 46px;
+    text-decoration: none;
+    overflow: hidden;
+    transition: background 0.18s ease, transform 0.18s ease;
+  }
+  .gp-btn-label {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(1.15rem, 3.2vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+  .gp-btn-arrow {
+    font-size: clamp(1.3rem, 3.2vw, 2rem);
+    color: var(--gold);
+    transition: transform 0.18s ease;
+  }
+  /* light sweeping across the face of the button */
+  .gp-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -60%;
+    width: 42%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,0.34), transparent);
+    transform: skewX(-18deg);
+    pointer-events: none;
+    animation: gp-sweep 3.6s ease-in-out infinite;
+  }
+  .gp-glow:hover .gp-btn { background: var(--forest); transform: translateY(-2px); }
+  .gp-glow:hover .gp-btn-arrow { transform: translateX(5px); }
+  .gp-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 5px; }
+
+  @keyframes gp-spin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+  @keyframes gp-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(200,149,109,0.55), 0 14px 40px -12px rgba(217,117,67,0.45); }
+    50%      { box-shadow: 0 0 0 18px rgba(200,149,109,0), 0 18px 54px -10px rgba(217,117,67,0.70); }
+  }
+  @keyframes gp-sweep {
+    0%   { left: -60%; }
+    55%  { left: 118%; }
+    100% { left: 118%; }
+  }
+
+  @media (max-width: 560px) {
+    .gp-banner { padding-top: 92px; }
+    .gp-banner + .hero { padding-top: 34px; }
+    .gp-btn { padding: 20px 26px; gap: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gp-glow, .gp-glow::before, .gp-btn::after { animation: none; }
+    .gp-glow::before { background: linear-gradient(135deg, var(--gold), var(--terra)); }
+    .gp-glow { box-shadow: 0 14px 40px -12px rgba(217,117,67,0.45); }
+    .gp-btn::after { display: none; }
+  }
