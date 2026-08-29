@@ -699,6 +699,8 @@
   .student-portrait.p2 { background: linear-gradient(160deg, #0F3D2E, #C8956D); }
   .student-portrait.p3 { background: linear-gradient(160deg, #1A1612, #D97543); }
   .student-portrait.p4 { background: linear-gradient(160deg, #D97543, #C8956D); }
+  .student-portrait.p5 { background: linear-gradient(160deg, #3B4A6B, #C8956D); }
+  .student-portrait.p6 { background: linear-gradient(160deg, #4a7c52, #1A1612); }
   .portrait-initials {
     font-family: var(--display);
     font-size: 80px;

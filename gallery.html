@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gallery — Tech4Good</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ---------- gallery grid ---------- */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+    margin-top: 44px;
+  }
+  .shot {
+    margin: 0;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--cream-warm);
+    border: 1px solid var(--line);
+    cursor: zoom-in;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .shot:hover { transform: translateY(-3px); box-shadow: 0 18px 40px -20px rgba(15,61,46,.45); }
+  .shot:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+  .shot img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+  }
+  .shot figcaption {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    line-height: 1.4;
+    padding: 11px 14px;
+    color: var(--ink);
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+  }
+  /* let a favourite photo run twice as wide */
+  .shot.wide { grid-column: span 2; }
+  .shot.wide img { aspect-ratio: 16/9; }
+  @media (max-width: 560px) {
+    .shot.wide { grid-column: span 1; }
+    .shot.wide img { aspect-ratio: 4/3; }
+  }
+
+  /* ---------- empty state (hides itself once photos are added) ---------- */
+  .gallery-empty {
+    margin-top: 44px;
+    padding: 46px 34px;
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    background: var(--paper);
+    max-width: 640px;
+  }
+  .gallery-empty h3 {
+    font-family: var(--display);
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  .gallery-empty p { margin: 0 0 14px; color: var(--ink); opacity: .75; font-size: .96rem; }
+  .gallery-empty code {
+    font-family: var(--mono);
+    font-size: .84rem;
+    background: var(--cream);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .gallery-empty pre {
+    font-family: var(--mono);
+    font-size: .78rem;
+    line-height: 1.65;
+    background: var(--forest-deep);
+    color: #F3EFE2;
+    padding: 16px 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 0;
+  }
+
+  /* ---------- lightbox ---------- */
+  .lb {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(12, 26, 20, 0.94);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 34px 20px 78px;
+  }
+  .lb.open { display: flex; }
+  .lb img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+  .lb-cap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 26px;
+    text-align: center;
+    color: #E7DFCE;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    padding: 0 20px;
+  }
+  .lb-btn {
+    position: absolute;
+    background: rgba(247,243,233,0.10);
+    border: 1px solid rgba(247,243,233,0.28);
+    color: #F7F3E9;
+    font-family: var(--body);
+    font-size: 20px;
+    line-height: 1;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+  .lb-btn:hover { background: rgba(247,243,233,0.22); }
+  .lb-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .lb-close { top: 20px; right: 20px; }
+  .lb-prev { left: 18px; top: 50%; transform: translateY(-50%); }
+  .lb-next { right: 18px; top: 50%; transform: translateY(-50%); }
+  @media (max-width: 560px) {
+    .lb-prev { left: 10px; }
+    .lb-next { right: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .shot { transition: none; }
+    .shot:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="top">
+  <div class="inner">
+    <a class="brand" href="index.html">
+      <div class="brand-mark"></div>
+      Tech4Good
+    </a>
+    <div class="nav-links">
+      <a href="program.html">Program</a>
+      <a href="projects.html">Projects</a>
+      <a href="students.html">Students</a>
+      <a href="gallery.html">Gallery</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ GALLERY ============ -->
+<section class="section page-head" id="gallery">
+  <div class="wrap">
+    <a class="nav-back" href="index.html">← Back to home</a>
+    <div class="chapter" style="margin-top:28px;">From the Bootcamp</div>
+    <h2 class="section-title">Moments from the <em>Tech4Good</em> Bootcamp.</h2>
+   
+
+    <!--
+      ===========================================================
+       HOW TO ADD A PHOTO
+       1. Drop the image file into the  gallery/  folder.
+       2. Copy one <figure> block below and change the src + caption.
+       3. Use lowercase filenames with dashes and no spaces
+          (GitHub Pages is case-sensitive: Photo.JPG will NOT load
+          if you write photo.jpg).
+       4. Add  class="shot wide"  to let a photo run double width.
+
+       <figure class="shot" tabindex="0">
+         <img src="gallery/day-one-first-program.jpg"
+              alt="Students running their first Python program"
+              loading="lazy">
+         <figcaption>Day one — the first program runs</figcaption>
+       </figure>
+      ===========================================================
+    -->
+
+    <div class="gallery-grid" id="galleryGrid">
+
+      <figure class="shot" tabindex="0">
+  <img src="gallery/calvin_holding_marker.png"
+       alt="Calvin teaching"
+       loading="lazy">
+</figure>
+
+      <figure class="shot" tabindex="0">
+  <img src="gallery/group_pic_1.png"
+       alt="Students in a group"
+       loading="lazy">
+</figure>
+
+      <figure class="shot" tabindex="0">
+  <img src="gallery/group_pic_2.png"
+       alt="Students in a group"
+       loading="lazy">
+</figure>
+
+
+    </div>
+
+    <div class="cta-buttons" style="margin-top:60px;">
+      <a class="btn btn-dark" href="students.html">Meet the students →</a>
+      <a class="btn btn-outline" href="program.html">Explore the program</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LIGHTBOX ============ -->
+<div class="lb" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <button class="lb-btn lb-close" id="lbClose" aria-label="Close photo viewer">✕</button>
+  <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous photo">‹</button>
+  <img id="lbImg" alt="">
+  <button class="lb-btn lb-next" id="lbNext" aria-label="Next photo">›</button>
+  <div class="lb-cap" id="lbCap"></div>
+</div>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand"><div class="brand-mark"></div>Tech4Good</div>
+      </div>
+      <div class="foot-col">
+        <h4>Explore</h4>
+        <a href="program.html">Program</a>
+        <a href="projects.html">Projects</a>
+        <a href="students.html">Students</a>
+        <a href="gallery.html">Gallery</a>
+      </div>
+      <div class="foot-col">
+        <h4>Connect</h4>
+        <a href="partner.html">Partner with Us</a>
+        <a href="newsletter.html">Newsletter</a>
+      </div>
+      <div class="foot-col">
+        <h4>Contact</h4>
+        <a href="mailto:ca0977@princeton.edu">ca0977@princeton.edu</a>
+        <a href="https://www.instagram.com/andohcalvin/">Instagram</a>
+        <a href="https://www.linkedin.com/in/calvin-andoh-7a83481b5/">LinkedIn</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div>© 2026 Tech4Good </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const grid  = document.getElementById('galleryGrid');
+  const empty = document.getElementById('galleryEmpty');
+  const lb    = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lbImg');
+  const lbCap = document.getElementById('lbCap');
+
+  // Hide the "no photos yet" panel the moment real photos exist.
+  const shots = () => Array.from(grid.querySelectorAll('.shot'));
+  if (shots().length > 0) empty.style.display = 'none';
+
+  let index = 0;
+  let lastFocused = null;
+
+  function show(i) {
+    const list = shots();
+    if (!list.length) return;
+    index = (i + list.length) % list.length;          // wraps around both ways
+    const fig = list[index];
+    const img = fig.querySelector('img');
+    const cap = fig.querySelector('figcaption');
+    lbImg.src = img.getAttribute('src');
+    lbImg.alt = img.getAttribute('alt') || '';
+    lbCap.textContent = cap ? cap.textContent.trim() : '';
+  }
+
+  function open(i) {
+    lastFocused = document.activeElement;
+    show(i);
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('lbClose').focus();
+  }
+
+  function close() {
+    lb.classList.remove('open');
+    lbImg.src = '';
+    document.body.style.overflow = '';
+    if (lastFocused) lastFocused.focus();
+  }
+
+  grid.addEventListener('click', function (e) {
+    const fig = e.target.closest('.shot');
+    if (fig) open(shots().indexOf(fig));
+  });
+
+  // Enter or Space opens a photo for keyboard users.
+  grid.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const fig = e.target.closest('.shot');
+    if (fig) { e.preventDefault(); open(shots().indexOf(fig)); }
+  });
+
+  document.getElementById('lbClose').addEventListener('click', close);
+  document.getElementById('lbPrev').addEventListener('click', () => show(index - 1));
+  document.getElementById('lbNext').addEventListener('click', () => show(index + 1));
+
+  // Clicking the dark backdrop closes; clicking the photo itself does not.
+  lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+
+  document.addEventListener('keydown', function (e) {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape')     close();
+    if (e.key === 'ArrowLeft')  show(index - 1);
+    if (e.key === 'ArrowRight') show(index + 1);
+  });
+})();
+</script>
+
+</body>
+</html>
