@@ -275,8 +275,11 @@
   const lbCap = document.getElementById('lbCap');
 
   // Hide the "no photos yet" panel the moment real photos exist.
+  // The panel is optional -- it gets deleted once photos are added, so
+  // check it is actually there before touching it. Without this guard the
+  // whole script dies here and no photo ever opens.
   const shots = () => Array.from(grid.querySelectorAll('.shot'));
-  if (shots().length > 0) empty.style.display = 'none';
+  if (empty && shots().length > 0) empty.style.display = 'none';
 
   let index = 0;
   let lastFocused = null;
