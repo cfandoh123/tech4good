@@ -45,12 +45,34 @@
     background: var(--paper);
     border-top: 1px solid var(--line);
   }
+  /* video tiles: a poster image with a play badge over it */
+  .shot-play {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .shot.wide .shot-play { aspect-ratio: 16/9; }
+  .shot-play svg {
+    width: 56px;
+    height: 56px;
+    filter: drop-shadow(0 4px 14px rgba(0,0,0,0.5));
+    transition: transform 0.18s ease;
+  }
+  .shot:hover .shot-play svg { transform: scale(1.08); }
+
   /* let a favourite photo run twice as wide */
   .shot.wide { grid-column: span 2; }
   .shot.wide img { aspect-ratio: 16/9; }
   @media (max-width: 560px) {
     .shot.wide { grid-column: span 1; }
     .shot.wide img { aspect-ratio: 4/3; }
+    .shot.wide .shot-play { aspect-ratio: 4/3; }
   }
 
   /* ---------- empty state (hides itself once photos are added) ---------- */
@@ -106,6 +128,17 @@
     object-fit: contain;
     border-radius: 6px;
   }
+  .lb video,
+  .lb iframe {
+    width: min(1100px, 100%);
+    max-height: 100%;
+    aspect-ratio: 16/9;
+    border: 0;
+    border-radius: 6px;
+    background: #000;
+  }
+  /* the viewer swaps between image / video / embed, so hidden must win */
+  .lb [hidden] { display: none !important; }
   .lb-cap {
     position: absolute;
     left: 0;
@@ -192,10 +225,81 @@
               loading="lazy">
          <figcaption>Day one — the first program runs</figcaption>
        </figure>
+
+       -----------------------------------------------------------
+       HOW TO ADD A VIDEO
+
+       A video tile looks exactly like a photo tile: it shows a
+       poster image, plus a play badge. The video itself only
+       loads when someone clicks, so the page stays light.
+
+       A) SHORT CLIP hosted here (keep it under ~10MB; GitHub
+          refuses any file over 100MB). Put the .mp4 in gallery/
+          and a poster image next to it, then:
+
+       <figure class="shot" tabindex="0"
+               data-video="gallery/first-program-clip.mp4">
+         <img src="gallery/first-program-poster.jpg"
+              alt="Students cheering as their first program runs"
+              loading="lazy">
+         <span class="shot-play" aria-hidden="true">
+           <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+             <path fill="#E4B04A" d="M66.5 7.7a8.6 8.6 0 0 0-6.1-6.1C55.1 0 34 0 34 0S12.9 0 7.6 1.6a8.6 8.6 0 0 0-6.1 6.1C0 13 0 24 0 24s0 11 1.5 16.3a8.6 8.6 0 0 0 6.1 6.1C12.9 48 34 48 34 48s21.1 0 26.4-1.6a8.6 8.6 0 0 0 6.1-6.1C68 35 68 24 68 24s0-11-1.5-16.3z"/>
+             <path fill="#123028" d="M27 34.5V13.5L45 24z"/>
+           </svg>
+         </span>
+         <figcaption>The first program runs</figcaption>
+       </figure>
+
+       B) LONGER VIDEO on YouTube. Upload it as UNLISTED, copy the
+          id out of the URL (youtu.be/XXXXXXXXXXX -> XXXXXXXXXXX),
+          and use data-yt instead. Same <span class="shot-play">
+          badge as above.
+
+       <figure class="shot" tabindex="0" data-yt="XXXXXXXXXXX">
+         <img src="gallery/demo-day-poster.jpg"
+              alt="Students presenting on demo day"
+              loading="lazy">
+         <span class="shot-play" aria-hidden="true"> ...same svg... </span>
+         <figcaption>Demo day, full presentation</figcaption>
+       </figure>
+
+       Prefer B for anything over about 30 seconds: YouTube drops
+       the quality automatically on a slow connection, while an
+       .mp4 hosted here sends every phone the full-size file.
+       -----------------------------------------------------------
       ===========================================================
     -->
 
     <div class="gallery-grid" id="galleryGrid">
+
+      <!-- ========== WORKED EXAMPLE: a YouTube video ==========
+           Copy this whole block for the next one. Only three
+           things change:
+             1. data-yt  -- the id from the share link.
+                           https://youtu.be/wRkGWr47Cxs
+                                            ^^^^^^^^^^^ this part
+             2. the img src -- swap the same id into the thumbnail
+                           URL and YouTube gives you the poster
+                           frame for free. Nothing to upload.
+             3. the alt text and the caption.
+
+           "shot wide" makes it 16:9 and double width, which suits
+           video. Use plain "shot" if you would rather it match the
+           photo tiles.
+      ====================================================== -->
+      <figure class="shot wide" tabindex="0" data-yt="wRkGWr47Cxs">
+        <img src="https://i.ytimg.com/vi/wRkGWr47Cxs/hq720.jpg"
+             alt="Tech4Good participants recording a thank-you message"
+             loading="lazy">
+        <span class="shot-play" aria-hidden="true">
+          <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#E4B04A" d="M66.5 7.7a8.6 8.6 0 0 0-6.1-6.1C55.1 0 34 0 34 0S12.9 0 7.6 1.6a8.6 8.6 0 0 0-6.1 6.1C0 13 0 24 0 24s0 11 1.5 16.3a8.6 8.6 0 0 0 6.1 6.1C12.9 48 34 48 34 48s21.1 0 26.4-1.6a8.6 8.6 0 0 0 6.1-6.1C68 35 68 24 68 24s0-11-1.5-16.3z"/>
+            <path fill="#123028" d="M27 34.5V13.5L45 24z"/>
+          </svg>
+        </span>
+        <figcaption>Participants thank the Princeton Class of 1978 Foundation</figcaption>
+      </figure>
 
       <figure class="shot" tabindex="0">
   <img src="gallery/calvin_holding_marker.png"
@@ -380,6 +484,11 @@
   <button class="lb-btn lb-close" id="lbClose" aria-label="Close photo viewer">✕</button>
   <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous photo">‹</button>
   <img id="lbImg" alt="">
+  <video id="lbVid" controls playsinline preload="metadata" hidden></video>
+  <iframe id="lbFrame" title="Video" allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; encrypted-media; picture-in-picture; web-share"
+          hidden></iframe>
   <button class="lb-btn lb-next" id="lbNext" aria-label="Next photo">›</button>
   <div class="lb-cap" id="lbCap"></div>
 </div>
@@ -421,8 +530,10 @@
   const grid  = document.getElementById('galleryGrid');
   const empty = document.getElementById('galleryEmpty');
   const lb    = document.getElementById('lightbox');
-  const lbImg = document.getElementById('lbImg');
-  const lbCap = document.getElementById('lbCap');
+  const lbImg   = document.getElementById('lbImg');
+  const lbVid   = document.getElementById('lbVid');
+  const lbFrame = document.getElementById('lbFrame');
+  const lbCap   = document.getElementById('lbCap');
 
   // Hide the "no photos yet" panel the moment real photos exist.
   // The panel is optional -- it gets deleted once photos are added, so
@@ -434,15 +545,52 @@
   let index = 0;
   let lastFocused = null;
 
+  // Tear down whatever is playing before showing anything else. Without this,
+  // stepping past a video with the arrow keys leaves its audio running.
+  function clearMedia() {
+    lbImg.hidden = true;
+    lbImg.removeAttribute('src');
+
+    lbVid.hidden = true;
+    lbVid.pause();
+    lbVid.removeAttribute('src');
+    lbVid.load();                       // forces the browser to drop the buffer
+
+    lbFrame.hidden = true;
+    lbFrame.removeAttribute('src');     // the only way to stop a YouTube embed
+  }
+
   function show(i) {
     const list = shots();
     if (!list.length) return;
     index = (i + list.length) % list.length;          // wraps around both ways
+
     const fig = list[index];
-    const img = fig.querySelector('img');
     const cap = fig.querySelector('figcaption');
-    lbImg.src = img.getAttribute('src');
-    lbImg.alt = img.getAttribute('alt') || '';
+    const yt    = fig.getAttribute('data-yt');        // YouTube video id
+    const video = fig.getAttribute('data-video');     // path to a local .mp4
+
+    clearMedia();
+
+    if (yt) {
+      lbFrame.src = 'https://www.youtube-nocookie.com/embed/' +
+                    encodeURIComponent(yt) +
+                    '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+      lbFrame.hidden = false;
+    } else if (video) {
+      lbVid.src = video;
+      lbVid.hidden = false;
+      // Autoplay can be refused (phones, data-saver). Controls still work,
+      // so a rejected promise is not an error worth surfacing.
+      const p = lbVid.play();
+      if (p) p.catch(function () {});
+    } else {
+      const img = fig.querySelector('img');
+      lbImg.src = img.getAttribute('src');
+      lbImg.alt = img.getAttribute('alt') || '';
+      lbImg.hidden = false;
+    }
+
     lbCap.textContent = cap ? cap.textContent.trim() : '';
   }
 
@@ -456,7 +604,7 @@
 
   function close() {
     lb.classList.remove('open');
-    lbImg.src = '';
+    clearMedia();                       // stops video/audio, not just the image
     document.body.style.overflow = '';
     if (lastFocused) lastFocused.focus();
   }
