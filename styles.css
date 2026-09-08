@@ -104,6 +104,32 @@
   }
   .nav-cta:hover { background: var(--forest); color: var(--paper) !important; }
 
+  /* Mobile menu button — revealed by the <=960px query below */
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 42px; height: 42px;
+    margin: -6px -9px -6px 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .nav-toggle span {
+    display: block;
+    width: 22px; height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.25s, opacity 0.2s;
+  }
+  nav.top.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.top.open .nav-toggle span:nth-child(2) { opacity: 0; }
+  nav.top.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
   /* ============ HERO ============ */
   .hero {
     padding: 160px 0 100px;
@@ -1046,8 +1072,29 @@
     .timeline { grid-template-columns: 1fr; }
     .week { border-right: none; border-bottom: 1px solid rgba(244,237,224,0.15); }
     .foot-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
-    .nav-links { display: none; }
-    .nav-links .nav-cta { display: flex; }
+    .nav-toggle { display: flex; }
+    nav.top .inner { flex-wrap: wrap; }
+    .nav-links {
+      display: none;
+      /* +64px so the panel spans the full bar despite .inner's 32px padding */
+      flex-basis: calc(100% + 64px);
+      flex-shrink: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      /* negative margins cancel .inner's padding so the rules span the full bar */
+      margin: 14px -32px -18px;
+      padding: 0 32px 8px;
+      border-top: 1px solid var(--line);
+    }
+    nav.top.open .nav-links { display: flex; }
+    .nav-links a {
+      font-size: 16px;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-links a:last-child { border-bottom: none; }
+    .nav-links .nav-cta { align-self: flex-start; margin: 14px 0 6px; border-bottom: none; }
     .section { padding: 70px 0; }
     .hero { padding: 130px 0 70px; }
   }
