@@ -20,6 +20,10 @@
   .shot {
     margin: 0;
     position: relative;
+    /* column flex so the image can absorb any height the grid row forces on
+       this tile (rows stretch to their tallest tile) instead of leaving a gap */
+    display: flex;
+    flex-direction: column;
     border-radius: 10px;
     overflow: hidden;
     background: var(--cream-warm);
@@ -34,6 +38,8 @@
     aspect-ratio: 4/3;
     object-fit: cover;
     display: block;
+    flex: 1 1 auto;   /* 4/3 is the floor; grow to fill a taller row */
+    min-height: 0;
   }
   .shot figcaption {
     font-family: var(--mono);
@@ -123,10 +129,11 @@
   }
   .lb.open { display: flex; }
   .lb img {
-    max-width: 100%;
-    max-height: 100%;
+    /* width/height, not max-*: max-* only ever shrinks, so the photo used to sit
+       at its natural ~1050px in a larger frame. object-fit keeps the ratio. */
+    width: 100%;
+    height: 100%;
     object-fit: contain;
-    border-radius: 6px;
   }
   .lb video,
   .lb iframe {
@@ -628,8 +635,26 @@
   document.getElementById('lbPrev').addEventListener('click', () => show(index - 1));
   document.getElementById('lbNext').addEventListener('click', () => show(index + 1));
 
+  // The image box now fills the whole frame (object-fit letterboxes the photo
+  // inside it), so "did this click land on the photo?" is a geometry question,
+  // not an e.target question.
+  function hitsPhoto(e) {
+    const r = lbImg.getBoundingClientRect();
+    const nw = lbImg.naturalWidth, nh = lbImg.naturalHeight;
+    if (!nw || !nh) return true;                 // not loaded yet: treat as a hit
+    const scale = Math.min(r.width / nw, r.height / nh);
+    const w = nw * scale, h = nh * scale;
+    const x = r.left + (r.width - w) / 2;
+    const y = r.top + (r.height - h) / 2;
+    return e.clientX >= x && e.clientX <= x + w &&
+           e.clientY >= y && e.clientY <= y + h;
+  }
+
   // Clicking the dark backdrop closes; clicking the photo itself does not.
-  lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+  lb.addEventListener('click', function (e) {
+    if (e.target === lb) close();
+    else if (e.target === lbImg && !hitsPhoto(e)) close();
+  });
 
   document.addEventListener('keydown', function (e) {
     if (!lb.classList.contains('open')) return;
